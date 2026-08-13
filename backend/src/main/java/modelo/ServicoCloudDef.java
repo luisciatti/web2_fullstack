@@ -1,3 +1,6 @@
+// Representa um serviço cloud como EC2, RDS ou S3.
+// O campo `configuracao` é um `Map<String, String>` porque cada tipo de serviço
+// tem configurações diferentes (EC2 tem `instanceType`, RDS tem `engine`, etc.).
 package modelo;
 
 import java.util.Map;
