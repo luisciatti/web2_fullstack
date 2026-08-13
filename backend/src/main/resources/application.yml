@@ -10,3 +10,10 @@
        web:
          exposure:
            include: "*"  # quais endpoints do actuator expor
+           
+   springdoc:
+     swagger-ui:
+       path: /swagger-ui.html   # URL onde o Swagger UI ficará disponível
+       try-it-out-enabled: true  # permite testar direto no browser
+     api-docs:
+       path: /api-docs           # URL do JSON/YAML da especificação
