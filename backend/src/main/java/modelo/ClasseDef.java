@@ -1,4 +1,5 @@
 package modelo;
+
 import java.util.ArrayList;
 import java.util.List;
 import jakarta.validation.Valid;
@@ -20,5 +21,17 @@ public record ClasseDef(
     public List<MetodoDef> metodosSeguro() {
         // mesma lógica do método acima
         return metodos == null ? new ArrayList<>() : metodos;
+    }
+
+    public String getName() {
+        return nome;
+    }
+
+    public List<AtributoDef> getAtributos() {
+        return atributosSeguro();
+    }
+
+    public List<MetodoDef> getMetodos() {
+        return metodosSeguro();
     }
 }
