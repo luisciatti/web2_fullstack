@@ -6,8 +6,19 @@ package modelo;
 import jakarta.validation.constraints.NotBlank;
 
 public record RelacaoDef(
-        @NotBlank String origem, // nome da classe de origem
-        @NotBlank String destino, // nome da classe de destino
-        @NotBlank String tipo // tipo da relação (ONE_TO_MANY etc.)
+                @NotBlank String origem, // nome da classe de origem
+                @NotBlank String destino, // nome da classe de destino
+                @NotBlank String tipo // tipo da relação (ONE_TO_MANY etc.)
 ) {
+        public String getOrigem() {
+                return origem;
+        }
+
+        public String getDestino() {
+                return destino;
+        }
+
+        public String getTipo() {
+                return tipo;
+        }
 }

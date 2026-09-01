@@ -39,7 +39,8 @@ public class Projeto {
     @Valid
     private List<ConexaoCloudDef> conexoesCloud = new ArrayList<>();
 
-    // getters defensivos para listas (Lombok gera os normais, mas aqui sobrescrevemos)
+    // getters defensivos para listas (Lombok gera os normais, mas aqui
+    // sobrescrevemos)
     public List<ClasseDef> getClasses() {
         return classes == null ? new ArrayList<>() : classes;
     }
@@ -54,5 +55,25 @@ public class Projeto {
 
     public List<ConexaoCloudDef> getConexoesCloud() {
         return conexoesCloud == null ? new ArrayList<>() : conexoesCloud;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public String getLinguagem() {
+        return linguagem;
+    }
+
+    public String getFramework() {
+        return framework;
+    }
+
+    public String getProvedorCloud() {
+        return provedorCloud;
     }
 }
