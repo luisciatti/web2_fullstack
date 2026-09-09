@@ -207,9 +207,9 @@ public class GeradorTemplate {
         sb.append("    }\n");
 
         sb.append("}\n");
-
         return sb.toString();
     }
+
     public String gerarDiagramaCloud(Projeto projeto) {
         StringBuilder sb = new StringBuilder("flowchart LR\n");
 
