@@ -1,10 +1,10 @@
 package gerador;
 
-import modelo.Projeto;
+
+import modelo.*;
 
 import org.springframework.stereotype.Component;
 
-import jakarta.validation.constraints.Null;
 
 @Component
 public class GeradorTemplate {
@@ -62,12 +62,12 @@ public class GeradorTemplate {
         // anotações JPA
         sb.append("@Entity\n");
         sb.append("@Table(name = \"")
-          .append(snake(classe.nome()))
-          .append("\")\n");
+                .append(snake(classe.nome()))
+                .append("\")\n");
 
         sb.append("public class ")
-          .append(classe.nome())
-          .append(" {\n\n");
+                .append(classe.nome())
+                .append(" {\n\n");
 
         // ID
         sb.append("    @Id\n");
@@ -84,16 +84,16 @@ public class GeradorTemplate {
             sb.append("    @Column(nullable = false)\n");
 
             sb.append("    private ")
-              .append(atributo.tipo())
-              .append(" ")
-              .append(atributo.nome())
-              .append(";\n\n");
+                    .append(atributo.tipo())
+                    .append(" ")
+                    .append(atributo.nome())
+                    .append(";\n\n");
         }
 
         // construtor vazio
         sb.append("    public ")
-          .append(classe.nome())
-          .append("() {}\n\n");
+                .append(classe.nome())
+                .append("() {}\n\n");
 
         // getter ID
         sb.append("    public Long getId() {\n");
@@ -116,31 +116,31 @@ public class GeradorTemplate {
 
             // getter
             sb.append("    public ")
-              .append(atributo.tipo())
-              .append(" get")
-              .append(nomeCapitalizado)
-              .append("() {\n");
+                    .append(atributo.tipo())
+                    .append(" get")
+                    .append(nomeCapitalizado)
+                    .append("() {\n");
 
             sb.append("        return ")
-              .append(atributo.nome())
-              .append(";\n");
+                    .append(atributo.nome())
+                    .append(";\n");
 
             sb.append("    }\n\n");
 
             // setter
             sb.append("    public void set")
-              .append(nomeCapitalizado)
-              .append("(")
-              .append(atributo.tipo())
-              .append(" ")
-              .append(atributo.nome())
-              .append(") {\n");
+                    .append(nomeCapitalizado)
+                    .append("(")
+                    .append(atributo.tipo())
+                    .append(" ")
+                    .append(atributo.nome())
+                    .append(") {\n");
 
             sb.append("        this.")
-              .append(atributo.nome())
-              .append(" = ")
-              .append(atributo.nome())
-              .append(";\n");
+                    .append(atributo.nome())
+                    .append(" = ")
+                    .append(atributo.nome())
+                    .append(";\n");
 
             sb.append("    }\n\n");
         }
@@ -149,10 +149,10 @@ public class GeradorTemplate {
         for (MetodoDef metodo : classe.metodosSeguro()) {
 
             sb.append("    public ")
-              .append(metodo.tipoRetorno())
-              .append(" ")
-              .append(metodo.nome())
-              .append("() {\n");
+                    .append(metodo.tipoRetorno())
+                    .append(" ")
+                    .append(metodo.nome())
+                    .append("() {\n");
 
             sb.append("        // TODO: implementar\n");
 
@@ -182,10 +182,10 @@ public class GeradorTemplate {
         sb.append("        if (o == null || getClass() != o.getClass()) return false;\n");
 
         sb.append("        ")
-          .append(classe.nome())
-          .append(" that = (")
-          .append(classe.nome())
-          .append(") o;\n");
+                .append(classe.nome())
+                .append(" that = (")
+                .append(classe.nome())
+                .append(") o;\n");
 
         sb.append("        return Objects.equals(id, that.id);\n");
         sb.append("    }\n\n");
@@ -201,8 +201,8 @@ public class GeradorTemplate {
         sb.append("    public String toString() {\n");
 
         sb.append("        return \"")
-          .append(classe.nome())
-          .append("{id=\" + id + \"}\";\n");
+                .append(classe.nome())
+                .append("{id=\" + id + \"}\";\n");
 
         sb.append("    }\n");
 
