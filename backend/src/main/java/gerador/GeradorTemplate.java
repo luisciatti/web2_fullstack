@@ -3,6 +3,7 @@ package gerador;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.ArrayList;
 import modelo.*;
 
 import org.springframework.stereotype.Component;
@@ -725,7 +726,37 @@ public class GeradorTemplate {
         sb.append("        averageUtilization: 70\n");
 
         return sb.toString();
-}
+    }
+
+    public List<ArtefatoGerado> gerarArtefatos(Projeto projeto) {
+        List<ArtefatoGerado> artefatos = new ArrayList<>();
+
+        // artefatos Java: 5 por classe
+        for (ClasseDef classe : projeto.getClasses()) {
+            String nome = classe.nome();
+
+            artefatos.add(new ArtefatoGerado("JAVA_MODEL", nome + ".java", gerarModel(classe)));
+            artefatos.add(new ArtefatoGerado("JAVA_DAO", nome + "Repositorio.java", gerarRepositorio(classe)));
+            artefatos.add(new ArtefatoGerado("JAVA_SERVICE", nome + "Servico.java", gerarServico(classe)));
+            artefatos.add(new ArtefatoGerado("JAVA_SERVICE", nome + "ServicoImpl.java", gerarServicoImpl(classe)));
+            artefatos.add(new ArtefatoGerado("JAVA_CONTROLLER", nome + "Controlador.java", gerarControlador(classe)));
+        }
+
+        // artefatos fixos de configuração
+        artefatos.add(new ArtefatoGerado("CONFIG", "Application.java", gerarAplicacao(projeto.getNome())));
+        artefatos.add(new ArtefatoGerado("CONFIG", "pom.xml", gerarPom(projeto)));
+        artefatos.add(new ArtefatoGerado("CONFIG", "application.yml", gerarApplicationYml(projeto)));
+
+        // artefatos de infraestrutura
+        artefatos.add(new ArtefatoGerado("INFRA", "main.tf", gerarTerraform(projeto)));
+        artefatos.add(new ArtefatoGerado("INFRA", "deployment.yaml", gerarKubernetes(projeto)));
+
+        // diagramas
+        artefatos.add(new ArtefatoGerado("DIAGRAM", "diagrama.mmd", gerarUml(projeto)));
+        artefatos.add(new ArtefatoGerado("DIAGRAM", "cloud.mmd", gerarDiagramaCloud(projeto)));
+
+        return artefatos;
+    }
 
 
 }
