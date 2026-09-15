@@ -652,4 +652,80 @@ public class GeradorTemplate {
         
     }
 
+    private String gerarKubernetes(Projeto projeto) {  
+        String nome = slug(projeto.getNome());
+
+        StringBuilder sb = new StringBuilder();
+
+        // 1. Deployment
+        sb.append("apiVersion: apps/v1\n");
+        sb.append("kind: Deployment\n");
+        sb.append("metadata:\n");
+        sb.append("  name: ").append(nome).append("-deployment\n");
+        sb.append("spec:\n");
+        sb.append("  replicas: 2\n");
+        sb.append("  selector:\n");
+        sb.append("    matchLabels:\n");
+        sb.append("      app: ").append(nome).append("\n");
+        sb.append("  template:\n");
+        sb.append("    metadata:\n");
+        sb.append("      labels:\n");
+        sb.append("        app: ").append(nome).append("\n");
+        sb.append("    spec:\n");
+        sb.append("      containers:\n");
+        sb.append("      - name: ").append(nome).append("-container\n");
+        sb.append("        image: ").append(nome).append(":latest\n");
+        sb.append("        ports:\n");
+        sb.append("        - containerPort: 8080\n");
+        sb.append("        env:\n");
+        sb.append("        - name: DB_HOST\n");
+        sb.append("          valueFrom:\n");
+        sb.append("            secretKeyRef:\n");
+        sb.append("              name: db-secrets\n");
+        sb.append("              key: host\n");
+        sb.append("        - name: DB_PASSWORD\n");
+        sb.append("          valueFrom:\n");
+        sb.append("            secretKeyRef:\n");
+        sb.append("              name: db-secrets\n");
+        sb.append("              key: password\n");
+        sb.append("---\n");
+
+        // 2. Service
+        sb.append("apiVersion: v1\n");
+        sb.append("kind: Service\n");
+        sb.append("metadata:\n");
+        sb.append("  name: ").append(nome).append("-service\n");
+        sb.append("spec:\n");
+        sb.append("  type: LoadBalancer\n");
+        sb.append("  selector:\n");
+        sb.append("    app: ").append(nome).append("\n");
+        sb.append("  ports:\n");
+        sb.append("  - port: 80\n");
+        sb.append("    targetPort: 8080\n");
+        sb.append("---\n");
+
+        // 3. HorizontalPodAutoscaler
+        sb.append("apiVersion: autoscaling/v2\n");
+        sb.append("kind: HorizontalPodAutoscaler\n");
+        sb.append("metadata:\n");
+        sb.append("  name: ").append(nome).append("-hpa\n");
+        sb.append("spec:\n");
+        sb.append("  scaleTargetRef:\n");
+        sb.append("    apiVersion: apps/v1\n");
+        sb.append("    kind: Deployment\n");
+        sb.append("    name: ").append(nome).append("-deployment\n");
+        sb.append("  minReplicas: 2\n");
+        sb.append("  maxReplicas: 10\n");
+        sb.append("  metrics:\n");
+        sb.append("  - type: Resource\n");
+        sb.append("    resource:\n");
+        sb.append("      name: cpu\n");
+        sb.append("      target:\n");
+        sb.append("        type: Utilization\n");
+        sb.append("        averageUtilization: 70\n");
+
+        return sb.toString();
+}
+
+
 }
