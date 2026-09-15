@@ -225,4 +225,143 @@ public class GeradorTemplate {
 
         return sb.toString();
     }
+
+    private String gerarRepositorio(ClasseDef classe) {
+        StringBuilder sb = new StringBuilder();
+
+        // imports
+        sb.append("import org.springframework.data.jpa.repository.JpaRepository;\n");
+        sb.append("import org.springframework.stereotype.Repository;\n");
+        sb.append("import java.util.Optional;\n\n");
+
+        // anotação Repository
+        sb.append("@Repository\n");
+
+        // interface NomeRepositorio
+        String nomeClasse = classe.nome();
+        String nomeRepositorio = nomeClasse + "Repositorio";
+        sb.append("public interface ")
+          .append(nomeRepositorio)
+          .append(" extends JpaRepository<")
+          .append(nomeClasse)
+          .append(", Long> {\n\n");
+
+        // pegar os dois primeiros atributos (exceto id)
+        int count = 0;
+        for (AtributoDef atributo : classe.atributosSeguro()) {
+            if ("id".equalsIgnoreCase(atributo.nome())) {
+                continue;
+            }
+            if (count < 2) {
+                sb.append("    // Optional<")
+                  .append(nomeClasse)
+                  .append("> findBy")
+                  .append(capitalizar(atributo.nome()))
+                  .append("(")
+                  .append(atributo.tipo())
+                  .append(" ")
+                  .append(atributo.nome())
+                  .append(");\n");
+                count++;
+            }
+        }
+
+        sb.append("}\n");
+
+        return sb.toString();
+    }
+
+
+    private String gerarServico(ClasseDef classe) {
+        StringBuilder sb = new StringBuilder();
+
+        // imports
+        sb.append("import java.util.List;\n");
+        sb.append("import java.util.Optional;\n\n");
+
+        // interface NomeServico
+        String nomeClasse = classe.nome();
+        String nomeServico = nomeClasse + "Servico";
+
+        sb.append("public interface ")
+          .append(nomeServico)
+          .append(" {\n\n");
+
+        // métodos
+        sb.append("    List<").append(nomeClasse).append("> buscarTodos();\n\n");
+        sb.append("    Optional<").append(nomeClasse).append("> buscarPorId(Long id);\n\n");
+        sb.append("    ").append(nomeClasse).append(" salvar(").append(nomeClasse).append(" entidade);\n\n");
+        sb.append("    void deletarPorId(Long id);\n\n");
+
+        sb.append("}\n");
+
+        return sb.toString();
+    }
+
+
+    private String gerarServicoImpl(ClasseDef classe) {
+        StringBuilder sb = new StringBuilder();
+
+        // imports
+        sb.append("import org.springframework.stereotype.Service;\n");
+        sb.append("import org.springframework.transaction.annotation.Transactional;\n");
+        sb.append("import java.util.List;\n");
+        sb.append("import java.util.Optional;\n\n");
+
+        // anotação Service e Transactional
+        sb.append("@Service\n");
+        sb.append("@Transactional\n");
+
+        // nome da classe
+        String nomeClasse = classe.nome();
+        String nomeServico = nomeClasse + "Servico";
+        String nomeRepositorio = nomeClasse + "Repositorio";
+        String nomeImpl = nomeClasse + "ServicoImpl";
+
+        sb.append("public class ")
+          .append(nomeImpl)
+          .append(" implements ")
+          .append(nomeServico)
+          .append(" {\n\n");
+
+        // campo final repositorio
+        sb.append("    private final ")
+          .append(nomeRepositorio)
+          .append(" repositorio;\n\n");
+
+        // construtor com injeção
+        sb.append("    public ")
+          .append(nomeImpl)
+          .append("(")
+          .append(nomeRepositorio)
+          .append(" repositorio) {\n");
+        sb.append("        this.repositorio = repositorio;\n");
+        sb.append("    }\n\n");
+
+        // métodos delegando para repositorio
+        sb.append("    @Override\n");
+        sb.append("    public List<").append(nomeClasse).append("> buscarTodos() {\n");
+        sb.append("        return repositorio.findAll();\n");
+        sb.append("    }\n\n");
+
+        sb.append("    @Override\n");
+        sb.append("    public Optional<").append(nomeClasse).append("> buscarPorId(Long id) {\n");
+        sb.append("        return repositorio.findById(id);\n");
+        sb.append("    }\n\n");
+
+        sb.append("    @Override\n");
+        sb.append("    public ").append(nomeClasse).append(" salvar(").append(nomeClasse).append(" entidade) {\n");
+        sb.append("        return repositorio.save(entidade);\n");
+        sb.append("    }\n\n");
+
+        sb.append("    @Override\n");
+        sb.append("    public void deletarPorId(Long id) {\n");
+        sb.append("        repositorio.deleteById(id);\n");
+        sb.append("    }\n\n");
+
+        sb.append("}\n");
+
+        return sb.toString();
+    }
+
 }
