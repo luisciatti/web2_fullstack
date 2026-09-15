@@ -1,5 +1,6 @@
 package gerador;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import modelo.*;
@@ -533,6 +534,21 @@ public class GeradorTemplate {
                 """.formatted(url, username, driverClassName);
     }
 
+        private String gerarTerraform(Projeto projeto) {
+                List<ServicoCloudDef> servicos = Optional.ofNullable(projeto.getServicosCloud())
+                                .orElse(List.of());
+
+                String provedor = Optional.ofNullable(projeto.getProvedorCloud())
+                                .orElse("aws")
+                                .toLowerCase();
+
+                return switch (provedor) {
+                        case "aws" -> AwsTerraformGenerator.gerar(servicos);
+                        case "oci" -> OciTerraformGenerator.gerar(servicos);
+                        default -> "# Provedor " + provedor + " nao suportado. Use aws ou oci.\n";
+                };
+        }
+
     private String pluralizar(String nome) {
         if (nome == null) {
             return "";
@@ -633,6 +649,7 @@ public class GeradorTemplate {
         sb.append("}\n");
 
         return sb.toString();
+        
     }
 
 }
