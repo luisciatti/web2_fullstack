@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import dao.ProjetoRepositorio;
 import gerador.GeradorTemplate;
+import modelo.ArtefatoGerado;
 import modelo.Projeto;
 import modelo.ResultadoGeracao;
 
@@ -49,6 +50,13 @@ public class ProjetoServicoImpl implements ProjetoServico {
 
     @Override
     public ResultadoGeracao gerar(String id) {
-        throw new UnsupportedOperationException("Implementar após T-17");
+        Projeto projeto = repositorio.buscarPorId(id)
+                .orElseThrow(() -> new IllegalArgumentException("Projeto não encontrado: " + id));
+
+        String uml = geradorTemplate.gerarUml(projeto);
+        String cloud = geradorTemplate.gerarDiagramaCloud(projeto);
+        List<ArtefatoGerado> artefatos = geradorTemplate.gerarArtefatos(projeto);
+
+        return new ResultadoGeracao(projeto.getId(), uml, cloud, artefatos);
     }
 }
