@@ -272,7 +272,6 @@ public class GeradorTemplate {
         return sb.toString();
     }
 
-
     private String gerarServico(ClasseDef classe) {
         StringBuilder sb = new StringBuilder();
 
@@ -298,7 +297,6 @@ public class GeradorTemplate {
 
         return sb.toString();
     }
-
 
     private String gerarServicoImpl(ClasseDef classe) {
         StringBuilder sb = new StringBuilder();
@@ -533,6 +531,108 @@ public class GeradorTemplate {
                       exposure:
                         include: health,info
                 """.formatted(url, username, driverClassName);
+    }
+
+    private String pluralizar(String nome) {
+        if (nome == null) {
+            return "";
+        }
+        return nome.toLowerCase() + "s";
+    }
+
+    private String gerarControlador(ClasseDef classe) {
+        StringBuilder sb = new StringBuilder();
+
+        // imports
+        sb.append("import org.springframework.http.HttpStatus;\n");
+        sb.append("import org.springframework.http.ResponseEntity;\n");
+        sb.append("import org.springframework.web.bind.annotation.*;\n");
+        sb.append("import java.util.List;\n\n");
+
+        String nomeClasse = classe.nome();
+        String nomeServicoTipo = nomeClasse + "Servico";
+        String nomeControlador = nomeClasse + "Controlador";
+        String nomeCampoServico = Character.toLowerCase(nomeClasse.charAt(0)) + nomeClasse.substring(1) + "Servico";
+
+        // anotações da classe
+        sb.append("@RestController\n");
+        sb.append("@RequestMapping(\"/api/")
+        .append(pluralizar(nomeClasse))
+        .append("\")\n");
+        sb.append("@CrossOrigin(origins = \"*\")\n");
+
+        sb.append("public class ")
+        .append(nomeControlador)
+        .append(" {\n\n");
+
+        // campo final do serviço
+        sb.append("    private final ")
+        .append(nomeServicoTipo)
+        .append(" ")
+        .append(nomeCampoServico)
+        .append(";\n\n");
+
+        // construtor com injeção
+        sb.append("    public ")
+        .append(nomeControlador)
+        .append("(")
+        .append(nomeServicoTipo)
+        .append(" ")
+        .append(nomeCampoServico)
+        .append(") {\n");
+        sb.append("        this.")
+        .append(nomeCampoServico)
+        .append(" = ")
+        .append(nomeCampoServico)
+        .append(";\n");
+        sb.append("    }\n\n");
+
+        // GET /
+        sb.append("    @GetMapping\n");
+        sb.append("    public List<").append(nomeClasse).append("> buscarTodos() {\n");
+        sb.append("        return ").append(nomeCampoServico).append(".buscarTodos();\n");
+        sb.append("    }\n\n");
+
+        // GET /{id}
+        sb.append("    @GetMapping(\"/{id}\")\n");
+        sb.append("    public ResponseEntity<").append(nomeClasse).append("> buscarPorId(@PathVariable Long id) {\n");
+        sb.append("        return ")
+        .append(nomeCampoServico)
+        .append(".buscarPorId(id)\n");
+        sb.append("                .map(ResponseEntity::ok)\n");
+        sb.append("                .orElse(ResponseEntity.notFound().build());\n");
+        sb.append("    }\n\n");
+
+        // POST /
+        sb.append("    @PostMapping\n");
+        sb.append("    @ResponseStatus(HttpStatus.CREATED)\n");
+        sb.append("    public ").append(nomeClasse).append(" criar(@RequestBody ").append(nomeClasse).append(" entidade) {\n");
+        sb.append("        return ").append(nomeCampoServico).append(".salvar(entidade);\n");
+        sb.append("    }\n\n");
+
+        // PUT /{id}
+        sb.append("    @PutMapping(\"/{id}\")\n");
+        sb.append("    public ResponseEntity<").append(nomeClasse).append("> atualizar(@PathVariable Long id, @RequestBody ").append(nomeClasse).append(" entidade) {\n");
+        sb.append("        return ")
+        .append(nomeCampoServico)
+        .append(".buscarPorId(id)\n");
+        sb.append("                .map(existente -> {\n");
+        sb.append("                    entidade.setId(id);\n");
+        sb.append("                    return ResponseEntity.ok(").append(nomeCampoServico).append(".salvar(entidade));\n");
+        sb.append("                })\n");
+        sb.append("                .orElse(ResponseEntity.notFound().build());\n");
+        sb.append("    }\n\n");
+
+        // DELETE /{id}
+        sb.append("    @DeleteMapping(\"/{id}\")\n");
+        sb.append("    @ResponseStatus(HttpStatus.NO_CONTENT)\n");
+        sb.append("    public void deletar(@PathVariable Long id) {\n");
+        sb.append("        ").append(nomeCampoServico).append(".deletarPorId(id);\n");
+        sb.append("    }\n\n");
+
+        sb.append("}\n");
+
+        return sb.toString();
     }
 
 }
