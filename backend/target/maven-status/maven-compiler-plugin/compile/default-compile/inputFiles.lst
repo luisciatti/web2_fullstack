@@ -4,10 +4,14 @@ C:\Users\luisc\OneDrive\Desktop\Repositorios\web2_fullstack\backend\src\main\jav
 C:\Users\luisc\OneDrive\Desktop\Repositorios\web2_fullstack\backend\src\main\java\modelo\Projeto.java
 C:\Users\luisc\OneDrive\Desktop\Repositorios\web2_fullstack\backend\src\main\java\modelo\ResultadoGeracao.java
 C:\Users\luisc\OneDrive\Desktop\Repositorios\web2_fullstack\backend\src\main\java\modelo\ConexaoCloudDef.java
+C:\Users\luisc\OneDrive\Desktop\Repositorios\web2_fullstack\backend\src\main\java\gerador\OciTerraformGenerator.java
+C:\Users\luisc\OneDrive\Desktop\Repositorios\web2_fullstack\backend\src\main\java\gerador\AwsTerraformGenerator.java
 C:\Users\luisc\OneDrive\Desktop\Repositorios\web2_fullstack\backend\src\main\java\modelo\AtributoDef.java
 C:\Users\luisc\OneDrive\Desktop\Repositorios\web2_fullstack\backend\src\main\java\modelo\RelacaoDef.java
 C:\Users\luisc\OneDrive\Desktop\Repositorios\web2_fullstack\backend\src\main\java\modelo\ServicoCloudDef.java
 C:\Users\luisc\OneDrive\Desktop\Repositorios\web2_fullstack\backend\src\main\java\modelo\ArtefatoGerado.java
+C:\Users\luisc\OneDrive\Desktop\Repositorios\web2_fullstack\backend\src\main\java\servico\ProjetoServicoImpl.java
 C:\Users\luisc\OneDrive\Desktop\Repositorios\web2_fullstack\backend\src\main\java\dao\ProjetoRepositorioEmMemoria.java
 C:\Users\luisc\OneDrive\Desktop\Repositorios\web2_fullstack\backend\src\main\java\com\web2\DiagramCodeBackendApplication.java
 C:\Users\luisc\OneDrive\Desktop\Repositorios\web2_fullstack\backend\src\main\java\gerador\GeradorTemplate.java
+C:\Users\luisc\OneDrive\Desktop\Repositorios\web2_fullstack\backend\src\main\java\servico\ProjetoServico.java
