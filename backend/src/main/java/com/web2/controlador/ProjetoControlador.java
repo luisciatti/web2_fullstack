@@ -14,6 +14,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import java.util.Map;
+import modelo.ArtefatoGerado;
+import modelo.ResultadoGeracao;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import jakarta.validation.Valid;
 import modelo.Projeto;
@@ -70,5 +74,30 @@ public class ProjetoControlador {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deletar(@PathVariable String id) {
         servico.deletarPorId(id);
+    }
+
+    // POST /api/projetos/{id}/gerar
+    @PostMapping("/{id}/gerar")
+    public ResultadoGeracao gerar(@PathVariable String id) {
+        return servico.gerar(id);
+    }
+
+    // GET /api/projetos/{id}/artefatos
+    @GetMapping("/{id}/artefatos")
+    public List<ArtefatoGerado> artefatos(@PathVariable String id) {
+        return servico.gerar(id).artefatos();
+    }
+
+    // GET /api/projetos/{id}/diagrama/uml
+    @GetMapping("/{id}/diagrama/uml")
+    public Map<String, String> diagramaUml(@PathVariable String id) {
+        return Map.of("uml", servico.gerar(id).uml());
+    }
+
+    // Trata projeto não encontrado
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, String> tratarNaoEncontrado(IllegalArgumentException ex) {
+        return Map.of("erro", ex.getMessage());
     }
 }
