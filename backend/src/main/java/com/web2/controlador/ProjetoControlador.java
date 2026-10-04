@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import modelo.Projeto;
-import modelo.ResultadoGeracao;
 import servico.ProjetoServico;
 
 @RestController
@@ -50,16 +49,6 @@ public class ProjetoControlador {
     @PostMapping
     public Projeto salvar(@Valid @RequestBody Projeto projeto) {
         return servico.salvar(projeto);
-    }
-
-    // POST /api/projetos/{id}/gerar → retorna os artefatos gerados ou 404
-    @PostMapping("/{id}/gerar")
-    public ResponseEntity<ResultadoGeracao> gerar(@PathVariable String id) {
-        try {
-            return ResponseEntity.ok(servico.gerar(id));
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.notFound().build();
-        }
     }
 
     // PUT /api/projetos/{id} → 200 se existe, 404 se não
