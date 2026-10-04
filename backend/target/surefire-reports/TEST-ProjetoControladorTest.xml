@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="ModeloValidacaoTest" time="0.572" tests="3" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="ProjetoControladorTest" time="5.7" tests="4" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.specification.version" value="21"/>
     <property name="sun.cpu.isalist" value="amd64"/>
@@ -9,7 +9,9 @@
     <property name="sun.arch.data.model" value="64"/>
     <property name="user.variant" value=""/>
     <property name="java.vendor.url" value="https://java.oracle.com/"/>
+    <property name="catalina.useNaming" value="false"/>
     <property name="user.timezone" value="America/Sao_Paulo"/>
+    <property name="org.jboss.logging.provider" value="slf4j"/>
     <property name="os.name" value="Windows 11"/>
     <property name="java.vm.specification.version" value="21"/>
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
@@ -30,6 +32,8 @@
     <property name="line.separator" value="&#10;"/>
     <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
     <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="FILE_LOG_CHARSET" value="UTF-8"/>
+    <property name="java.awt.headless" value="true"/>
     <property name="surefire.real.class.path" value="C:\Users\luisc\AppData\Local\Temp\surefire11121402757813007017\surefirebooter-20261004190245479_3.jar"/>
     <property name="user.script" value=""/>
     <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
@@ -44,11 +48,15 @@
     <property name="localRepository" value="C:\Users\luisc\.m2\repository"/>
     <property name="java.vendor.url.bug" value="https://bugreport.java.com/bugreport/"/>
     <property name="java.io.tmpdir" value="C:\Users\luisc\AppData\Local\Temp\"/>
+    <property name="catalina.home" value="C:\Users\luisc\AppData\Local\Temp\tomcat.0.4237281591732235692"/>
     <property name="java.version" value="21.0.9"/>
     <property name="user.dir" value="C:\Users\luisc\OneDrive\Desktop\Repositorios\web2_fullstack\backend"/>
     <property name="os.arch" value="amd64"/>
     <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="PID" value="22984"/>
     <property name="sun.os.patch.level" value=""/>
+    <property name="CONSOLE_LOG_CHARSET" value="UTF-8"/>
+    <property name="catalina.base" value="C:\Users\luisc\AppData\Local\Temp\tomcat.0.4237281591732235692"/>
     <property name="native.encoding" value="Cp1252"/>
     <property name="java.library.path" value="C:\Program Files\Java\jdk-21\bin;C:\Windows\Sun\Java\bin;C:\Windows\system32;C:\Windows;c:\Users\luisc\AppData\Roaming\Code\User\globalStorage\github.copilot-chat\debugCommand;c:\Users\luisc\AppData\Roaming\Code\User\globalStorage\github.copilot-chat\copilotCli;C:\Program Files\Common Files\Oracle\Java\javapath;C:\Program Files (x86)\Common Files\Oracle\Java\java8path;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files\Git\cmd;C:\Program Files\nodejs\;C:\Program Files\apache-maven-3.9.16\bin;;C:\Program Files\Docker\Docker\resources\bin;C:\Users\luisc\AppData\Local\Microsoft\WindowsApps;C:\Users\luisc\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\luisc\AppData\Local\Python\bin;C:\Users\luisc\AppData\Roaming\npm;C:\Program Files\apache-maven-3.9.16\bin;c:\Users\luisc\.vscode\extensions\vscjava.vscode-java-debug-0.59.0\bundled\scripts\noConfigScripts;c:\Users\luisc\.vscode\extensions\ms-python.debugpy-2026.6.0-win32-x64\bundled\scripts\noConfigScripts;."/>
     <property name="java.vm.info" value="mixed mode, sharing"/>
@@ -58,10 +66,40 @@
     <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
     <property name="java.class.version" value="65.0"/>
   </properties>
-  <testcase name="projeto_comNomeVazio_deveRetornarViolation" classname="ModeloValidacaoTest" time="0.534">
-    <system-out><![CDATA[19:02:46.251 [main] INFO org.hibernate.validator.internal.util.Version -- HV000001: Hibernate Validator 8.0.1.Final
+  <testcase name="postProjeto_retornaIdGerado" classname="ProjetoControladorTest" time="1.47">
+    <system-out><![CDATA[
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.1.0)
+
+2026-10-04T19:02:47.501-03:00  INFO 22984 --- [           main] ProjetoControladorTest                   : Starting ProjetoControladorTest using Java 21.0.9 with PID 22984 (started by luisc in C:\Users\luisc\OneDrive\Desktop\Repositorios\web2_fullstack\backend)
+2026-10-04T19:02:47.504-03:00  INFO 22984 --- [           main] ProjetoControladorTest                   : No active profile set, falling back to 1 default profile: "default"
+2026-10-04T19:02:49.332-03:00  INFO 22984 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 0 (http)
+2026-10-04T19:02:49.342-03:00  INFO 22984 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-10-04T19:02:49.343-03:00  INFO 22984 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.8]
+2026-10-04T19:02:49.470-03:00  INFO 22984 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-10-04T19:02:49.472-03:00  INFO 22984 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1912 ms
+2026-10-04T19:02:50.524-03:00  INFO 22984 --- [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 13 endpoint(s) beneath base path '/actuator'
+2026-10-04T19:02:50.649-03:00  INFO 22984 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 50389 (http) with context path ''
+2026-10-04T19:02:50.666-03:00  INFO 22984 --- [           main] ProjetoControladorTest                   : Started ProjetoControladorTest in 3.636 seconds (process running for 5.067)
+2026-10-04T19:02:52.108-03:00  INFO 22984 --- [o-auto-1-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-10-04T19:02:52.108-03:00  INFO 22984 --- [o-auto-1-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-10-04T19:02:52.109-03:00  INFO 22984 --- [o-auto-1-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+]]></system-out>
+    <system-err><![CDATA[WARNING: A Java agent has been loaded dynamically (C:\Users\luisc\.m2\repository\net\bytebuddy\byte-buddy-agent\1.14.4\byte-buddy-agent-1.14.4.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+]]></system-err>
+  </testcase>
+  <testcase name="getPorIdInexistente_retorna404" classname="ProjetoControladorTest" time="0.015"/>
+  <testcase name="postGerar_comProjetoValido_retornaArtefatos" classname="ProjetoControladorTest" time="0.045"/>
+  <testcase name="postComBodyVazio_retorna400" classname="ProjetoControladorTest" time="0.057">
+    <system-out><![CDATA[2026-10-04T19:02:52.355-03:00  WARN 22984 --- [o-auto-1-exec-5] .w.s.m.s.DefaultHandlerExceptionResolver : Resolved [org.springframework.web.bind.MethodArgumentNotValidException: Validation failed for argument [0] in public modelo.Projeto com.web2.controlador.ProjetoControlador.salvar(modelo.Projeto) with 4 errors: [Field error in object 'projeto' on field 'framework': rejected value [null]; codes [NotBlank.projeto.framework,NotBlank.framework,NotBlank.java.lang.String,NotBlank]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [projeto.framework,framework]; arguments []; default message [framework]]; default message [não deve estar em branco]] [Field error in object 'projeto' on field 'provedorCloud': rejected value [null]; codes [NotBlank.projeto.provedorCloud,NotBlank.provedorCloud,NotBlank.java.lang.String,NotBlank]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [projeto.provedorCloud,provedorCloud]; arguments []; default message [provedorCloud]]; default message [não deve estar em branco]] [Field error in object 'projeto' on field 'linguagem': rejected value [null]; codes [NotBlank.projeto.linguagem,NotBlank.linguagem,NotBlank.java.lang.String,NotBlank]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [projeto.linguagem,linguagem]; arguments []; default message [linguagem]]; default message [não deve estar em branco]] [Field error in object 'projeto' on field 'nome': rejected value [null]; codes [NotBlank.projeto.nome,NotBlank.nome,NotBlank.java.lang.String,NotBlank]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [projeto.nome,nome]; arguments []; default message [nome]]; default message [não deve estar em branco]] ]
 ]]></system-out>
   </testcase>
-  <testcase name="atributoDef_comNomeVazio_deveRetornarViolation" classname="ModeloValidacaoTest" time="0.01"/>
-  <testcase name="atributoDef_valido_naoDeveRetornarViolations" classname="ModeloValidacaoTest" time="0.008"/>
 </testsuite>
