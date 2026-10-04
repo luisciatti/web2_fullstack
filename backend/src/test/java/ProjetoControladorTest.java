@@ -11,7 +11,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
-import com.web2.DiagramCodeBackendApplication;
+import com.web2.Web2BackendApplication;
 
 import modelo.AtributoDef;
 import modelo.ClasseDef;
@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@SpringBootTest(classes = DiagramCodeBackendApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(classes = Web2BackendApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class ProjetoControladorTest {
 
     @Autowired

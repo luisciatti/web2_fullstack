@@ -11,9 +11,9 @@ import org.springframework.context.annotation.ComponentScan;
         "servico",
         "gerador"
 })
-public class DiagramCodeBackendApplication {
+public class Web2BackendApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(DiagramCodeBackendApplication.class, args);
+        SpringApplication.run(Web2BackendApplication.class, args);
     }
 }
