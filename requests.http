@@ -1,0 +1,55 @@
+### 1. Health check
+GET http://localhost:8080/actuator/health
+
+###
+
+### 2. Criar projeto
+POST http://localhost:8080/api/projetos
+Content-Type: application/json
+
+{
+  "nome": "Teste",
+  "linguagem": "java",
+  "framework": "spring-boot",
+  "provedorCloud": "aws",
+  "classes": [
+    {
+      "nome": "Usuario",
+      "atributos": [
+        {
+          "nome": "nome",
+          "tipo": "String"
+        }
+      ],
+      "metodos": []
+    }
+  ],
+  "servicosCloud": [
+    {
+      "id": "db-principal",
+      "tipo": "aws-rds",
+      "categoria": "DATA",
+      "configuracao": {
+        "engine": "postgres",
+        "dbName": "projeto_teste",
+        "username": "usuario_teste",
+        "password": "senha_teste"
+      }
+    }
+  ]
+}
+
+###
+
+### 3. Buscar projeto (substitua {{id}})
+GET http://localhost:8080/api/projetos/{{id}}
+
+###
+
+### 4. Gerar artefatos
+POST http://localhost:8080/api/projetos/{{id}}/gerar
+
+###
+
+### 5. Deletar projeto
+DELETE http://localhost:8080/api/projetos/{{id}}
