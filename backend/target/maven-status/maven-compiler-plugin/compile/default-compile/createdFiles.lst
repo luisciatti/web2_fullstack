@@ -1,3 +1,4 @@
 modelo\ConexaoCloudDef.class
 modelo\ServicoCloudDef.class
+com\web2\controlador\ProjetoControlador.class
 com\web2\DiagramCodeBackendApplication.class
