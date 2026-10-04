@@ -41,21 +41,21 @@ public class ProjetoControlador {
 
     // GET /api/projetos → retorna List<Projeto>
     @GetMapping
-        @Operation(summary = "Lista todos os projetos")
-        @ApiResponses({
+    @Operation(summary = "Lista todos os projetos")
+    @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Lista de projetos retornada com sucesso")
-        })
+    })
     public List<Projeto> buscarTodos() {
         return servico.buscarTodos();
     }
 
     // GET /api/projetos/{id} → retorna 200 com projeto ou 404
     @GetMapping("/{id}")
-        @Operation(summary = "Consulta um projeto pelo ID")
-        @ApiResponses({
+    @Operation(summary = "Consulta um projeto pelo ID")
+    @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Projeto encontrado"),
             @ApiResponse(responseCode = "404", description = "Projeto não encontrado")
-        })
+    })
     public ResponseEntity<Projeto> buscarPorId(@PathVariable String id) {
         return servico.buscarPorId(id)
                 .map(ResponseEntity::ok)
@@ -64,23 +64,23 @@ public class ProjetoControlador {
 
     // POST /api/projetos → recebe @Valid @RequestBody, retorna projeto salvo
     @PostMapping
-        @Operation(summary = "Cria um novo projeto")
-        @ApiResponses({
+    @Operation(summary = "Cria um novo projeto")
+    @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Projeto criado com sucesso"),
             @ApiResponse(responseCode = "400", description = "Payload inválido")
-        })
+    })
     public Projeto salvar(@Valid @RequestBody Projeto projeto) {
         return servico.salvar(projeto);
     }
 
     // PUT /api/projetos/{id} → 200 se existe, 404 se não
     @PutMapping("/{id}")
-        @Operation(summary = "Atualiza um projeto existente")
-        @ApiResponses({
+    @Operation(summary = "Atualiza um projeto existente")
+    @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Projeto atualizado com sucesso"),
             @ApiResponse(responseCode = "404", description = "Projeto não encontrado"),
             @ApiResponse(responseCode = "400", description = "Payload inválido")
-        })
+    })
     public ResponseEntity<Projeto> atualizar(
             @PathVariable String id,
             @Valid @RequestBody Projeto projeto) {
