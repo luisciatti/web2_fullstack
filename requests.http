@@ -51,5 +51,63 @@ POST http://localhost:8080/api/projetos/{{id}}/gerar
 
 ###
 
-### 5. Deletar projeto
+### 5. Listar artefatos
+GET http://localhost:8080/api/projetos/{{id}}/artefatos
+
+###
+
+### 6. Diagrama UML
+GET http://localhost:8080/api/projetos/{{id}}/diagrama/uml
+
+###
+
+### 7. Diagrama Cloud
+GET http://localhost:8080/api/projetos/{{id}}/diagrama/cloud
+
+###
+
+### 8. Atualizar projeto
+PUT http://localhost:8080/api/projetos/{{id}}
+Content-Type: application/json
+
+{
+  "nome": "Teste Atualizado",
+  "linguagem": "java",
+  "framework": "spring-boot",
+  "provedorCloud": "aws",
+  "classes": [
+    {
+      "nome": "Usuario",
+      "atributos": [
+        {
+          "nome": "nome",
+          "tipo": "String"
+        }
+      ],
+      "metodos": []
+    }
+  ],
+  "servicosCloud": [
+    {
+      "id": "db-principal",
+      "tipo": "aws-rds",
+      "categoria": "DATA",
+      "configuracao": {
+        "engine": "postgres",
+        "dbName": "projeto_teste",
+        "username": "usuario_teste",
+        "password": "senha_teste"
+      }
+    }
+  ]
+}
+
+###
+
+### 9. Deletar projeto
 DELETE http://localhost:8080/api/projetos/{{id}}
+
+###
+
+### Swagger UI
+GET http://localhost:8080/swagger-ui.html
