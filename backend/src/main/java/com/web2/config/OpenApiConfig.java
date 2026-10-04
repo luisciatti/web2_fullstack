@@ -8,7 +8,7 @@ import io.swagger.v3.oas.annotations.info.Info;
 @Configuration
 @OpenAPIDefinition(
         info = @Info(
-                title = "DiagramCode Backend API",
+                title = "Web2 Backend API",
                 version = "v1",
                 description = "API REST para projetos, geração de artefatos e diagramas Mermaid"
         )
