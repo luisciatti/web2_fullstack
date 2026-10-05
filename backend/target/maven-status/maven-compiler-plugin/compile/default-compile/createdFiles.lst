@@ -1,5 +1,6 @@
 modelo\ConexaoCloudDef.class
 modelo\ServicoCloudDef.class
 com\web2\controlador\ProjetoControlador.class
-com\web2\DiagramCodeBackendApplication.class
+com\web2\Web2BackendApplication.class
+com\web2\config\OpenApiConfig.class
 com\web2\controlador\TratadorGlobalDeErros.class
