@@ -1,0 +1,5 @@
+$kind: http-request
+name: Diagrama Cloud
+method: GET
+url: '{{baseUrl}}/api/projetos/{{id}}/diagrama/cloud'
+order: 9000

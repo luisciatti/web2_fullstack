@@ -1,0 +1,5 @@
+$kind: http-request
+name: Buscar projeto por ID
+method: GET
+url: '{{baseUrl}}/api/projetos/{{id}}'
+order: 4000
