@@ -7,13 +7,22 @@ Para a próxima etapa do projeto, o banco mais adequado é um banco relacional.
 ### Sugestão de tecnologia
 
 - **Desenvolvimento local/testes:** H2
-- **Produção:** PostgreSQL
+- **Produção:** MySQL
 
 ### Por que usar banco relacional
 
 - O sistema possui entidades com relacionamento claro entre si.
 - Há necessidade de persistir projetos, classes, atributos, métodos, relações e artefatos.
 - O modelo relacional facilita integridade, consultas e evolução futura.
+
+### O que precisa ser feito para usar MySQL em produção
+
+1. Instalar ou disponibilizar uma instância MySQL.
+2. Criar o banco da aplicação.
+3. Criar um usuário próprio para a aplicação.
+4. Definir a senha desse usuário.
+5. Configurar a aplicação para usar a URL, usuário e senha do MySQL.
+6. Definir depois as migrations para criar as tabelas automaticamente.
 
 ### Entidades principais
 
