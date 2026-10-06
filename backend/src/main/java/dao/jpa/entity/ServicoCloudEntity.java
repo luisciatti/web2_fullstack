@@ -7,7 +7,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
@@ -31,8 +30,7 @@ public class ServicoCloudEntity {
 
     private String categoria;
 
-    @Lob
-    @Column(name = "configuracao_json")
+    @Column(name = "configuracao_json", columnDefinition = "TEXT")
     private String configuracaoJson;
 
     public Long getId() {
