@@ -1,14 +1,11 @@
 // Usa um `LinkedHashMap` (mantém ordem de inserção) como banco de dados em memória.
 // Os dados somem quando o servidor reinicia — aceitável para MVP.
-// `@Repository` indica ao Spring que esta classe é um bean de acesso a dados.
 package dao;
 
 import modelo.Projeto;
-import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
-@Repository
 public class ProjetoRepositorioEmMemoria implements ProjetoRepositorio {
     private final Map<String, Projeto> armazenamento = new LinkedHashMap<>();
 
