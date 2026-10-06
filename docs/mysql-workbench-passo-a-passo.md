@@ -129,6 +129,16 @@ Quando terminar no MySQL Workbench, me envie estes dados:
 
 Nao precisa me mandar a senha em texto se não quiser. Se preferir, você pode só dizer que a senha já está definida e eu deixo o arquivo preparado para você preencher localmente.
 
+## 9.1 Dados já definidos neste projeto
+
+Neste momento, os dados informados para a configuração são:
+
+- **Host**: `localhost`
+- **Porta**: `3306`
+- **Banco**: `web2_fullstack`
+- **Usuário**: `web2_user`
+- **Senha**: `123qwe`
+
 ## 10. O que eu vou fazer depois disso
 
 Com essas informações, eu posso fazer no projeto:
@@ -138,6 +148,21 @@ Com essas informações, eu posso fazer no projeto:
 3. configurar a URL do datasource;
 4. ajustar usuário e senha para leitura por configuração;
 5. preparar a base para migrations.
+
+## 10.1 Como rodar o projeto usando MySQL
+
+Depois da configuração, rode o backend com o profile MySQL:
+
+```powershell
+cd backend
+mvn spring-boot:run -Dspring-boot.run.profiles=mysql
+```
+
+Se preferir executar o `.jar`, use:
+
+```powershell
+java -jar target/backend-Snapshot_v1.jar --spring.profiles.active=mysql
+```
 
 ## 11. SQL completo para copiar no Workbench
 
