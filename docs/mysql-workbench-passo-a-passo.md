@@ -151,6 +151,19 @@ Com essas informações, eu posso fazer no projeto:
 
 ## 10.1 Como rodar o projeto usando MySQL
 
+### Antes da primeira subida com Flyway
+
+Se esse banco já foi usado antes com tabelas criadas pelo Hibernate ou por testes anteriores, faça uma limpeza uma única vez para deixar o schema 100% controlado pelo Flyway.
+
+Use este bloco no MySQL Workbench:
+
+```sql
+DROP DATABASE IF EXISTS web2_fullstack;
+CREATE DATABASE web2_fullstack;
+```
+
+Depois disso, rode a aplicação normalmente com o profile MySQL. O Flyway vai criar a tabela de histórico e aplicar a migration inicial do projeto.
+
 Depois da configuração, rode o backend com o profile MySQL:
 
 ```powershell
@@ -163,6 +176,14 @@ Se preferir executar o `.jar`, use:
 ```powershell
 java -jar target/backend-Snapshot_v1.jar --spring.profiles.active=mysql
 ```
+
+### O que deve acontecer
+
+Na primeira execução após limpar o banco:
+
+- o Flyway cria a tabela `flyway_schema_history`;
+- o Flyway aplica a migration `V1__create_schema.sql`;
+- o Hibernate apenas valida o schema, sem criar tabelas por conta própria.
 
 ## 11. SQL completo para copiar no Workbench
 
