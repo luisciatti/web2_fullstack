@@ -15,9 +15,9 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 })
 @EntityScan(basePackages = "dao.jpa.entity")
 @EnableJpaRepositories(basePackages = "dao.jpa")
-public class DiagramCodeBackendApplication {
+public class Web2BackendApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(DiagramCodeBackendApplication.class, args);
+        SpringApplication.run(Web2BackendApplication.class, args);
     }
 }

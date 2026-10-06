@@ -1,0 +1,5 @@
+$kind: http-request
+name: Excluir projeto
+method: DELETE
+url: '{{baseUrl}}/api/projetos/{{id}}'
+order: 10000

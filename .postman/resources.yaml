@@ -7,3 +7,6 @@ workspace:
 #localResources:
 #  collections:
 #    - ../tests/E2E Test Collection/
+localResources:
+  collections:
+    - ../postman_collection.json

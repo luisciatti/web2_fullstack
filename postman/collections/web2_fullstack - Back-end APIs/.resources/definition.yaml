@@ -1,0 +1,8 @@
+$kind: collection
+name: 'web2_fullstack - Back-end APIs'
+description: 'Collection para validar as APIs REST do backend com criação, consulta, atualização, geração e remoção de projetos.'
+variables:
+  - key: baseUrl
+    value: 'http://localhost:8080'
+  - key: id
+    value: ''

@@ -1,0 +1,5 @@
+$kind: http-request
+name: Listar artefatos
+method: GET
+url: '{{baseUrl}}/api/projetos/{{id}}/artefatos'
+order: 7000

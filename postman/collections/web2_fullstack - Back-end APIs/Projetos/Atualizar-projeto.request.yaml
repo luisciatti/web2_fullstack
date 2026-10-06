@@ -1,0 +1,42 @@
+$kind: http-request
+name: Atualizar projeto
+method: PUT
+url: '{{baseUrl}}/api/projetos/{{id}}'
+order: 5000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "nome": "Projeto Atualizado",
+      "linguagem": "java",
+      "framework": "spring-boot",
+      "provedorCloud": "aws",
+      "classes": [
+        {
+          "nome": "Usuario",
+          "atributos": [
+            {
+              "nome": "nome",
+              "tipo": "String"
+            }
+          ],
+          "metodos": []
+        }
+      ],
+      "servicosCloud": [
+        {
+          "id": "db-principal",
+          "tipo": "aws-rds",
+          "categoria": "DATA",
+          "configuracao": {
+            "engine": "postgres",
+            "dbName": "projeto_exemplo",
+            "username": "usuario_teste",
+            "password": "senha_teste"
+          }
+        }
+      ]
+    }
