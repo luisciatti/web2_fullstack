@@ -7,6 +7,13 @@ workspace:
 #localResources:
 #  collections:
 #    - ../tests/E2E Test Collection/
+
 localResources:
   collections:
     - ../postman_collection.json
+
+# Each entry here maps a local resource to one or more corresponding objects in Postman Cloud
+
+cloudResources:
+  collections:
+    ../postman/collections/web2_fullstack - Back-end APIs: 24d6a51a-ab79-4eb7-9288-9780f88a3c2f

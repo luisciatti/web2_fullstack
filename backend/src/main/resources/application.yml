@@ -24,6 +24,12 @@ spring:
       hibernate:
         format_sql: true
 
+springdoc:
+  swagger-ui:
+    path: /docs
+  api-docs:
+    path: /docs/api-docs
+
 management:
   endpoints:
     web:

@@ -1,0 +1,63 @@
+$kind: http-request
+description: Atualiza o projeto identificado por {{id}} com o JSON enviado no body.
+url: "{{baseUrl}}/api/projetos/{{id}}"
+method: PUT
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "id": "{{id}}",
+      "nome": "string",
+      "linguagem": "string",
+      "framework": "string",
+      "provedorCloud": "string",
+      "classes": [
+        {
+          "nome": "string",
+          "atributos": [
+            {
+              "nome": "string",
+              "tipo": "string",
+              "name": "string"
+            }
+          ],
+          "metodos": [
+            {
+              "nome": "string",
+              "tipoRetorno": "string",
+              "name": "string"
+            }
+          ],
+          "name": "string"
+        }
+      ],
+      "relacoes": [
+        {
+          "origem": "string",
+          "destino": "string",
+          "tipo": "string"
+        }
+      ],
+      "servicosCloud": [
+        {
+          "id": "string",
+          "tipo": "string",
+          "categoria": "string",
+          "configuracao": {
+            "additionalProp1": "string",
+            "additionalProp2": "string",
+            "additionalProp3": "string"
+          }
+        }
+      ],
+      "conexoesCloud": [
+        {
+          "de": "string",
+          "para": "string",
+          "rotulo": "string"
+        }
+      ]
+    }
+order: 5000

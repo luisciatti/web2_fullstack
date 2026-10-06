@@ -1,5 +1,0 @@
-$kind: http-request
-name: Listar projetos
-method: GET
-url: '{{baseUrl}}/api/projetos'
-order: 2000

@@ -1,0 +1,5 @@
+$kind: http-request
+description: Remove o projeto identificado por {{id}}. Rode por ultimo para nao perder o recurso antes dos demais testes.
+url: "{{baseUrl}}/api/projetos/{{id}}"
+method: DELETE
+order: 10000

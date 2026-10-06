@@ -1,0 +1,5 @@
+$kind: http-request
+description: Lista todos os projetos cadastrados. Pode ser usado antes e depois do POST para conferir os dados persistidos.
+url: "{{baseUrl}}/api/projetos"
+method: GET
+order: 2000

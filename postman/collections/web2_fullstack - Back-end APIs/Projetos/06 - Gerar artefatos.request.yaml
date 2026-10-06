@@ -1,0 +1,5 @@
+$kind: http-request
+description: Executa a geracao de artefatos com base no projeto salvo em {{id}}.
+url: "{{baseUrl}}/api/projetos/{{id}}/gerar"
+method: POST
+order: 6000

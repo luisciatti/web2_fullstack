@@ -1,0 +1,3 @@
+$kind: collection
+description: "Run order sugerida: 1) Health check, 2) Criar projeto, 3) Listar projetos, 4) Buscar projeto por ID, 5) Atualizar projeto, 6) Gerar artefatos, 7) Listar artefatos, 8) Diagrama UML, 9) Diagrama Cloud, 10) Excluir projeto."
+order: 1000

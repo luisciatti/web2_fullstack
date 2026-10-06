@@ -7,11 +7,13 @@
     "item": [
         {
             "name": "Projetos",
+            "description": "Run order sugerida: 1) Health check, 2) Criar projeto, 3) Listar projetos, 4) Buscar projeto por ID, 5) Atualizar projeto, 6) Gerar artefatos, 7) Listar artefatos, 8) Diagrama UML, 9) Diagrama Cloud, 10) Excluir projeto.",
             "item": [
                 {
-                    "name": "Health check",
+                    "name": "01 - Health check",
                     "request": {
                         "method": "GET",
+                        "description": "Verifica se o backend esta respondendo antes de executar os demais requests.",
                         "header": [],
                         "url": {
                             "raw": "{{baseUrl}}/actuator/health",
@@ -26,9 +28,10 @@
                     }
                 },
                 {
-                    "name": "Listar projetos",
+                    "name": "03 - Listar projetos",
                     "request": {
                         "method": "GET",
+                        "description": "Lista todos os projetos cadastrados. Pode ser usado antes e depois do POST para conferir os dados persistidos.",
                         "header": [],
                         "url": {
                             "raw": "{{baseUrl}}/api/projetos",
@@ -43,7 +46,7 @@
                     }
                 },
                 {
-                    "name": "Criar projeto",
+                    "name": "02 - Criar projeto",
                     "event": [
                         {
                             "listen": "test",
@@ -60,6 +63,7 @@
                     ],
                     "request": {
                         "method": "POST",
+                        "description": "Cria um projeto e salva automaticamente o campo id retornado na variavel de collection {{id}}.",
                         "header": [
                             {
                                 "key": "Content-Type",
@@ -68,7 +72,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"nome\": \"Projeto Exemplo\",\n  \"linguagem\": \"java\",\n  \"framework\": \"spring-boot\",\n  \"provedorCloud\": \"aws\",\n  \"classes\": [\n    {\n      \"nome\": \"Usuario\",\n      \"atributos\": [\n        {\n          \"nome\": \"nome\",\n          \"tipo\": \"String\"\n        }\n      ],\n      \"metodos\": []\n    }\n  ],\n  \"servicosCloud\": [\n    {\n      \"id\": \"db-principal\",\n      \"tipo\": \"aws-rds\",\n      \"categoria\": \"DATA\",\n      \"configuracao\": {\n        \"engine\": \"postgres\",\n        \"dbName\": \"projeto_exemplo\",\n        \"username\": \"usuario_teste\",\n        \"password\": \"senha_teste\"\n      }\n    }\n  ]\n}"
+                            "raw": "{\n  \"id\": \"\",\n  \"nome\": \"string\",\n  \"linguagem\": \"string\",\n  \"framework\": \"string\",\n  \"provedorCloud\": \"string\",\n  \"classes\": [\n    {\n      \"nome\": \"string\",\n      \"atributos\": [\n        {\n          \"nome\": \"string\",\n          \"tipo\": \"string\",\n          \"name\": \"string\"\n        }\n      ],\n      \"metodos\": [\n        {\n          \"nome\": \"string\",\n          \"tipoRetorno\": \"string\",\n          \"name\": \"string\"\n        }\n      ],\n      \"name\": \"string\"\n    }\n  ],\n  \"relacoes\": [\n    {\n      \"origem\": \"string\",\n      \"destino\": \"string\",\n      \"tipo\": \"string\"\n    }\n  ],\n  \"servicosCloud\": [\n    {\n      \"id\": \"string\",\n      \"tipo\": \"string\",\n      \"categoria\": \"string\",\n      \"configuracao\": {\n        \"additionalProp1\": \"string\",\n        \"additionalProp2\": \"string\",\n        \"additionalProp3\": \"string\"\n      }\n    }\n  ],\n  \"conexoesCloud\": [\n    {\n      \"de\": \"string\",\n      \"para\": \"string\",\n      \"rotulo\": \"string\"\n    }\n  ]\n}"
                         },
                         "url": {
                             "raw": "{{baseUrl}}/api/projetos",
@@ -83,9 +87,10 @@
                     }
                 },
                 {
-                    "name": "Buscar projeto por ID",
+                    "name": "04 - Buscar projeto por ID",
                     "request": {
                         "method": "GET",
+                        "description": "Busca o projeto usando a variavel {{id}} preenchida no request de criacao.",
                         "header": [],
                         "url": {
                             "raw": "{{baseUrl}}/api/projetos/{{id}}",
@@ -101,9 +106,10 @@
                     }
                 },
                 {
-                    "name": "Atualizar projeto",
+                    "name": "05 - Atualizar projeto",
                     "request": {
                         "method": "PUT",
+                        "description": "Atualiza o projeto identificado por {{id}} com o JSON enviado no body.",
                         "header": [
                             {
                                 "key": "Content-Type",
@@ -112,7 +118,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"nome\": \"Projeto Atualizado\",\n  \"linguagem\": \"java\",\n  \"framework\": \"spring-boot\",\n  \"provedorCloud\": \"aws\",\n  \"classes\": [\n    {\n      \"nome\": \"Usuario\",\n      \"atributos\": [\n        {\n          \"nome\": \"nome\",\n          \"tipo\": \"String\"\n        }\n      ],\n      \"metodos\": []\n    }\n  ],\n  \"servicosCloud\": [\n    {\n      \"id\": \"db-principal\",\n      \"tipo\": \"aws-rds\",\n      \"categoria\": \"DATA\",\n      \"configuracao\": {\n        \"engine\": \"postgres\",\n        \"dbName\": \"projeto_exemplo\",\n        \"username\": \"usuario_teste\",\n        \"password\": \"senha_teste\"\n      }\n    }\n  ]\n}"
+                            "raw": "{\n  \"id\": \"{{id}}\",\n  \"nome\": \"string\",\n  \"linguagem\": \"string\",\n  \"framework\": \"string\",\n  \"provedorCloud\": \"string\",\n  \"classes\": [\n    {\n      \"nome\": \"string\",\n      \"atributos\": [\n        {\n          \"nome\": \"string\",\n          \"tipo\": \"string\",\n          \"name\": \"string\"\n        }\n      ],\n      \"metodos\": [\n        {\n          \"nome\": \"string\",\n          \"tipoRetorno\": \"string\",\n          \"name\": \"string\"\n        }\n      ],\n      \"name\": \"string\"\n    }\n  ],\n  \"relacoes\": [\n    {\n      \"origem\": \"string\",\n      \"destino\": \"string\",\n      \"tipo\": \"string\"\n    }\n  ],\n  \"servicosCloud\": [\n    {\n      \"id\": \"string\",\n      \"tipo\": \"string\",\n      \"categoria\": \"string\",\n      \"configuracao\": {\n        \"additionalProp1\": \"string\",\n        \"additionalProp2\": \"string\",\n        \"additionalProp3\": \"string\"\n      }\n    }\n  ],\n  \"conexoesCloud\": [\n    {\n      \"de\": \"string\",\n      \"para\": \"string\",\n      \"rotulo\": \"string\"\n    }\n  ]\n}"
                         },
                         "url": {
                             "raw": "{{baseUrl}}/api/projetos/{{id}}",
@@ -128,9 +134,10 @@
                     }
                 },
                 {
-                    "name": "Gerar artefatos",
+                    "name": "06 - Gerar artefatos",
                     "request": {
                         "method": "POST",
+                        "description": "Executa a geracao de artefatos com base no projeto salvo em {{id}}.",
                         "header": [],
                         "url": {
                             "raw": "{{baseUrl}}/api/projetos/{{id}}/gerar",
@@ -147,9 +154,10 @@
                     }
                 },
                 {
-                    "name": "Listar artefatos",
+                    "name": "07 - Listar artefatos",
                     "request": {
                         "method": "GET",
+                        "description": "Retorna os artefatos gerados para o projeto informado em {{id}}.",
                         "header": [],
                         "url": {
                             "raw": "{{baseUrl}}/api/projetos/{{id}}/artefatos",
@@ -166,9 +174,10 @@
                     }
                 },
                 {
-                    "name": "Diagrama UML",
+                    "name": "08 - Diagrama UML",
                     "request": {
                         "method": "GET",
+                        "description": "Retorna o diagrama UML em formato textual para o projeto informado em {{id}}.",
                         "header": [],
                         "url": {
                             "raw": "{{baseUrl}}/api/projetos/{{id}}/diagrama/uml",
@@ -186,9 +195,10 @@
                     }
                 },
                 {
-                    "name": "Diagrama Cloud",
+                    "name": "09 - Diagrama Cloud",
                     "request": {
                         "method": "GET",
+                        "description": "Retorna o diagrama cloud em formato textual para o projeto informado em {{id}}.",
                         "header": [],
                         "url": {
                             "raw": "{{baseUrl}}/api/projetos/{{id}}/diagrama/cloud",
@@ -206,9 +216,10 @@
                     }
                 },
                 {
-                    "name": "Excluir projeto",
+                    "name": "10 - Excluir projeto",
                     "request": {
                         "method": "DELETE",
+                        "description": "Remove o projeto identificado por {{id}}. Rode por ultimo para nao perder o recurso antes dos demais testes.",
                         "header": [],
                         "url": {
                             "raw": "{{baseUrl}}/api/projetos/{{id}}",
@@ -229,11 +240,13 @@
     "variable": [
         {
             "key": "baseUrl",
-            "value": "http://localhost:8080"
+            "value": "http://localhost:8080",
+            "description": "Endereco base do backend. Exemplo: http://localhost:8080"
         },
         {
             "key": "id",
-            "value": ""
+            "value": "",
+            "description": "Id do projeto criado no POST. A collection preenche essa variavel automaticamente depois de executar '02 - Criar projeto'."
         }
     ]
 }

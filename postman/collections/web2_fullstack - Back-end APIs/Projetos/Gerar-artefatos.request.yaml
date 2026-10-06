@@ -1,5 +1,0 @@
-$kind: http-request
-name: Gerar artefatos
-method: POST
-url: '{{baseUrl}}/api/projetos/{{id}}/gerar'
-order: 6000

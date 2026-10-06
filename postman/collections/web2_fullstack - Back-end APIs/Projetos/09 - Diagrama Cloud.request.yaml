@@ -1,0 +1,5 @@
+$kind: http-request
+description: Retorna o diagrama cloud em formato textual para o projeto informado em {{id}}.
+url: "{{baseUrl}}/api/projetos/{{id}}/diagrama/cloud"
+method: GET
+order: 9000

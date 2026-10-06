@@ -1,0 +1,71 @@
+$kind: http-request
+description: Cria um projeto e salva automaticamente o campo id retornado na variavel de collection {{id}}.
+url: "{{baseUrl}}/api/projetos"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "id": "",
+      "nome": "string",
+      "linguagem": "string",
+      "framework": "string",
+      "provedorCloud": "string",
+      "classes": [
+        {
+          "nome": "string",
+          "atributos": [
+            {
+              "nome": "string",
+              "tipo": "string",
+              "name": "string"
+            }
+          ],
+          "metodos": [
+            {
+              "nome": "string",
+              "tipoRetorno": "string",
+              "name": "string"
+            }
+          ],
+          "name": "string"
+        }
+      ],
+      "relacoes": [
+        {
+          "origem": "string",
+          "destino": "string",
+          "tipo": "string"
+        }
+      ],
+      "servicosCloud": [
+        {
+          "id": "string",
+          "tipo": "string",
+          "categoria": "string",
+          "configuracao": {
+            "additionalProp1": "string",
+            "additionalProp2": "string",
+            "additionalProp3": "string"
+          }
+        }
+      ],
+      "conexoesCloud": [
+        {
+          "de": "string",
+          "para": "string",
+          "rotulo": "string"
+        }
+      ]
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      const response = pm.response.json();
+      if (response.id) {
+        pm.collectionVariables.set('id', response.id);
+      }
+    language: text/javascript
+order: 3000

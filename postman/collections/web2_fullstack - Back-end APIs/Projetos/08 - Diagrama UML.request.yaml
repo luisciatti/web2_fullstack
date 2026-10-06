@@ -1,0 +1,5 @@
+$kind: http-request
+description: Retorna o diagrama UML em formato textual para o projeto informado em {{id}}.
+url: "{{baseUrl}}/api/projetos/{{id}}/diagrama/uml"
+method: GET
+order: 8000

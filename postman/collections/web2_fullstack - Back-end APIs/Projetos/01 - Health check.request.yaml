@@ -1,0 +1,5 @@
+$kind: http-request
+description: Verifica se o backend esta respondendo antes de executar os demais requests.
+url: "{{baseUrl}}/actuator/health"
+method: GET
+order: 1000

@@ -1,5 +1,0 @@
-$kind: http-request
-name: Diagrama UML
-method: GET
-url: '{{baseUrl}}/api/projetos/{{id}}/diagrama/uml'
-order: 8000

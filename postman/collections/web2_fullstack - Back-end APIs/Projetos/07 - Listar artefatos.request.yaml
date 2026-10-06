@@ -1,0 +1,5 @@
+$kind: http-request
+description: Retorna os artefatos gerados para o projeto informado em {{id}}.
+url: "{{baseUrl}}/api/projetos/{{id}}/artefatos"
+method: GET
+order: 7000

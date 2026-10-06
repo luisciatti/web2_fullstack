@@ -1,0 +1,5 @@
+$kind: http-request
+description: Busca o projeto usando a variavel {{id}} preenchida no request de criacao.
+url: "{{baseUrl}}/api/projetos/{{id}}"
+method: GET
+order: 4000
