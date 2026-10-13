@@ -4,7 +4,9 @@ import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.*;
 import dao.ProjetoRepositorioEmMemoria;
 import modelo.Projeto;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 
+@AutoConfigureMockMvc(addFilters = false)
 public class ProjetoRepositorioEmMemoriaTest {
 
     private ProjetoRepositorioEmMemoria repositorio;

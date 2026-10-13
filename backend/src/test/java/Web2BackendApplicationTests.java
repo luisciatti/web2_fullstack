@@ -1,8 +1,10 @@
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import com.web2.Web2BackendApplication;
 
+@AutoConfigureMockMvc(addFilters = false)
 @SpringBootTest(classes = Web2BackendApplication.class)
 class Web2BackendApplicationTests {
 
