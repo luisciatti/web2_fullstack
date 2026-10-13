@@ -4,9 +4,12 @@ import modelo.Projeto;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.Set;
 
+@AutoConfigureMockMvc(addFilters = false)
 public class ModeloValidacaoTest {
 
     private Validator validator;
