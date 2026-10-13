@@ -1,7 +1,5 @@
 package dao.jpa.entity;
 
-package modelo;
-
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,10 +17,6 @@ public class RoleEntity implements GrantedAuthority {
 
     @Column(nullable = false, unique = true, length = 50)
     private String nome;
-
-    public Role(String nome) {
-        this.nome = nome;
-    }
 
     @Override
     public String getAuthority() {
