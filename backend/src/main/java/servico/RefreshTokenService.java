@@ -1,7 +1,6 @@
 package servico;
 
 import dao.RefreshTokenRepositorio;
-import dao.jpa.RefreshTokenRepository;
 import modelo.RefreshToken;
 import modelo.Usuario;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,17 +12,13 @@ import java.util.UUID;
 
 @Service
 public class RefreshTokenService {
-
     private final RefreshTokenRepositorio refreshTokenRepositorio;
-    private final RefreshTokenRepository refreshTokenRepository;
     private final long refreshTokenExpirationMs;
 
     public RefreshTokenService(
             RefreshTokenRepositorio refreshTokenRepositorio,
-            RefreshTokenRepository refreshTokenRepository,
             @Value("${app.jwt.refresh-token-expiration-ms}") long refreshTokenExpirationMs) {
         this.refreshTokenRepositorio = refreshTokenRepositorio;
-        this.refreshTokenRepository = refreshTokenRepository;
         this.refreshTokenExpirationMs = refreshTokenExpirationMs;
     }
 
@@ -39,7 +34,7 @@ public class RefreshTokenService {
         refreshToken.setExpiraEm(Instant.now().plusMillis(refreshTokenExpirationMs));
         refreshToken.setRevogado(false);
 
-        return refreshTokenRepository.save(refreshToken);
+        return refreshTokenRepositorio.save(refreshToken);
     }
 
     public RefreshToken findByToken(String token) {
@@ -56,7 +51,7 @@ public class RefreshTokenService {
     public void revokeRefreshToken(RefreshToken refreshToken) {
         if (refreshToken != null) {
             refreshToken.setRevogado(true);
-            refreshTokenRepository.save(refreshToken);
+            refreshTokenRepositorio.save(refreshToken);
         }
     }
 

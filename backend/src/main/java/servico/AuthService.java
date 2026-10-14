@@ -2,7 +2,6 @@ package servico;
 
 import dao.RoleRepositorio;
 import dao.UsuarioRepositorio;
-import dao.jpa.UsuarioEntityJpaRepository;
 import modelo.RefreshToken;
 import modelo.Role;
 import modelo.Usuario;
@@ -20,9 +19,7 @@ import java.util.Set;
 
 @Service
 public class AuthService {
-
     private final UsuarioRepositorio usuarioRepositorio;
-    private final UsuarioEntityJpaRepository usuarioRepository;
     private final RoleRepositorio roleRepositorio;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
@@ -31,14 +28,12 @@ public class AuthService {
 
     public AuthService(
             UsuarioRepositorio usuarioRepositorio,
-            UsuarioEntityJpaRepository usuarioRepository,
             RoleRepositorio roleRepositorio,
             PasswordEncoder passwordEncoder,
             JwtService jwtService,
             RefreshTokenService refreshTokenService,
             AuthenticationManager authenticationManager) {
         this.usuarioRepositorio = usuarioRepositorio;
-        this.usuarioRepository = usuarioRepository;
         this.roleRepositorio = roleRepositorio;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
@@ -63,7 +58,7 @@ public class AuthService {
                 .orElseThrow(() -> new RuntimeException("Role ROLE_USER não encontrada"));
         usuario.setRoles(Set.of(roleUser));
 
-        usuarioRepository.save(usuario);
+        usuarioRepositorio.save(usuario);
 
         return gerarTokens(usuario);
     }

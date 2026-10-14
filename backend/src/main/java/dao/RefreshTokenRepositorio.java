@@ -10,4 +10,6 @@ public interface RefreshTokenRepositorio {
     Optional<RefreshToken> findByUsuarioIdAndRevogadoFalse(String usuarioId);
 
     void deleteByUsuarioId(String usuarioId);
+
+    RefreshToken save(RefreshToken refreshToken);
 }

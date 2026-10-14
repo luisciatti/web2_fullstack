@@ -8,4 +8,6 @@ public interface UsuarioRepositorio {
     Optional<Usuario> findByEmail(String email);
 
     boolean existsByEmail(String email);
+
+    Usuario save(Usuario usuario);
 }
