@@ -66,3 +66,39 @@ CREATE TABLE IF NOT EXISTS conexao_cloud (
     PRIMARY KEY (id),
     CONSTRAINT fk_conexao_cloud_projeto FOREIGN KEY (projeto_id) REFERENCES projeto(id) ON DELETE CASCADE
 );
+
+CREATE TABLE usuario (
+    id VARCHAR(64) NOT NULL,
+    nome VARCHAR(150) NOT NULL,
+    email VARCHAR(150) NOT NULL UNIQUE,
+    senha_hash VARCHAR(255) NOT NULL,
+    ativo BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE app_role (
+    id VARCHAR(64) NOT NULL,
+    nome VARCHAR(50) NOT NULL UNIQUE,
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE usuario_role (
+    usuario_id VARCHAR(64) NOT NULL,
+    role_id VARCHAR(64) NOT NULL,
+    PRIMARY KEY (usuario_id, role_id),
+    CONSTRAINT fk_usuario_role_usuario FOREIGN KEY (usuario_id) REFERENCES usuario(id) ON DELETE CASCADE,
+    CONSTRAINT fk_usuario_role_role FOREIGN KEY (role_id) REFERENCES app_role(id) ON DELETE CASCADE
+);
+
+CREATE TABLE refresh_token (
+    id VARCHAR(64) PRIMARY KEY,
+    token VARCHAR(512) NOT NULL UNIQUE,
+    usuario_id BIGINT NOT NULL,
+    expira_em TIMESTAMP WITH TIME ZONE NOT NULL,
+    revogado BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_refresh_token_usuario FOREIGN KEY (usuario_id) REFERENCES usuario(id) ON DELETE CASCADE,
+    PRIMARY KEY (id)
+);
