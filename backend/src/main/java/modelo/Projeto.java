@@ -1,5 +1,6 @@
 package modelo;
 
+import jakarta.persistence.Id;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import java.util.ArrayList;
@@ -12,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Setter
 @NoArgsConstructor // gera o construtor vazio exigido pelo Jackson
 public class Projeto {
-
+    @Id
     private String id; // sem @NotBlank: será gerado pelo sistema
 
     @NotBlank
@@ -55,29 +56,5 @@ public class Projeto {
 
     public List<ConexaoCloudDef> getConexoesCloud() {
         return conexoesCloud == null ? new ArrayList<>() : conexoesCloud;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getNome() {
-        return nome;
-    }
-
-    public String getLinguagem() {
-        return linguagem;
-    }
-
-    public String getFramework() {
-        return framework;
-    }
-
-    public String getProvedorCloud() {
-        return provedorCloud;
     }
 }
