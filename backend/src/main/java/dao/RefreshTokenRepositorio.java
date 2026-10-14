@@ -7,7 +7,7 @@ import java.util.Optional;
 public interface RefreshTokenRepositorio {
     Optional<RefreshToken> findByToken(String token);
 
-    Optional<RefreshToken> findByUsuarioIdAndRevogadoFalse(Long usuarioId);
+    Optional<RefreshToken> findByUsuarioIdAndRevogadoFalse(String usuarioId);
 
-    void deleteByUsuarioId(Long usuarioId);
+    void deleteByUsuarioId(String usuarioId);
 }
