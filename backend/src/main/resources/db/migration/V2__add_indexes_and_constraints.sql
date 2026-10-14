@@ -17,8 +17,7 @@ CREATE INDEX idx_conexao_cloud_projeto_id ON conexao_cloud (projeto_id);
 CREATE INDEX idx_usuario_email ON usuario(email);
 CREATE INDEX idx_usuario_ativo ON usuario(ativo);
 
-CREATE INDEX idx_role_nome ON role(nome);
-
+CREATE INDEX idx_role_nome ON app_role(nome);
 
 CREATE INDEX idx_usuario_role_usuario_id ON usuario_role(usuario_id);
 CREATE INDEX idx_usuario_role_role_id ON usuario_role(role_id);
