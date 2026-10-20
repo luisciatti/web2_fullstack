@@ -93,12 +93,12 @@ CREATE TABLE usuario_role (
 );
 
 CREATE TABLE refresh_token (
-    id VARCHAR(64) PRIMARY KEY,
+    id VARCHAR(64) NOT NULL,
     token VARCHAR(512) NOT NULL UNIQUE,
-    usuario_id BIGINT NOT NULL,
+    usuario_id VARCHAR(64) NOT NULL,
     expira_em TIMESTAMP WITH TIME ZONE NOT NULL,
     revogado BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_refresh_token_usuario FOREIGN KEY (usuario_id) REFERENCES usuario(id) ON DELETE CASCADE,
-    PRIMARY KEY (id)
+    PRIMARY KEY (id),
+    CONSTRAINT fk_refresh_token_usuario FOREIGN KEY (usuario_id) REFERENCES usuario(id) ON DELETE CASCADE
 );

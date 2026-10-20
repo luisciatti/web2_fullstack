@@ -1,13 +1,14 @@
 package servico;
 
+import com.web2.security.JwtService;
 import dao.RoleRepositorio;
 import dao.UsuarioRepositorio;
-import modelo.RefreshToken;
-import modelo.Role;
-import modelo.Usuario;
 import dto.AuthResponse;
 import dto.LoginRequest;
 import dto.RegistroRequest;
+import modelo.RefreshToken;
+import modelo.Role;
+import modelo.Usuario;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -65,8 +66,7 @@ public class AuthService {
 
     public AuthResponse login(LoginRequest request) {
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getSenha())
-        );
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getSenha()));
 
         Usuario usuario = (Usuario) authentication.getPrincipal();
         return gerarTokens(usuario);
