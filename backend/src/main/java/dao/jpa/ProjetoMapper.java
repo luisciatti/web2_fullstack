@@ -36,6 +36,7 @@ public class ProjetoMapper {
     public ProjetoEntity toEntity(Projeto projeto) {
         ProjetoEntity entity = new ProjetoEntity();
         entity.setId(projeto.getId());
+        entity.setUsuarioId(projeto.getUsuarioId());
         entity.setNome(projeto.getNome());
         entity.setLinguagem(projeto.getLinguagem());
         entity.setFramework(projeto.getFramework());
@@ -116,6 +117,7 @@ public class ProjetoMapper {
     public Projeto toModel(ProjetoEntity entity) {
         Projeto projeto = new Projeto();
         projeto.setId(entity.getId());
+        projeto.setUsuarioId(entity.getUsuarioId());
         projeto.setNome(entity.getNome());
         projeto.setLinguagem(entity.getLinguagem());
         projeto.setFramework(entity.getFramework());
