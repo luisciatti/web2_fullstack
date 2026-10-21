@@ -11,7 +11,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.core.annotation.Order;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.web.SecurityFilterChain;
 import com.web2.Web2BackendApplication;
 
 import modelo.AtributoDef;
@@ -27,6 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @AutoConfigureMockMvc(addFilters = false)
 @SpringBootTest(classes = Web2BackendApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Import(ProjetoControladorTest.TestSecurityConfig.class)
 class ProjetoControladorTest {
 
     @Autowired
@@ -207,4 +213,22 @@ class ProjetoControladorTest {
 
         assertEquals(400, resposta.getStatusCode().value());
     }
+
+    @TestConfiguration
+        static class TestSecurityConfig {
+
+        @Bean
+        @Order(0)
+        SecurityFilterChain testSecurityFilterChain(HttpSecurity http)
+                throws Exception {
+
+                http
+                        .securityMatcher("/api/projetos/**")
+                        .csrf(csrf -> csrf.disable())
+                        .authorizeHttpRequests(authorize ->
+                                authorize.anyRequest().permitAll());
+
+                return http.build();
+        }
+        }
 }
