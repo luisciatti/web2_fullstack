@@ -8,6 +8,7 @@ import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Getter
 @Setter
@@ -16,6 +17,9 @@ public class Projeto {
     @Id
     private String id; // sem @NotBlank: será gerado pelo sistema
 
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private String usuarioId;
+    
     @NotBlank
     private String nome;
 

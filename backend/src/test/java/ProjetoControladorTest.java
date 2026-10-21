@@ -18,6 +18,24 @@ import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import com.web2.Web2BackendApplication;
+import java.io.IOException;
+import java.util.Set;
+import dao.RoleRepositorio;
+import dao.UsuarioRepositorio;
+import org.junit.jupiter.api.BeforeEach;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+import modelo.Role;
+import modelo.Usuario;
+
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import modelo.AtributoDef;
 import modelo.ClasseDef;
@@ -37,6 +55,31 @@ class ProjetoControladorTest {
 
     @Autowired
     private TestRestTemplate restTemplate;
+
+    @Autowired
+    private UsuarioRepositorio usuarioRepositorio;
+
+    @Autowired
+    private RoleRepositorio roleRepositorio;
+
+    
+    @BeforeEach
+    void prepararUsuarioTeste() {
+        if (!usuarioRepositorio.existsByEmail("teste@teste.com")) {
+                Role role = roleRepositorio.findByNome("ROLE_USER")
+                        .orElseThrow();
+
+                Usuario usuario = new Usuario();
+                usuario.setId("usuario-teste");
+                usuario.setNome("Usuário Teste");
+                usuario.setEmail("teste@teste.com");
+                usuario.setSenhaHash("senha");
+                usuario.setAtivo(true);
+                usuario.setRoles(Set.of(role));
+
+                usuarioRepositorio.save(usuario);
+        }
+}
 
     private Projeto criarProjetoValido() {
         Projeto projeto = new Projeto();
@@ -226,7 +269,44 @@ class ProjetoControladorTest {
                         .securityMatcher("/api/projetos/**")
                         .csrf(csrf -> csrf.disable())
                         .authorizeHttpRequests(authorize ->
-                                authorize.anyRequest().permitAll());
+                                authorize.anyRequest().permitAll())
+                        .addFilterBefore(
+                                new OncePerRequestFilter() {
+
+                                @Override
+                                protected void doFilterInternal(
+                                        HttpServletRequest request,
+                                        HttpServletResponse response,
+                                        FilterChain filterChain)
+                                        throws ServletException, IOException {
+
+                                        Role role = new Role();
+                                        role.setId("role-user");
+                                        role.setNome("ROLE_USER");
+
+                                        Usuario usuario = new Usuario();
+                                        usuario.setId("usuario-teste");
+                                        usuario.setNome("Usuário Teste");
+                                        usuario.setEmail("teste@teste.com");
+                                        usuario.setSenhaHash("senha");
+                                        usuario.setAtivo(true);
+                                        usuario.setRoles(Set.of(role));
+
+                                        UsernamePasswordAuthenticationToken authentication =
+                                                new UsernamePasswordAuthenticationToken(
+                                                        usuario,
+                                                        null,
+                                                        usuario.getAuthorities()
+                                                );
+
+                                        SecurityContextHolder.getContext()
+                                                .setAuthentication(authentication);
+
+                                        filterChain.doFilter(request, response);
+                                }
+                                },
+                                AnonymousAuthenticationFilter.class
+                        );
 
                 return http.build();
         }

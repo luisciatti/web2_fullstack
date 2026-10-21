@@ -18,6 +18,9 @@ public class ProjetoEntity {
     @Column(nullable = false, length = 64)
     private String id;
 
+    @Column(name = "usuario_id", nullable = false, length = 64)
+    private String usuarioId;
+
     @Column(nullable = false)
     private String nome;
 
@@ -42,6 +45,13 @@ public class ProjetoEntity {
     @OneToMany(mappedBy = "projeto", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ConexaoCloudEntity> conexoesCloud = new ArrayList<>();
 
+    public String getUsuarioId() {
+        return usuarioId;
+    }
+
+    public void setUsuarioId(String usuarioId) {
+        this.usuarioId = usuarioId;
+    }
     public String getId() {
         return id;
     }
