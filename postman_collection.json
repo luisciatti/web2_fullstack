@@ -4,6 +4,16 @@
         "description": "Collection para validar as APIs REST do backend com criação, consulta, atualização, geração e remoção de projetos.",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
+    "auth": {
+     "type": "bearer",
+     "bearer": [
+       {
+         "key": "token",
+         "value": "{{accessToken}}",
+         "type": "string"
+        }
+      ]
+    },
     "item": [
         {
             "name": "Projetos",
@@ -247,6 +257,16 @@
             "key": "id",
             "value": "",
             "description": "Id do projeto criado no POST. A collection preenche essa variavel automaticamente depois de executar '02 - Criar projeto'."
+        },
+        {
+            "key": "accessToken",
+            "value": "",
+            "description": "JWT de acesso utilizado nos endpoints protegidos."
+        },
+        {
+            "key": "refreshToken",
+            "value": "",
+            "description": "Token utilizado para renovar o access token."
         }
     ]
 }
