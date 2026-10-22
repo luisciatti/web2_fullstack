@@ -59,9 +59,9 @@ public class AuthService {
                 .orElseThrow(() -> new RuntimeException("Role ROLE_USER não encontrada"));
         usuario.setRoles(Set.of(roleUser));
 
-        usuarioRepositorio.save(usuario);
+        Usuario salvo = usuarioRepositorio.save(usuario);
 
-        return gerarTokens(usuario);
+        return gerarTokens(salvo);
     }
 
     public AuthResponse login(LoginRequest request) {
