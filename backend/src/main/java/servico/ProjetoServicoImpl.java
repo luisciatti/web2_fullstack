@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import com.web2.metricas.MetricasNegocio;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -22,13 +23,16 @@ public class ProjetoServicoImpl implements ProjetoServico {
 
     private final ProjetoRepositorio repositorio;
     private final GeradorTemplate geradorTemplate;
+    private final MetricasNegocio metricasNegocio;
 
     public ProjetoServicoImpl(
             ProjetoRepositorio repositorio,
-            GeradorTemplate geradorTemplate) {
+            GeradorTemplate geradorTemplate,
+            MetricasNegocio metricasNegocio) {
 
         this.repositorio = repositorio;
         this.geradorTemplate = geradorTemplate;
+        this.metricasNegocio = metricasNegocio;
     }
 
     @Override
@@ -106,27 +110,34 @@ public class ProjetoServicoImpl implements ProjetoServico {
 
     @Override
     public ResultadoGeracao gerar(String id) {
-        Authentication authentication = autenticacaoAtual();
+        try {
+            Authentication authentication = autenticacaoAtual();
 
-        Projeto projeto = repositorio.buscarPorId(id)
-                .orElseThrow(() ->
-                        new IllegalArgumentException(
-                                "Projeto não encontrado: " + id));
+            Projeto projeto = repositorio.buscarPorId(id)
+                    .orElseThrow(() ->
+                            new IllegalArgumentException(
+                                    "Projeto não encontrado: " + id));
 
-        validarAcesso(projeto, authentication);
+            validarAcesso(projeto, authentication);
 
-        String uml = geradorTemplate.gerarUml(projeto);
-        String cloud =
-                geradorTemplate.gerarDiagramaCloud(projeto);
+            String uml = geradorTemplate.gerarUml(projeto);
+            String cloud =
+                    geradorTemplate.gerarDiagramaCloud(projeto);
 
-        List<ArtefatoGerado> artefatos =
-                geradorTemplate.gerarArtefatos(projeto);
+            List<ArtefatoGerado> artefatos =
+                    geradorTemplate.gerarArtefatos(projeto);
 
-        return new ResultadoGeracao(
-                projeto.getId(),
-                uml,
-                cloud,
-                artefatos);
+            ResultadoGeracao resultado = new ResultadoGeracao(
+                    projeto.getId(),
+                    uml,
+                    cloud,
+                    artefatos);
+            metricasNegocio.registrarProjetoGeracaoSucesso();
+            return resultado;
+        } catch (RuntimeException e) {
+            metricasNegocio.registrarProjetoGeracaoFalha();
+            throw e;
+        }
     }
 
     private Authentication autenticacaoAtual() {

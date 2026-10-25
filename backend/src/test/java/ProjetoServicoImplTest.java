@@ -68,6 +68,9 @@ class ProjetoServicoImplTest {
     @Mock
     private GeradorTemplate geradorTemplate;
 
+    @Mock
+    private com.web2.metricas.MetricasNegocio metricasNegocio;
+
     @InjectMocks
     private ProjetoServicoImpl servico;
 
