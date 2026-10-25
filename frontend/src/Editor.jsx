@@ -1,3 +1,7 @@
+import { useEffect, useMemo, useState } from 'react'
+import JSZip from 'jszip'
+import { apiFetch, clearAuth } from './api.js'
+
 const TIPOS_ATRIBUTO = ['String', 'Long', 'Integer', 'Double', 'BigDecimal', 'Boolean', 'LocalDate', 'LocalDateTime']
 const TIPOS_RETORNO = ['void', 'String', 'Long', 'Integer', 'Double', 'BigDecimal', 'Boolean']
 const TIPOS_RELACAO = ['ONE_TO_ONE', 'ONE_TO_MANY', 'MANY_TO_ONE', 'MANY_TO_MANY']
@@ -242,20 +246,26 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
     }, [projectId, onLogout])
 
     useEffect(() => {
-        const render = async (id, diagram) => {
-            const el = document.getElementById(id)
-            if (!el || !diagram) return
-            mermaid.initialize({ startOnLoad: false, securityLevel: 'loose' })
-            try {
-                const { svg } = await mermaid.render(`${id}-svg`, diagram)
-                el.innerHTML = svg
-            } catch {
-                el.innerHTML = `<pre>${escapeHtml(diagram)}</pre>`
+        const renderDiagram = async () => {
+            const { default: mermaidLib } = await import('mermaid')
+
+            const render = async (id, diagram) => {
+                const el = document.getElementById(id)
+                if (!el || !diagram) return
+                mermaidLib.initialize({ startOnLoad: false, securityLevel: 'loose' })
+                try {
+                    const { svg } = await mermaidLib.render(`${id}-svg`, diagram)
+                    el.innerHTML = svg
+                } catch {
+                    el.innerHTML = `<pre>${escapeHtml(diagram)}</pre>`
+                }
             }
+
+            await render('uml-diagram', resultado?.uml)
+            await render('cloud-diagram', resultado?.cloud)
         }
 
-        render('uml-diagram', resultado?.uml)
-        render('cloud-diagram', resultado?.cloud)
+        renderDiagram()
     }, [resultado])
 
     const atualizarProvedor = (valor) => {
