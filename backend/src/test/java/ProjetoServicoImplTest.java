@@ -46,12 +46,10 @@ class ProjetoServicoImplTest {
         usuario.setAtivo(true);
         usuario.setRoles(Set.of(role));
 
-        UsernamePasswordAuthenticationToken authentication =
-                new UsernamePasswordAuthenticationToken(
-                        usuario,
-                        null,
-                        usuario.getAuthorities()
-                );
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                usuario,
+                null,
+                usuario.getAuthorities());
 
         SecurityContextHolder.getContext()
                 .setAuthentication(authentication);
@@ -81,7 +79,8 @@ class ProjetoServicoImplTest {
 
         when(repositorio.buscarPorId("1")).thenReturn(Optional.of(projeto));
 
-        List<ArtefatoGerado> listaArtefatosEsperada = List.of(new ArtefatoGerado("JAVA_MODEL", "Usuario.java", "public class Usuario {}"));
+        List<ArtefatoGerado> listaArtefatosEsperada = List
+                .of(new ArtefatoGerado("JAVA_MODEL", "Usuario.java", "public class Usuario {}"));
 
         when(geradorTemplate.gerarUml(projeto)).thenReturn("diagrama-uml-gerado");
         when(geradorTemplate.gerarDiagramaCloud(projeto)).thenReturn("diagrama-cloud-gerado");
@@ -102,8 +101,7 @@ class ProjetoServicoImplTest {
 
         IllegalArgumentException excecao = assertThrows(
                 IllegalArgumentException.class,
-                () -> servico.gerar("nao-existe")
-        );
+                () -> servico.gerar("nao-existe"));
     }
 
     @Test
