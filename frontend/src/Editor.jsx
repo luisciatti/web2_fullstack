@@ -1,8 +1,196 @@
-import { useEffect, useMemo, useState } from 'react'
-import JSZip from 'jszip'
-import mermaid from 'mermaid'
-import { apiFetch, clearAuth } from './api.js'
-import { EXEMPLO_MODELO, createProjetoVazio, modeloParaTexto, parseModelo } from './modelo.js'
+const TIPOS_ATRIBUTO = ['String', 'Long', 'Integer', 'Double', 'BigDecimal', 'Boolean', 'LocalDate', 'LocalDateTime']
+const TIPOS_RETORNO = ['void', 'String', 'Long', 'Integer', 'Double', 'BigDecimal', 'Boolean']
+const TIPOS_RELACAO = ['ONE_TO_ONE', 'ONE_TO_MANY', 'MANY_TO_ONE', 'MANY_TO_MANY']
+const TIPOS_SERVICO = {
+    aws: ['VPC', 'EC2', 'ASG', 'ALB', 'RDS', 'S3', 'LAMBDA', 'SQS', 'SNS', 'CLOUDWATCH', 'DYNAMODB'],
+    oci: ['VCN', 'INSTANCE', 'DATABASE', 'OBJECT_STORAGE', 'LOAD_BALANCER'],
+}
+
+const EXEMPLO_PROJETO = {
+    nome: 'Pedido',
+    linguagem: 'java',
+    framework: 'spring-boot',
+    provedorCloud: 'aws',
+    classes: [
+        { nome: 'Pedido', atributos: [{ nome: 'id', tipo: 'Long' }, { nome: 'valor', tipo: 'BigDecimal' }], metodos: [{ nome: 'calcularTotal', tipoRetorno: 'BigDecimal' }] },
+        { nome: 'Cliente', atributos: [{ nome: 'id', tipo: 'Long' }, { nome: 'nome', tipo: 'String' }], metodos: [] },
+    ],
+    relacoes: [{ origem: 'Pedido', destino: 'Cliente', tipo: 'MANY_TO_ONE' }],
+    servicosCloud: [
+        { id: 'db', tipo: 'RDS', categoria: 'DATA', configuracao: { engine: 'mysql', instanceType: 'db.t3.micro' } },
+        { id: 'api', tipo: 'EC2', categoria: 'COMPUTE', configuracao: { instanceType: 't3.micro' } },
+    ],
+    conexoesCloud: [{ de: 'api', para: 'db', rotulo: 'API para banco' }],
+}
+
+export function createProjetoVazio() {
+    return {
+        nome: '',
+        linguagem: 'java',
+        framework: 'spring-boot',
+        provedorCloud: 'aws',
+        classes: [],
+        relacoes: [],
+        servicosCloud: [],
+        conexoesCloud: [],
+    }
+}
+
+export function normalizeProjeto(data = {}) {
+    return {
+        id: data.id || '',
+        usuarioId: data.usuarioId || '',
+        nome: data.nome || '',
+        linguagem: data.linguagem || 'java',
+        framework: data.framework || 'spring-boot',
+        provedorCloud: data.provedorCloud || 'aws',
+        classes: Array.isArray(data.classes) ? data.classes.map((classe) => ({
+            nome: classe?.nome || '',
+            atributos: Array.isArray(classe?.atributos) ? classe.atributos.map((atributo) => ({
+                nome: atributo?.nome || '',
+                tipo: atributo?.tipo || '',
+            })) : [],
+            metodos: Array.isArray(classe?.metodos) ? classe.metodos.map((metodo) => ({
+                nome: metodo?.nome || '',
+                tipoRetorno: metodo?.tipoRetorno || metodo?.tipo || '',
+            })) : [],
+        })) : [],
+        relacoes: Array.isArray(data.relacoes) ? data.relacoes.map((relacao) => ({
+            origem: relacao?.origem || '',
+            destino: relacao?.destino || '',
+            tipo: relacao?.tipo || '',
+        })) : [],
+        servicosCloud: Array.isArray(data.servicosCloud) ? data.servicosCloud.map((servico) => ({
+            id: servico?.id || '',
+            tipo: servico?.tipo || '',
+            categoria: servico?.categoria || 'COMPUTE',
+            configuracao: servico?.configuracao && typeof servico.configuracao === 'object'
+                ? Object.fromEntries(Object.entries(servico.configuracao).map(([chave, valor]) => [chave, String(valor ?? '')]))
+                : {},
+        })) : [],
+        conexoesCloud: Array.isArray(data.conexoesCloud) ? data.conexoesCloud.map((conexao) => ({
+            de: conexao?.de || '',
+            para: conexao?.para || '',
+            rotulo: conexao?.rotulo || '',
+        })) : [],
+    }
+}
+
+export function buildPayloadProjeto(projeto) {
+    const base = normalizeProjeto(projeto)
+    const payload = {
+        nome: String(base.nome || '').trim(),
+        linguagem: String(base.linguagem || 'java').trim(),
+        framework: String(base.framework || 'spring-boot').trim(),
+        provedorCloud: String(base.provedorCloud || 'aws').trim(),
+        classes: (base.classes || []).map((classe) => ({
+            nome: String(classe.nome || '').trim(),
+            atributos: (classe.atributos || []).map((atributo) => ({
+                nome: String(atributo.nome || '').trim(),
+                tipo: String(atributo.tipo || '').trim(),
+            })).filter((atributo) => atributo.nome || atributo.tipo),
+            metodos: (classe.metodos || []).map((metodo) => ({
+                nome: String(metodo.nome || '').trim(),
+                tipoRetorno: String(metodo.tipoRetorno || '').trim(),
+            })).filter((metodo) => metodo.nome || metodo.tipoRetorno),
+        })),
+        relacoes: (base.relacoes || []).map((relacao) => ({
+            origem: String(relacao.origem || '').trim(),
+            destino: String(relacao.destino || '').trim(),
+            tipo: String(relacao.tipo || '').trim(),
+        })).filter((relacao) => relacao.origem || relacao.destino || relacao.tipo),
+        servicosCloud: (base.servicosCloud || []).map((servico) => ({
+            id: String(servico.id || '').trim(),
+            tipo: String(servico.tipo || '').trim(),
+            categoria: String(servico.categoria || 'COMPUTE').trim(),
+            configuracao: Object.fromEntries(Object.entries(servico.configuracao || {}).map(([chave, valor]) => [String(chave), String(valor ?? '')])),
+        })).filter((servico) => servico.id || servico.tipo || servico.categoria),
+        conexoesCloud: (base.conexoesCloud || []).map((conexao) => ({
+            de: String(conexao.de || '').trim(),
+            para: String(conexao.para || '').trim(),
+            rotulo: String(conexao.rotulo || '').trim(),
+        })).filter((conexao) => conexao.de || conexao.para || conexao.rotulo),
+    }
+
+    delete payload.id
+    delete payload.usuarioId
+    return payload
+}
+
+export function renomearClasse(projeto, indice, nomeNovo) {
+    const nomeAntigo = projeto.classes?.[indice]?.nome || ''
+    const nomeFinal = String(nomeNovo || '').trim()
+    return {
+        ...projeto,
+        classes: (projeto.classes || []).map((classe, index) => index === indice ? { ...classe, nome: nomeFinal } : classe),
+        relacoes: (projeto.relacoes || []).map((relacao) => ({
+            ...relacao,
+            origem: relacao.origem === nomeAntigo ? nomeFinal : relacao.origem,
+            destino: relacao.destino === nomeAntigo ? nomeFinal : relacao.destino,
+        })),
+    }
+}
+
+export function removerClasse(projeto, indice) {
+    const nome = projeto.classes?.[indice]?.nome || ''
+    return {
+        ...projeto,
+        classes: (projeto.classes || []).filter((_, index) => index !== indice),
+        relacoes: (projeto.relacoes || []).filter((relacao) => relacao.origem !== nome && relacao.destino !== nome),
+    }
+}
+
+export function validarProjeto(projeto) {
+    const erros = []
+    const nomeProjeto = String(projeto?.nome || '').trim()
+    if (!nomeProjeto) erros.push('O nome do projeto é obrigatório.')
+
+    const nomesClasses = new Set()
+    for (const classe of projeto.classes || []) {
+        const nome = String(classe?.nome || '').trim()
+        if (!nome) erros.push('Há uma classe com nome vazio.')
+        else if (nomesClasses.has(nome)) erros.push(`A classe "${nome}" está duplicada.`)
+        else nomesClasses.add(nome)
+
+        for (const atributo of classe?.atributos || []) {
+            const nomeAtributo = String(atributo?.nome || '').trim()
+            const tipoAtributo = String(atributo?.tipo || '').trim()
+            if (!nomeAtributo || !tipoAtributo) erros.push(`Atributo inválido em "${nome || 'classe sem nome'}".`)
+        }
+
+        for (const metodo of classe?.metodos || []) {
+            const nomeMetodo = String(metodo?.nome || '').trim()
+            const retornoMetodo = String(metodo?.tipoRetorno || '').trim()
+            if (!nomeMetodo || !retornoMetodo) erros.push(`Método inválido em "${nome || 'classe sem nome'}".`)
+        }
+    }
+
+    for (const relacao of projeto.relacoes || []) {
+        const origem = String(relacao?.origem || '').trim()
+        const destino = String(relacao?.destino || '').trim()
+        const tipo = String(relacao?.tipo || '').trim()
+        if (!origem || !destino || !tipo) erros.push('Há uma relação incompleta.')
+    }
+
+    const idsServicos = new Set()
+    for (const servico of projeto.servicosCloud || []) {
+        const id = String(servico?.id || '').trim()
+        if (!id) erros.push('Há um serviço sem identificador.')
+        else if (idsServicos.has(id)) erros.push(`O serviço "${id}" está duplicado.`)
+        else idsServicos.add(id)
+
+        const tipo = String(servico?.tipo || '').trim()
+        if (!tipo) erros.push(`O serviço "${id || 'sem id'}" está sem tipo.`)
+    }
+
+    for (const conexao of projeto.conexoesCloud || []) {
+        const de = String(conexao?.de || '').trim()
+        const para = String(conexao?.para || '').trim()
+        if (!de || !para) erros.push('Há uma conexão incompleta.')
+    }
+
+    return erros
+}
 
 const escapeHtml = (text) => String(text)
     .replace(/&/g, '&amp;')
@@ -12,13 +200,13 @@ const escapeHtml = (text) => String(text)
 
 export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) {
     const [project, setProject] = useState(createProjetoVazio())
-    const [text, setText] = useState(EXEMPLO_MODELO)
     const [erro, setErro] = useState('')
     const [saving, setSaving] = useState(false)
     const [resultado, setResultado] = useState(null)
     const [loadingProject, setLoadingProject] = useState(false)
     const [currentProjectId, setCurrentProjectId] = useState(projectId)
 
+    const problemas = useMemo(() => validarProjeto(project), [project])
     const isNovo = currentProjectId === 'novo' || projectId === 'novo'
 
     useEffect(() => {
@@ -26,8 +214,8 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
             if (projectId === 'novo') {
                 setCurrentProjectId('novo')
                 setProject(createProjetoVazio())
-                setText(EXEMPLO_MODELO)
                 setErro('')
+                setResultado(null)
                 return
             }
 
@@ -36,10 +224,9 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
 
             try {
                 const data = await apiFetch(`/api/projetos/${projectId}`)
-                const projetoCarregado = data || createProjetoVazio()
+                const projetoCarregado = normalizeProjeto(data)
                 setCurrentProjectId(projetoCarregado.id || projectId)
                 setProject(projetoCarregado)
-                setText(modeloParaTexto(projetoCarregado))
             } catch (err) {
                 setErro(err.message)
                 if (err.message === 'Sessão expirada. Entre novamente.') {
@@ -71,47 +258,219 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
         render('cloud-diagram', resultado?.cloud)
     }, [resultado])
 
-    const aplicarTexto = () => {
-        try {
-            const next = parseModelo(text)
-            setProject(next)
-            setErro('')
-        } catch (err) {
-            setErro(err.message)
-        }
+    const atualizarProvedor = (valor) => {
+        const tiposValidos = TIPOS_SERVICO[valor] || TIPOS_SERVICO.aws
+        setProject((prev) => ({
+            ...prev,
+            provedorCloud: valor,
+            servicosCloud: (prev.servicosCloud || []).map((servico) => (
+                tiposValidos.includes(servico.tipo) ? servico : { ...servico, tipo: tiposValidos[0] || '' }
+            )),
+        }))
+        setErro('Tipos incompatíveis foram ajustados para o provedor atual.')
+    }
+
+    const adicionarClasse = () => {
+        setProject((prev) => ({ ...prev, classes: [...(prev.classes || []), { nome: '', atributos: [], metodos: [] }] }))
+    }
+
+    const atualizarClasse = (indice, campo, valor) => {
+        setProject((prev) => {
+            if (campo !== 'nome') {
+                return { ...prev, classes: prev.classes.map((classe, index) => index === indice ? { ...classe, [campo]: valor } : classe) }
+            }
+            return renomearClasse(prev, indice, valor)
+        })
+    }
+
+    const removerClasseLocal = (indice) => {
+        setProject((prev) => removerClasse(prev, indice))
+    }
+
+    const adicionarAtributo = (classeIndex) => {
+        setProject((prev) => ({
+            ...prev,
+            classes: prev.classes.map((classe, index) => index === classeIndex ? {
+                ...classe,
+                atributos: [...(classe.atributos || []), { nome: '', tipo: TIPOS_ATRIBUTO[0] }],
+            } : classe),
+        }))
+    }
+
+    const atualizarAtributo = (classeIndex, atributoIndex, campo, valor) => {
+        setProject((prev) => ({
+            ...prev,
+            classes: prev.classes.map((classe, index) => index !== classeIndex ? classe : {
+                ...classe,
+                atributos: (classe.atributos || []).map((atributo, atributoPosicao) => (
+                    atributoPosicao === atributoIndex ? { ...atributo, [campo]: valor } : atributo
+                )),
+            }),
+        }))
+    }
+
+    const removerAtributo = (classeIndex, atributoIndex) => {
+        setProject((prev) => ({
+            ...prev,
+            classes: prev.classes.map((classe, index) => index === classeIndex ? {
+                ...classe,
+                atributos: (classe.atributos || []).filter((_, currentIndex) => currentIndex !== atributoIndex),
+            } : classe),
+        }))
+    }
+
+    const adicionarMetodo = (classeIndex) => {
+        setProject((prev) => ({
+            ...prev,
+            classes: prev.classes.map((classe, index) => index === classeIndex ? {
+                ...classe,
+                metodos: [...(classe.metodos || []), { nome: '', tipoRetorno: TIPOS_RETORNO[0] }],
+            } : classe),
+        }))
+    }
+
+    const atualizarMetodo = (classeIndex, metodoIndex, campo, valor) => {
+        setProject((prev) => ({
+            ...prev,
+            classes: prev.classes.map((classe, index) => index !== classeIndex ? classe : {
+                ...classe,
+                metodos: (classe.metodos || []).map((metodo, metodoPosicao) => (
+                    metodoPosicao === metodoIndex ? { ...metodo, [campo]: valor } : metodo
+                )),
+            }),
+        }))
+    }
+
+    const removerMetodo = (classeIndex, metodoIndex) => {
+        setProject((prev) => ({
+            ...prev,
+            classes: prev.classes.map((classe, index) => index === classeIndex ? {
+                ...classe,
+                metodos: (classe.metodos || []).filter((_, currentIndex) => currentIndex !== metodoIndex),
+            } : classe),
+        }))
+    }
+
+    const adicionarRelacao = () => {
+        setProject((prev) => ({ ...prev, relacoes: [...(prev.relacoes || []), { origem: '', destino: '', tipo: TIPOS_RELACAO[0] }] }))
+    }
+
+    const atualizarRelacao = (indice, campo, valor) => {
+        setProject((prev) => ({
+            ...prev,
+            relacoes: prev.relacoes.map((relacao, index) => index === indice ? { ...relacao, [campo]: valor } : relacao),
+        }))
+    }
+
+    const removerRelacao = (indice) => {
+        setProject((prev) => ({ ...prev, relacoes: prev.relacoes.filter((_, index) => index !== indice) }))
+    }
+
+    const adicionarServico = () => {
+        setProject((prev) => ({
+            ...prev,
+            servicosCloud: [...(prev.servicosCloud || []), { id: '', tipo: TIPOS_SERVICO[prev.provedorCloud || 'aws'][0], categoria: 'COMPUTE', configuracao: {} }],
+        }))
+    }
+
+    const atualizarServico = (indice, campo, valor) => {
+        setProject((prev) => ({
+            ...prev,
+            servicosCloud: prev.servicosCloud.map((servico, index) => index === indice ? { ...servico, [campo]: valor } : servico),
+        }))
+    }
+
+    const removerServico = (indice) => {
+        setProject((prev) => {
+            const servicoRemovido = prev.servicosCloud[indice]
+            return {
+                ...prev,
+                servicosCloud: prev.servicosCloud.filter((_, indexServico) => indexServico !== indice),
+                conexoesCloud: (prev.conexoesCloud || []).filter((conexao) => conexao.de !== servicoRemovido?.id && conexao.para !== servicoRemovido?.id),
+            }
+        })
+    }
+
+    const adicionarLinhaConfiguracao = (servicoIndex) => {
+        setProject((prev) => ({
+            ...prev,
+            servicosCloud: prev.servicosCloud.map((servico, index) => index === servicoIndex ? {
+                ...servico,
+                configuracao: { ...(servico.configuracao || {}), '': '' },
+            } : servico),
+        }))
+    }
+
+    const atualizarLinhaConfiguracao = (servicoIndex, chaveAntiga, valorChave, valorValor) => {
+        setProject((prev) => ({
+            ...prev,
+            servicosCloud: prev.servicosCloud.map((servico, index) => {
+                if (index !== servicoIndex) return servico
+                const atual = { ...(servico.configuracao || {}) }
+                if (chaveAntiga && chaveAntiga !== valorChave) delete atual[chaveAntiga]
+                if (valorChave.trim()) atual[valorChave.trim()] = String(valorValor ?? '')
+                return { ...servico, configuracao: atual }
+            }),
+        }))
+    }
+
+    const removerLinhaConfiguracao = (servicoIndex, chave) => {
+        setProject((prev) => ({
+            ...prev,
+            servicosCloud: prev.servicosCloud.map((servico, index) => {
+                if (index !== servicoIndex) return servico
+                const atual = { ...(servico.configuracao || {}) }
+                delete atual[chave]
+                return { ...servico, configuracao: atual }
+            }),
+        }))
+    }
+
+    const adicionarConexao = () => {
+        setProject((prev) => ({ ...prev, conexoesCloud: [...(prev.conexoesCloud || []), { de: '', para: '', rotulo: '' }] }))
+    }
+
+    const atualizarConexao = (indice, campo, valor) => {
+        setProject((prev) => ({
+            ...prev,
+            conexoesCloud: prev.conexoesCloud.map((conexao, index) => index === indice ? { ...conexao, [campo]: valor } : conexao),
+        }))
+    }
+
+    const removerConexao = (indice) => {
+        setProject((prev) => ({ ...prev, conexoesCloud: prev.conexoesCloud.filter((_, index) => index !== indice) }))
+    }
+
+    const carregarExemplo = () => {
+        setProject(normalizeProjeto(EXEMPLO_PROJETO))
+        setErro('')
     }
 
     const salvar = async () => {
+        const erros = validarProjeto(project)
+        if (erros.length > 0) {
+            setErro(erros.join(' • '))
+            return
+        }
+
         try {
-            const next = parseModelo(text)
-            setProject(next)
             setErro('')
             setSaving(true)
+            const payload = buildPayloadProjeto(project)
+            const isCreate = currentProjectId === 'novo' || !currentProjectId
+            const response = await apiFetch(isCreate ? '/api/projetos' : `/api/projetos/${currentProjectId}`, {
+                method: isCreate ? 'POST' : 'PUT',
+                body: payload,
+            })
 
-            const payload = {
-                nome: next.nome,
-                linguagem: next.linguagem,
-                framework: next.framework,
-                provedorCloud: next.provedorCloud,
-                classes: next.classes,
-                relacoes: next.relacoes,
-                servicosCloud: next.servicosCloud,
-                conexoesCloud: next.conexoesCloud,
-            }
-
-            const response = isNovo
-                ? await apiFetch('/api/projetos', { method: 'POST', body: payload })
-                : await apiFetch(`/api/projetos/${currentProjectId}`, { method: 'PUT', body: payload })
-
-            const id = response?.id || currentProjectId
             if (response?.id) {
                 setCurrentProjectId(response.id)
                 onProjectSaved?.(response.id)
             }
-            const gerado = await apiFetch(`/api/projetos/${id}/gerar`, { method: 'POST' })
+
+            const gerado = await apiFetch(`/api/projetos/${response?.id || currentProjectId}/gerar`, { method: 'POST' })
             setResultado(gerado)
-            setProject((prev) => ({ ...prev, ...(response || {}), id: id || prev.id }))
-            setText(modeloParaTexto({ ...next, ...(response || {}), id: id || next.id }))
+            setProject((prev) => ({ ...prev, ...(response || {}), id: response?.id || prev.id || currentProjectId }))
         } catch (err) {
             setErro(err.message)
             if (err.message === 'Sessão expirada. Entre novamente.') {
@@ -174,6 +533,9 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
         return mapa
     }, [resultado])
 
+    const nomesClasses = (project.classes || []).map((classe) => classe.nome).filter(Boolean)
+    const idsServicos = (project.servicosCloud || []).map((servico) => servico.id).filter(Boolean)
+
     if (loadingProject) {
         return (
             <div className="shell">
@@ -197,47 +559,163 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
                     <h1>{isNovo ? 'Novo projeto' : 'Editar projeto'}</h1>
                     <div className="actions">
                         <button type="button" onClick={onBack}>Voltar</button>
-                        <button type="button" onClick={salvar} disabled={saving}>{saving ? 'Salvando...' : 'Salvar e gerar'}</button>
+                        <button type="button" onClick={salvar} disabled={saving || problemas.length > 0}>{saving ? 'Salvando...' : 'Salvar e gerar'}</button>
                     </div>
                 </div>
 
                 {erro && <div className="error">{erro}</div>}
+                {problemas.length > 0 && (
+                    <div className="error list-error">
+                        <strong>Problemas do formulário:</strong>
+                        <ul>{problemas.map((problema) => <li key={problema}>{problema}</li>)}</ul>
+                    </div>
+                )}
 
-                <div className="editor-grid">
-                    <div>
-                        <label>
-                            Nome
-                            <input value={project.nome} onChange={(event) => setProject({ ...project, nome: event.target.value })} />
-                        </label>
-                        <label>
-                            Provedor
-                            <select value={project.provedorCloud} onChange={(event) => setProject({ ...project, provedorCloud: event.target.value })}>
-                                <option value="aws">AWS</option>
-                                <option value="oci">OCI</option>
-                            </select>
-                        </label>
-                        <label>
-                            Modelo em texto
-                            <textarea rows="18" value={text} onChange={(event) => setText(event.target.value)} />
-                        </label>
-                        <div className="actions"><button type="button" onClick={() => setText(EXEMPLO_MODELO)}>Carregar exemplo</button><button type="button" className="muted" onClick={aplicarTexto}>Carregar no formulário</button></div>
+                <div className="editor-stack">
+                    <fieldset>
+                        <legend>Projeto</legend>
+                        <div className="grid-2">
+                            <label>
+                                Nome
+                                <input value={project.nome} onChange={(event) => setProject((prev) => ({ ...prev, nome: event.target.value }))} />
+                            </label>
+                            <label>
+                                Provedor
+                                <select value={project.provedorCloud} onChange={(event) => atualizarProvedor(event.target.value)}>
+                                    <option value="aws">aws</option>
+                                    <option value="oci">oci</option>
+                                </select>
+                            </label>
+                        </div>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>Classes</legend>
+                        {(project.classes || []).map((classe, classeIndex) => (
+                            <div key={`classe-${classeIndex}`} className="card-inside">
+                                <div className="grid-2">
+                                    <label>
+                                        Nome da classe
+                                        <input value={classe.nome} onChange={(event) => atualizarClasse(classeIndex, 'nome', event.target.value)} />
+                                    </label>
+                                    <div className="actions end">
+                                        <button type="button" className="muted" onClick={() => adicionarAtributo(classeIndex)}>Adicionar atributo</button>
+                                        <button type="button" className="muted" onClick={() => adicionarMetodo(classeIndex)}>Adicionar método</button>
+                                        <button type="button" className="danger" onClick={() => removerClasseLocal(classeIndex)}>Remover</button>
+                                    </div>
+                                </div>
+
+                                <div className="nested-list">
+                                    {(classe.atributos || []).map((atributo, atributoIndex) => (
+                                        <div key={`atributo-${classeIndex}-${atributoIndex}`} className="row-grid">
+                                            <input value={atributo.nome} placeholder="nome do atributo" onChange={(event) => atualizarAtributo(classeIndex, atributoIndex, 'nome', event.target.value)} />
+                                            <select value={atributo.tipo} onChange={(event) => atualizarAtributo(classeIndex, atributoIndex, 'tipo', event.target.value)}>
+                                                {TIPOS_ATRIBUTO.map((tipo) => <option key={tipo} value={tipo}>{tipo}</option>)}
+                                            </select>
+                                            <button type="button" className="danger" onClick={() => removerAtributo(classeIndex, atributoIndex)}>Remover</button>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <div className="nested-list">
+                                    {(classe.metodos || []).map((metodo, metodoIndex) => (
+                                        <div key={`metodo-${classeIndex}-${metodoIndex}`} className="row-grid">
+                                            <input value={metodo.nome} placeholder="nome do método" onChange={(event) => atualizarMetodo(classeIndex, metodoIndex, 'nome', event.target.value)} />
+                                            <select value={metodo.tipoRetorno} onChange={(event) => atualizarMetodo(classeIndex, metodoIndex, 'tipoRetorno', event.target.value)}>
+                                                {TIPOS_RETORNO.map((tipo) => <option key={tipo} value={tipo}>{tipo}</option>)}
+                                            </select>
+                                            <button type="button" className="danger" onClick={() => removerMetodo(classeIndex, metodoIndex)}>Remover</button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                        <button type="button" onClick={adicionarClasse}>Adicionar classe</button>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>Relações</legend>
+                        {(project.relacoes || []).map((relacao, relacaoIndex) => (
+                            <div key={`relacao-${relacaoIndex}`} className="card-inside row-grid">
+                                <select value={relacao.origem} onChange={(event) => atualizarRelacao(relacaoIndex, 'origem', event.target.value)}>
+                                    <option value="">Origem</option>
+                                    {nomesClasses.map((nome) => <option key={nome} value={nome}>{nome}</option>)}
+                                </select>
+                                <select value={relacao.destino} onChange={(event) => atualizarRelacao(relacaoIndex, 'destino', event.target.value)}>
+                                    <option value="">Destino</option>
+                                    {nomesClasses.map((nome) => <option key={nome} value={nome}>{nome}</option>)}
+                                </select>
+                                <select value={relacao.tipo} onChange={(event) => atualizarRelacao(relacaoIndex, 'tipo', event.target.value)}>
+                                    <option value="">Tipo</option>
+                                    {TIPOS_RELACAO.map((tipo) => <option key={tipo} value={tipo}>{tipo}</option>)}
+                                </select>
+                                <button type="button" className="danger" onClick={() => removerRelacao(relacaoIndex)}>Remover</button>
+                            </div>
+                        ))}
+                        <button type="button" onClick={adicionarRelacao}>Adicionar relação</button>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>Serviços cloud</legend>
+                        {(project.servicosCloud || []).map((servico, servicoIndex) => (
+                            <div key={`servico-${servicoIndex}`} className="card-inside">
+                                <div className="row-grid">
+                                    <input value={servico.id} placeholder="id do serviço" onChange={(event) => atualizarServico(servicoIndex, 'id', event.target.value)} />
+                                    <select value={servico.tipo} onChange={(event) => atualizarServico(servicoIndex, 'tipo', event.target.value)}>
+                                        {(TIPOS_SERVICO[project.provedorCloud || 'aws'] || []).map((tipo) => <option key={tipo} value={tipo}>{tipo}</option>)}
+                                    </select>
+                                    <select value={servico.categoria} onChange={(event) => atualizarServico(servicoIndex, 'categoria', event.target.value)}>
+                                        {['COMPUTE', 'DATA', 'STORAGE', 'NETWORK', 'API', 'MESSAGING', 'OBSERVABILITY'].map((categoria) => <option key={categoria} value={categoria}>{categoria}</option>)}
+                                    </select>
+                                    <button type="button" className="danger" onClick={() => removerServico(servicoIndex)}>Remover</button>
+                                </div>
+                                <div className="nested-list">
+                                    {Object.entries(servico.configuracao || {}).map(([chave, valor]) => (
+                                        <div key={`config-${servicoIndex}-${chave}`} className="row-grid">
+                                            <input value={chave} onChange={(event) => atualizarLinhaConfiguracao(servicoIndex, chave, event.target.value, valor)} />
+                                            <input value={valor} onChange={(event) => atualizarLinhaConfiguracao(servicoIndex, chave, chave, event.target.value)} />
+                                            <button type="button" className="danger" onClick={() => removerLinhaConfiguracao(servicoIndex, chave)}>Remover</button>
+                                        </div>
+                                    ))}
+                                </div>
+                                <button type="button" className="muted" onClick={() => adicionarLinhaConfiguracao(servicoIndex)}>Adicionar linha de config</button>
+                            </div>
+                        ))}
+                        <button type="button" onClick={adicionarServico}>Adicionar serviço</button>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>Conexões</legend>
+                        {(project.conexoesCloud || []).map((conexao, conexaoIndex) => (
+                            <div key={`conexao-${conexaoIndex}`} className="card-inside row-grid">
+                                <select value={conexao.de} onChange={(event) => atualizarConexao(conexaoIndex, 'de', event.target.value)}>
+                                    <option value="">De</option>
+                                    {idsServicos.map((id) => <option key={id} value={id}>{id}</option>)}
+                                </select>
+                                <select value={conexao.para} onChange={(event) => atualizarConexao(conexaoIndex, 'para', event.target.value)}>
+                                    <option value="">Para</option>
+                                    {idsServicos.map((id) => <option key={id} value={id}>{id}</option>)}
+                                </select>
+                                <input value={conexao.rotulo} placeholder="rótulo" onChange={(event) => atualizarConexao(conexaoIndex, 'rotulo', event.target.value)} />
+                                <button type="button" className="danger" onClick={() => removerConexao(conexaoIndex)}>Remover</button>
+                            </div>
+                        ))}
+                        <button type="button" onClick={adicionarConexao}>Adicionar conexão</button>
+                    </fieldset>
+
+                    <div className="actions">
+                        <button type="button" onClick={carregarExemplo}>Carregar exemplo</button>
                     </div>
 
-                    <aside className="help">
-                        <strong>Formato</strong>
-                        <pre>{`Classe Pedido
-  id: Long
-  valor: BigDecimal
-  calcularTotal(): BigDecimal
-Relação: Pedido -> Cliente (MANY_TO_ONE)
-Serviço: db RDS DATA engine=mysql instanceType=db.t3.micro
-Conexão: api -> db "API para banco"`}</pre>
-                        <p>Não use senhas reais em arquivos de exemplo.</p>
-                    </aside>
+                    <details>
+                        <summary>Ver JSON que será enviado</summary>
+                        <pre>{JSON.stringify(buildPayloadProjeto(project), null, 2)}</pre>
+                    </details>
                 </div>
 
                 {resultado && (
                     <div className="resultado">
+                        <p className="mini-note">V0 — versão inicial simples. Foco: validar o backend e o que ele gera.</p>
                         <div className="topline">
                             <h2>Resultado</h2>
                             <button type="button" onClick={baixarTudo}>Baixar tudo (.zip)</button>
