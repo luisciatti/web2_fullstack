@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -19,6 +20,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
     private final int maxRequests;
     private final long windowMs;
     private final Map<String, Deque<Long>> requestsByIp = new ConcurrentHashMap<>();
+    private final AtomicLong lastCleanup = new AtomicLong(0L);
 
     public RateLimitFilter(int maxRequests, long windowSeconds) {
         this.maxRequests = maxRequests;
@@ -36,12 +38,24 @@ public class RateLimitFilter extends OncePerRequestFilter {
             FilterChain filterChain)
             throws ServletException, IOException {
 
+        // TODO: atrás de um load balancer, request.getRemoteAddr() será o IP do LB;
+        // antes de expor na internet configurar server.forward-headers-strategy e usar
+        // o IP real do cliente.
         String ip = request.getRemoteAddr();
         if (ip == null || ip.isBlank()) {
             ip = "unknown";
         }
 
         long now = System.currentTimeMillis();
+        if (now - lastCleanup.get() >= windowMs) {
+            synchronized (lastCleanup) {
+                if (now - lastCleanup.get() >= windowMs) {
+                    limparEntradasAntigas(now);
+                    lastCleanup.set(now);
+                }
+            }
+        }
+
         Deque<Long> timestamps = requestsByIp.computeIfAbsent(ip, key -> new ConcurrentLinkedDeque<>());
 
         synchronized (timestamps) {
@@ -56,14 +70,12 @@ public class RateLimitFilter extends OncePerRequestFilter {
                 response.setContentType(MediaType.APPLICATION_JSON_VALUE);
                 response.setCharacterEncoding(StandardCharsets.UTF_8.name());
                 response.getWriter().write("{\"erro\":\"Muitas requisições\"}");
-                limparEntradasAntigas(now);
                 return;
             }
 
             timestamps.addLast(now);
         }
 
-        limparEntradasAntigas(now);
         filterChain.doFilter(request, response);
     }
 

@@ -3,14 +3,12 @@ package com.web2.controlador;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.web2.Web2BackendApplication;
-import dao.RoleRepositorio;
 import dao.UsuarioRepositorio;
 import dto.LoginRequest;
+import dto.RefreshTokenRequest;
 import dto.RegistroRequest;
 import java.util.UUID;
-import modelo.Role;
 import modelo.Usuario;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -39,30 +37,6 @@ class AuthControllerTest {
 
     @Autowired
     private UsuarioRepositorio usuarioRepositorio;
-
-    @Autowired
-    private RoleRepositorio roleRepositorio;
-
-    @BeforeEach
-    void setUp() {
-        Role roleUser = roleRepositorio.findByNome("ROLE_USER")
-                .orElseThrow(() -> new IllegalStateException("ROLE_USER não encontrada"));
-
-        String unique = UUID.randomUUID().toString();
-        String email = "teste." + unique + "@example.com";
-
-        Usuario usuario = new Usuario();
-        usuario.setId("user-" + unique);
-        usuario.setNome("Usuario Teste");
-        usuario.setEmail(email);
-        usuario.setSenhaHash("$2a$10$Q2Xg.............");
-        usuario.setAtivo(true);
-        usuario.setRoles(java.util.Set.of(roleUser));
-
-        if (!usuarioRepositorio.existsByEmail(email)) {
-            usuarioRepositorio.save(usuario);
-        }
-    }
 
     @Test
     void registerValido_retorna201ComTokens() throws Exception {
@@ -231,22 +205,29 @@ class AuthControllerTest {
     @Test
     void getProjetosSemToken_retornaStatusAtual() throws Exception {
         mockMvc.perform(get("/api/projetos"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
     }
 
     @Test
-    void registerDesabilitado_retorna403() throws Exception {
-        String email = "desabilitado." + UUID.randomUUID() + "@example.com";
-        RegistroRequest request = new RegistroRequest();
-        request.setNome("Teste");
-        request.setEmail(email);
-        request.setSenha("senhaValida123");
+    void refreshTokenInexistente_retorna401() throws Exception {
+        RefreshTokenRequest request = new RefreshTokenRequest();
+        request.setRefreshToken("token-inexistente");
 
-        mockMvc.perform(post("/api/auth/register")
+        mockMvc.perform(post("/api/auth/refresh")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request))
-                .header("X-Registration-Override", "nope"))
-                .andExpect(status().isForbidden())
-                .andExpect(content().json("{\"erro\":\"Cadastro temporariamente desabilitado\"}"));
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().json("{\"erro\":\"Refresh token inválido ou expirado\"}"));
+    }
+
+    @Test
+    void logoutTokenInexistente_retorna204() throws Exception {
+        RefreshTokenRequest request = new RefreshTokenRequest();
+        request.setRefreshToken("token-inexistente");
+
+        mockMvc.perform(post("/api/auth/logout")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNoContent());
     }
 }

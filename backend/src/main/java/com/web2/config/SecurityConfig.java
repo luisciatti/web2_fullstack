@@ -21,7 +21,7 @@ public class SecurityConfig {
 
         @Bean
         RateLimitFilter rateLimitFilter(
-                        @Value("${app.rate-limit.auth.max-requests:10}") int maxRequests,
+                        @Value("${app.rate-limit.auth.max-requests:20}") int maxRequests,
                         @Value("${app.rate-limit.auth.window-seconds:60}") long windowSeconds) {
                 return new RateLimitFilter(maxRequests, windowSeconds);
         }

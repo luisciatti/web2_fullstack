@@ -41,7 +41,7 @@ app:
     enabled: ${REGISTRATION_ENABLED:true}
   rate-limit:
     auth:
-      max-requests: ${APP_RATE_LIMIT_AUTH_MAX_REQUESTS:10}
+      max-requests: ${APP_RATE_LIMIT_AUTH_MAX_REQUESTS:20}
       window-seconds: ${APP_RATE_LIMIT_AUTH_WINDOW_SECONDS:60}
   jwt:
     secret: ${JWT_SECRET:dev-only-secret-key-that-is-at-least-32-bytes-long}

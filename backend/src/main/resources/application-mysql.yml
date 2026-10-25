@@ -2,7 +2,7 @@ spring:
   datasource:
     url: ${MYSQL_URL:jdbc:mysql://localhost:3306/web2_fullstack?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
     driver-class-name: com.mysql.cj.jdbc.Driver
-    username: ${MYSQL_USER:root}
+    username: ${MYSQL_USER:web2_user}
     password: ${MYSQL_PASSWORD}
   flyway:
     enabled: true

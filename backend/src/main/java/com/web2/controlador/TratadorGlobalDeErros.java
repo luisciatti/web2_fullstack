@@ -8,7 +8,7 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -43,9 +43,9 @@ public class TratadorGlobalDeErros {
         return Map.of("erro", "Email já está em uso");
     }
 
-    @ExceptionHandler(BadCredentialsException.class)
+    @ExceptionHandler(AuthenticationException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public Map<String, String> tratarBadCredentials(BadCredentialsException ex) {
+    public Map<String, String> tratarBadCredentials(AuthenticationException ex) {
         return Map.of("erro", "Credenciais inválidas");
     }
 
