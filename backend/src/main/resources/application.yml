@@ -37,7 +37,13 @@ management:
         include: "*"
 
 app:
+  registration:
+    enabled: ${REGISTRATION_ENABLED:true}
+  rate-limit:
+    auth:
+      max-requests: ${APP_RATE_LIMIT_AUTH_MAX_REQUESTS:20}
+      window-seconds: ${APP_RATE_LIMIT_AUTH_WINDOW_SECONDS:60}
   jwt:
     secret: ${JWT_SECRET:dev-only-secret-key-that-is-at-least-32-bytes-long}
     access-token-expiration-ms: ${JWT_ACCESS_TOKEN_EXPIRATION_MS:300000}
-    refresh-token-expiration-ms: ${JWT_REFRESH_TOKEN_EXPIRATION_MS:604800000} 
+    refresh-token-expiration-ms: ${JWT_REFRESH_TOKEN_EXPIRATION_MS:604800000}
