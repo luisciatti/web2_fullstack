@@ -55,6 +55,9 @@ public class SecurityConfig {
                                                                 "/swagger-ui/**",
                                                                 "/actuator/health")
                                                 .permitAll()
+                                                .requestMatchers(HttpMethod.GET,
+                                                                "/actuator/prometheus")
+                                                .permitAll()
 
                                                 // Rotas protegidas
                                                 .requestMatchers("/api/projetos/**")

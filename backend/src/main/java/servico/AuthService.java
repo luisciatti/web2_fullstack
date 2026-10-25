@@ -3,6 +3,7 @@ package servico;
 import com.web2.excecao.CadastroDesabilitadoException;
 import com.web2.excecao.EmailJaCadastradoException;
 import com.web2.excecao.TokenInvalidoException;
+import com.web2.metricas.MetricasNegocio;
 import com.web2.security.JwtService;
 import dao.RoleRepositorio;
 import dao.UsuarioRepositorio;
@@ -32,6 +33,7 @@ public class AuthService {
     private final RefreshTokenService refreshTokenService;
     private final AuthenticationManager authenticationManager;
     private final boolean registrationEnabled;
+    private final MetricasNegocio metricasNegocio;
 
     public AuthService(
             UsuarioRepositorio usuarioRepositorio,
@@ -40,7 +42,8 @@ public class AuthService {
             JwtService jwtService,
             RefreshTokenService refreshTokenService,
             AuthenticationManager authenticationManager,
-            @Value("${app.registration.enabled:true}") boolean registrationEnabled) {
+            @Value("${app.registration.enabled:true}") boolean registrationEnabled,
+            MetricasNegocio metricasNegocio) {
         this.usuarioRepositorio = usuarioRepositorio;
         this.roleRepositorio = roleRepositorio;
         this.passwordEncoder = passwordEncoder;
@@ -48,43 +51,56 @@ public class AuthService {
         this.refreshTokenService = refreshTokenService;
         this.authenticationManager = authenticationManager;
         this.registrationEnabled = registrationEnabled;
+        this.metricasNegocio = metricasNegocio;
     }
 
     @Transactional
     public AuthResponse registrar(RegistroRequest request) {
-        if (!registrationEnabled) {
-            throw new CadastroDesabilitadoException();
+        try {
+            if (!registrationEnabled) {
+                throw new CadastroDesabilitadoException();
+            }
+
+            String email = normalizarEmail(request.getEmail());
+            if (usuarioRepositorio.existsByEmail(email)) {
+                throw new EmailJaCadastradoException();
+            }
+
+            Usuario usuario = new Usuario();
+            usuario.setNome(request.getNome());
+            usuario.setEmail(email);
+            usuario.setSenhaHash(passwordEncoder.encode(request.getSenha()));
+            usuario.setAtivo(true);
+
+            // Atribui role padrão ROLE_USER
+            Role roleUser = roleRepositorio.findByNome("ROLE_USER")
+                    .orElseThrow(() -> new RuntimeException("Role ROLE_USER não encontrada"));
+            usuario.setRoles(Set.of(roleUser));
+
+            Usuario salvo = usuarioRepositorio.save(usuario);
+            metricasNegocio.registrarAuthRegisterSucesso();
+
+            return gerarTokens(salvo);
+        } catch (RuntimeException e) {
+            metricasNegocio.registrarAuthRegisterFalha();
+            throw e;
         }
-
-        String email = normalizarEmail(request.getEmail());
-        if (usuarioRepositorio.existsByEmail(email)) {
-            throw new EmailJaCadastradoException();
-        }
-
-        Usuario usuario = new Usuario();
-        usuario.setNome(request.getNome());
-        usuario.setEmail(email);
-        usuario.setSenhaHash(passwordEncoder.encode(request.getSenha()));
-        usuario.setAtivo(true);
-
-        // Atribui role padrão ROLE_USER
-        Role roleUser = roleRepositorio.findByNome("ROLE_USER")
-                .orElseThrow(() -> new RuntimeException("Role ROLE_USER não encontrada"));
-        usuario.setRoles(Set.of(roleUser));
-
-        Usuario salvo = usuarioRepositorio.save(usuario);
-
-        return gerarTokens(salvo);
     }
 
     public AuthResponse login(LoginRequest request) {
-        String email = normalizarEmail(request.getEmail());
+        try {
+            String email = normalizarEmail(request.getEmail());
 
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(email, request.getSenha()));
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(email, request.getSenha()));
 
-        Usuario usuario = (Usuario) authentication.getPrincipal();
-        return gerarTokens(usuario);
+            Usuario usuario = (Usuario) authentication.getPrincipal();
+            metricasNegocio.registrarAuthLoginSucesso();
+            return gerarTokens(usuario);
+        } catch (RuntimeException e) {
+            metricasNegocio.registrarAuthLoginFalha();
+            throw e;
+        }
     }
 
     @Transactional
