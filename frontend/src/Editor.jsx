@@ -202,6 +202,39 @@ const escapeHtml = (text) => String(text)
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
 
+let mermaidInstancePromise = null
+const loadMermaid = async () => {
+    if (!mermaidInstancePromise) {
+        mermaidInstancePromise = import('mermaid').then((module) => {
+            const mermaid = module.default
+            mermaid.initialize({ startOnLoad: false, securityLevel: 'loose' })
+            return mermaid
+        })
+    }
+    return mermaidInstancePromise
+}
+
+export function DiagramPanel({ title, status = 'idle', diagram = '', error = '', emptyMessage = 'A UML aparece aqui depois de Salvar e gerar.' }) {
+    const hasDiagram = status === 'success' && diagram
+    const hasError = status === 'error'
+
+    return (
+        <div className="diagram-box">
+            <h3>{title}</h3>
+            {status === 'idle' && <p className="diagram-placeholder">{emptyMessage}</p>}
+            {status === 'loading' && <div className="diagram-status">Gerando...</div>}
+            {hasDiagram && <div className="diagram-canvas" dangerouslySetInnerHTML={{ __html: diagram }} />}
+            {hasError && (
+                <div className="diagram-status error">
+                    <strong>Erro ao renderizar o diagrama:</strong>
+                    <p>{error}</p>
+                    {diagram && <pre>{diagram}</pre>}
+                </div>
+            )}
+        </div>
+    )
+}
+
 export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) {
     const [project, setProject] = useState(createProjetoVazio())
     const [erro, setErro] = useState('')
@@ -209,6 +242,7 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
     const [resultado, setResultado] = useState(null)
     const [loadingProject, setLoadingProject] = useState(false)
     const [currentProjectId, setCurrentProjectId] = useState(projectId)
+    const [diagramState, setDiagramState] = useState({ uml: { status: 'idle', diagram: '', error: '' }, cloud: { status: 'idle', diagram: '', error: '' } })
 
     const problemas = useMemo(() => validarProjeto(project), [project])
     const isNovo = currentProjectId === 'novo' || projectId === 'novo'
@@ -220,6 +254,7 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
                 setProject(createProjetoVazio())
                 setErro('')
                 setResultado(null)
+                setDiagramState({ uml: { status: 'idle', diagram: '', error: '' }, cloud: { status: 'idle', diagram: '', error: '' } })
                 return
             }
 
@@ -246,26 +281,57 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
     }, [projectId, onLogout])
 
     useEffect(() => {
-        const renderDiagram = async () => {
-            const { default: mermaidLib } = await import('mermaid')
+        let isCurrent = true
 
-            const render = async (id, diagram) => {
-                const el = document.getElementById(id)
-                if (!el || !diagram) return
-                mermaidLib.initialize({ startOnLoad: false, securityLevel: 'loose' })
-                try {
-                    const { svg } = await mermaidLib.render(`${id}-svg`, diagram)
-                    el.innerHTML = svg
-                } catch {
-                    el.innerHTML = `<pre>${escapeHtml(diagram)}</pre>`
+        const renderDiagram = async (key, containerId, diagramText) => {
+            if (!diagramText) {
+                if (isCurrent) {
+                    setDiagramState((prev) => ({ ...prev, [key]: { status: 'idle', diagram: '', error: '' } }))
                 }
+                return
             }
 
-            await render('uml-diagram', resultado?.uml)
-            await render('cloud-diagram', resultado?.cloud)
+            if (isCurrent) {
+                setDiagramState((prev) => ({ ...prev, [key]: { status: 'loading', diagram: '', error: '' } }))
+            }
+
+            try {
+                const mermaid = await loadMermaid()
+                const renderId = `${containerId}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
+                const { svg } = await mermaid.render(renderId, diagramText)
+
+                if (!isCurrent) return
+
+                const el = document.getElementById(containerId)
+                if (el) el.innerHTML = svg
+
+                setDiagramState((prev) => ({ ...prev, [key]: { status: 'success', diagram: svg, error: '' } }))
+            } catch (error) {
+                if (!isCurrent) return
+
+                const message = error?.message || 'Erro ao renderizar o diagrama.'
+                const el = document.getElementById(containerId)
+                if (el) {
+                    el.innerHTML = `<pre>${escapeHtml(diagramText)}</pre>`
+                }
+
+                setDiagramState((prev) => ({
+                    ...prev,
+                    [key]: {
+                        status: 'error',
+                        diagram: diagramText,
+                        error: message,
+                    },
+                }))
+            }
         }
 
-        renderDiagram()
+        renderDiagram('uml', 'uml-diagram', resultado?.uml)
+        renderDiagram('cloud', 'cloud-diagram', resultado?.cloud)
+
+        return () => {
+            isCurrent = false
+        }
     }, [resultado])
 
     const atualizarProvedor = (valor) => {
@@ -479,6 +545,9 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
             }
 
             const gerado = await apiFetch(`/api/projetos/${response?.id || currentProjectId}/gerar`, { method: 'POST' })
+            if (import.meta.env.DEV && gerado?.uml) {
+                console.debug('[Editor] resposta.uml recebido do backend:', gerado.uml)
+            }
             setResultado(gerado)
             setProject((prev) => ({ ...prev, ...(response || {}), id: response?.id || prev.id || currentProjectId }))
         } catch (err) {
@@ -581,146 +650,158 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
                     </div>
                 )}
 
-                <div className="editor-stack">
-                    <fieldset>
-                        <legend>Projeto</legend>
-                        <div className="grid-2">
-                            <label>
-                                Nome
-                                <input value={project.nome} onChange={(event) => setProject((prev) => ({ ...prev, nome: event.target.value }))} />
-                            </label>
-                            <label>
-                                Provedor
-                                <select value={project.provedorCloud} onChange={(event) => atualizarProvedor(event.target.value)}>
-                                    <option value="aws">aws</option>
-                                    <option value="oci">oci</option>
-                                </select>
-                            </label>
-                        </div>
-                    </fieldset>
+                <div className="editor-layout">
+                    <div className="editor-stack">
+                        <fieldset>
+                            <legend>Projeto</legend>
+                            <div className="grid-2">
+                                <label>
+                                    Nome
+                                    <input value={project.nome} onChange={(event) => setProject((prev) => ({ ...prev, nome: event.target.value }))} />
+                                </label>
+                                <label>
+                                    Provedor
+                                    <select value={project.provedorCloud} onChange={(event) => atualizarProvedor(event.target.value)}>
+                                        <option value="aws">aws</option>
+                                        <option value="oci">oci</option>
+                                    </select>
+                                </label>
+                            </div>
+                        </fieldset>
 
-                    <fieldset>
-                        <legend>Classes</legend>
-                        {(project.classes || []).map((classe, classeIndex) => (
-                            <div key={`classe-${classeIndex}`} className="card-inside">
-                                <div className="grid-2">
-                                    <label>
-                                        Nome da classe
-                                        <input value={classe.nome} onChange={(event) => atualizarClasse(classeIndex, 'nome', event.target.value)} />
-                                    </label>
-                                    <div className="actions end">
-                                        <button type="button" className="muted" onClick={() => adicionarAtributo(classeIndex)}>Adicionar atributo</button>
-                                        <button type="button" className="muted" onClick={() => adicionarMetodo(classeIndex)}>Adicionar método</button>
-                                        <button type="button" className="danger" onClick={() => removerClasseLocal(classeIndex)}>Remover</button>
+                        <fieldset>
+                            <legend>Classes</legend>
+                            {(project.classes || []).map((classe, classeIndex) => (
+                                <div key={`classe-${classeIndex}`} className="card-inside">
+                                    <div className="grid-2">
+                                        <label>
+                                            Nome da classe
+                                            <input value={classe.nome} onChange={(event) => atualizarClasse(classeIndex, 'nome', event.target.value)} />
+                                        </label>
+                                        <div className="actions end">
+                                            <button type="button" className="muted" onClick={() => adicionarAtributo(classeIndex)}>Adicionar atributo</button>
+                                            <button type="button" className="muted" onClick={() => adicionarMetodo(classeIndex)}>Adicionar método</button>
+                                            <button type="button" className="danger" onClick={() => removerClasseLocal(classeIndex)}>Remover</button>
+                                        </div>
+                                    </div>
+
+                                    <div className="nested-list">
+                                        {(classe.atributos || []).map((atributo, atributoIndex) => (
+                                            <div key={`atributo-${classeIndex}-${atributoIndex}`} className="row-grid">
+                                                <input value={atributo.nome} placeholder="nome do atributo" onChange={(event) => atualizarAtributo(classeIndex, atributoIndex, 'nome', event.target.value)} />
+                                                <select value={atributo.tipo} onChange={(event) => atualizarAtributo(classeIndex, atributoIndex, 'tipo', event.target.value)}>
+                                                    {TIPOS_ATRIBUTO.map((tipo) => <option key={tipo} value={tipo}>{tipo}</option>)}
+                                                </select>
+                                                <button type="button" className="danger" onClick={() => removerAtributo(classeIndex, atributoIndex)}>Remover</button>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div className="nested-list">
+                                        {(classe.metodos || []).map((metodo, metodoIndex) => (
+                                            <div key={`metodo-${classeIndex}-${metodoIndex}`} className="row-grid">
+                                                <input value={metodo.nome} placeholder="nome do método" onChange={(event) => atualizarMetodo(classeIndex, metodoIndex, 'nome', event.target.value)} />
+                                                <select value={metodo.tipoRetorno} onChange={(event) => atualizarMetodo(classeIndex, metodoIndex, 'tipoRetorno', event.target.value)}>
+                                                    {TIPOS_RETORNO.map((tipo) => <option key={tipo} value={tipo}>{tipo}</option>)}
+                                                </select>
+                                                <button type="button" className="danger" onClick={() => removerMetodo(classeIndex, metodoIndex)}>Remover</button>
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
+                            ))}
+                            <button type="button" onClick={adicionarClasse}>Adicionar classe</button>
+                        </fieldset>
 
-                                <div className="nested-list">
-                                    {(classe.atributos || []).map((atributo, atributoIndex) => (
-                                        <div key={`atributo-${classeIndex}-${atributoIndex}`} className="row-grid">
-                                            <input value={atributo.nome} placeholder="nome do atributo" onChange={(event) => atualizarAtributo(classeIndex, atributoIndex, 'nome', event.target.value)} />
-                                            <select value={atributo.tipo} onChange={(event) => atualizarAtributo(classeIndex, atributoIndex, 'tipo', event.target.value)}>
-                                                {TIPOS_ATRIBUTO.map((tipo) => <option key={tipo} value={tipo}>{tipo}</option>)}
-                                            </select>
-                                            <button type="button" className="danger" onClick={() => removerAtributo(classeIndex, atributoIndex)}>Remover</button>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                <div className="nested-list">
-                                    {(classe.metodos || []).map((metodo, metodoIndex) => (
-                                        <div key={`metodo-${classeIndex}-${metodoIndex}`} className="row-grid">
-                                            <input value={metodo.nome} placeholder="nome do método" onChange={(event) => atualizarMetodo(classeIndex, metodoIndex, 'nome', event.target.value)} />
-                                            <select value={metodo.tipoRetorno} onChange={(event) => atualizarMetodo(classeIndex, metodoIndex, 'tipoRetorno', event.target.value)}>
-                                                {TIPOS_RETORNO.map((tipo) => <option key={tipo} value={tipo}>{tipo}</option>)}
-                                            </select>
-                                            <button type="button" className="danger" onClick={() => removerMetodo(classeIndex, metodoIndex)}>Remover</button>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        ))}
-                        <button type="button" onClick={adicionarClasse}>Adicionar classe</button>
-                    </fieldset>
-
-                    <fieldset>
-                        <legend>Relações</legend>
-                        {(project.relacoes || []).map((relacao, relacaoIndex) => (
-                            <div key={`relacao-${relacaoIndex}`} className="card-inside row-grid">
-                                <select value={relacao.origem} onChange={(event) => atualizarRelacao(relacaoIndex, 'origem', event.target.value)}>
-                                    <option value="">Origem</option>
-                                    {nomesClasses.map((nome) => <option key={nome} value={nome}>{nome}</option>)}
-                                </select>
-                                <select value={relacao.destino} onChange={(event) => atualizarRelacao(relacaoIndex, 'destino', event.target.value)}>
-                                    <option value="">Destino</option>
-                                    {nomesClasses.map((nome) => <option key={nome} value={nome}>{nome}</option>)}
-                                </select>
-                                <select value={relacao.tipo} onChange={(event) => atualizarRelacao(relacaoIndex, 'tipo', event.target.value)}>
-                                    <option value="">Tipo</option>
-                                    {TIPOS_RELACAO.map((tipo) => <option key={tipo} value={tipo}>{tipo}</option>)}
-                                </select>
-                                <button type="button" className="danger" onClick={() => removerRelacao(relacaoIndex)}>Remover</button>
-                            </div>
-                        ))}
-                        <button type="button" onClick={adicionarRelacao}>Adicionar relação</button>
-                    </fieldset>
-
-                    <fieldset>
-                        <legend>Serviços cloud</legend>
-                        {(project.servicosCloud || []).map((servico, servicoIndex) => (
-                            <div key={`servico-${servicoIndex}`} className="card-inside">
-                                <div className="row-grid">
-                                    <input value={servico.id} placeholder="id do serviço" onChange={(event) => atualizarServico(servicoIndex, 'id', event.target.value)} />
-                                    <select value={servico.tipo} onChange={(event) => atualizarServico(servicoIndex, 'tipo', event.target.value)}>
-                                        {(TIPOS_SERVICO[project.provedorCloud || 'aws'] || []).map((tipo) => <option key={tipo} value={tipo}>{tipo}</option>)}
+                        <fieldset>
+                            <legend>Relações</legend>
+                            {(project.relacoes || []).map((relacao, relacaoIndex) => (
+                                <div key={`relacao-${relacaoIndex}`} className="card-inside row-grid">
+                                    <select value={relacao.origem} onChange={(event) => atualizarRelacao(relacaoIndex, 'origem', event.target.value)}>
+                                        <option value="">Origem</option>
+                                        {nomesClasses.map((nome) => <option key={nome} value={nome}>{nome}</option>)}
                                     </select>
-                                    <select value={servico.categoria} onChange={(event) => atualizarServico(servicoIndex, 'categoria', event.target.value)}>
-                                        {['COMPUTE', 'DATA', 'STORAGE', 'NETWORK', 'API', 'MESSAGING', 'OBSERVABILITY'].map((categoria) => <option key={categoria} value={categoria}>{categoria}</option>)}
+                                    <select value={relacao.destino} onChange={(event) => atualizarRelacao(relacaoIndex, 'destino', event.target.value)}>
+                                        <option value="">Destino</option>
+                                        {nomesClasses.map((nome) => <option key={nome} value={nome}>{nome}</option>)}
                                     </select>
-                                    <button type="button" className="danger" onClick={() => removerServico(servicoIndex)}>Remover</button>
+                                    <select value={relacao.tipo} onChange={(event) => atualizarRelacao(relacaoIndex, 'tipo', event.target.value)}>
+                                        <option value="">Tipo</option>
+                                        {TIPOS_RELACAO.map((tipo) => <option key={tipo} value={tipo}>{tipo}</option>)}
+                                    </select>
+                                    <button type="button" className="danger" onClick={() => removerRelacao(relacaoIndex)}>Remover</button>
                                 </div>
-                                <div className="nested-list">
-                                    {Object.entries(servico.configuracao || {}).map(([chave, valor]) => (
-                                        <div key={`config-${servicoIndex}-${chave}`} className="row-grid">
-                                            <input value={chave} onChange={(event) => atualizarLinhaConfiguracao(servicoIndex, chave, event.target.value, valor)} />
-                                            <input value={valor} onChange={(event) => atualizarLinhaConfiguracao(servicoIndex, chave, chave, event.target.value)} />
-                                            <button type="button" className="danger" onClick={() => removerLinhaConfiguracao(servicoIndex, chave)}>Remover</button>
-                                        </div>
-                                    ))}
+                            ))}
+                            <button type="button" onClick={adicionarRelacao}>Adicionar relação</button>
+                        </fieldset>
+
+                        <fieldset>
+                            <legend>Serviços cloud</legend>
+                            {(project.servicosCloud || []).map((servico, servicoIndex) => (
+                                <div key={`servico-${servicoIndex}`} className="card-inside">
+                                    <div className="row-grid">
+                                        <input value={servico.id} placeholder="id do serviço" onChange={(event) => atualizarServico(servicoIndex, 'id', event.target.value)} />
+                                        <select value={servico.tipo} onChange={(event) => atualizarServico(servicoIndex, 'tipo', event.target.value)}>
+                                            {(TIPOS_SERVICO[project.provedorCloud || 'aws'] || []).map((tipo) => <option key={tipo} value={tipo}>{tipo}</option>)}
+                                        </select>
+                                        <select value={servico.categoria} onChange={(event) => atualizarServico(servicoIndex, 'categoria', event.target.value)}>
+                                            {['COMPUTE', 'DATA', 'STORAGE', 'NETWORK', 'API', 'MESSAGING', 'OBSERVABILITY'].map((categoria) => <option key={categoria} value={categoria}>{categoria}</option>)}
+                                        </select>
+                                        <button type="button" className="danger" onClick={() => removerServico(servicoIndex)}>Remover</button>
+                                    </div>
+                                    <div className="nested-list">
+                                        {Object.entries(servico.configuracao || {}).map(([chave, valor]) => (
+                                            <div key={`config-${servicoIndex}-${chave}`} className="row-grid">
+                                                <input value={chave} onChange={(event) => atualizarLinhaConfiguracao(servicoIndex, chave, event.target.value, valor)} />
+                                                <input value={valor} onChange={(event) => atualizarLinhaConfiguracao(servicoIndex, chave, chave, event.target.value)} />
+                                                <button type="button" className="danger" onClick={() => removerLinhaConfiguracao(servicoIndex, chave)}>Remover</button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <button type="button" className="muted" onClick={() => adicionarLinhaConfiguracao(servicoIndex)}>Adicionar linha de config</button>
                                 </div>
-                                <button type="button" className="muted" onClick={() => adicionarLinhaConfiguracao(servicoIndex)}>Adicionar linha de config</button>
-                            </div>
-                        ))}
-                        <button type="button" onClick={adicionarServico}>Adicionar serviço</button>
-                    </fieldset>
+                            ))}
+                            <button type="button" onClick={adicionarServico}>Adicionar serviço</button>
+                        </fieldset>
 
-                    <fieldset>
-                        <legend>Conexões</legend>
-                        {(project.conexoesCloud || []).map((conexao, conexaoIndex) => (
-                            <div key={`conexao-${conexaoIndex}`} className="card-inside row-grid">
-                                <select value={conexao.de} onChange={(event) => atualizarConexao(conexaoIndex, 'de', event.target.value)}>
-                                    <option value="">De</option>
-                                    {idsServicos.map((id) => <option key={id} value={id}>{id}</option>)}
-                                </select>
-                                <select value={conexao.para} onChange={(event) => atualizarConexao(conexaoIndex, 'para', event.target.value)}>
-                                    <option value="">Para</option>
-                                    {idsServicos.map((id) => <option key={id} value={id}>{id}</option>)}
-                                </select>
-                                <input value={conexao.rotulo} placeholder="rótulo" onChange={(event) => atualizarConexao(conexaoIndex, 'rotulo', event.target.value)} />
-                                <button type="button" className="danger" onClick={() => removerConexao(conexaoIndex)}>Remover</button>
-                            </div>
-                        ))}
-                        <button type="button" onClick={adicionarConexao}>Adicionar conexão</button>
-                    </fieldset>
+                        <fieldset>
+                            <legend>Conexões</legend>
+                            {(project.conexoesCloud || []).map((conexao, conexaoIndex) => (
+                                <div key={`conexao-${conexaoIndex}`} className="card-inside row-grid">
+                                    <select value={conexao.de} onChange={(event) => atualizarConexao(conexaoIndex, 'de', event.target.value)}>
+                                        <option value="">De</option>
+                                        {idsServicos.map((id) => <option key={id} value={id}>{id}</option>)}
+                                    </select>
+                                    <select value={conexao.para} onChange={(event) => atualizarConexao(conexaoIndex, 'para', event.target.value)}>
+                                        <option value="">Para</option>
+                                        {idsServicos.map((id) => <option key={id} value={id}>{id}</option>)}
+                                    </select>
+                                    <input value={conexao.rotulo} placeholder="rótulo" onChange={(event) => atualizarConexao(conexaoIndex, 'rotulo', event.target.value)} />
+                                    <button type="button" className="danger" onClick={() => removerConexao(conexaoIndex)}>Remover</button>
+                                </div>
+                            ))}
+                            <button type="button" onClick={adicionarConexao}>Adicionar conexão</button>
+                        </fieldset>
 
-                    <div className="actions">
-                        <button type="button" onClick={carregarExemplo}>Carregar exemplo</button>
+                        <div className="actions">
+                            <button type="button" onClick={carregarExemplo}>Carregar exemplo</button>
+                        </div>
+
+                        <details>
+                            <summary>Ver JSON que será enviado</summary>
+                            <pre>{JSON.stringify(buildPayloadProjeto(project), null, 2)}</pre>
+                        </details>
                     </div>
 
-                    <details>
-                        <summary>Ver JSON que será enviado</summary>
-                        <pre>{JSON.stringify(buildPayloadProjeto(project), null, 2)}</pre>
-                    </details>
+                    <aside className="uml-panel">
+                        <DiagramPanel
+                            title="UML"
+                            status={diagramState.uml.status}
+                            diagram={diagramState.uml.diagram || resultado?.uml || ''}
+                            error={diagramState.uml.error}
+                            emptyMessage="A UML aparece aqui depois de Salvar e gerar."
+                        />
+                    </aside>
                 </div>
 
                 {resultado && (
@@ -731,14 +812,13 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
                             <button type="button" onClick={baixarTudo}>Baixar tudo (.zip)</button>
                         </div>
                         <div className="diagrams">
-                            <div className="diagram-box">
-                                <h3>UML</h3>
-                                <div id="uml-diagram" />
-                            </div>
-                            <div className="diagram-box">
-                                <h3>Cloud</h3>
-                                <div id="cloud-diagram" />
-                            </div>
+                            <DiagramPanel
+                                title="Cloud"
+                                status={diagramState.cloud.status}
+                                diagram={diagramState.cloud.diagram || resultado?.cloud || ''}
+                                error={diagramState.cloud.error}
+                                emptyMessage="O diagrama Cloud aparece aqui depois de Salvar e gerar."
+                            />
                         </div>
 
                         <div className="artefatos">
