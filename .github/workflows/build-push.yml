@@ -10,10 +10,12 @@ on:
         branches: [main]
         paths:
             - "backend/**"
+            - "frontend/**"
             - ".github/workflows/build-push.yml"
     pull_request:
         paths:
             - "backend/**"
+            - "frontend/**"
             - ".github/workflows/build-push.yml"
     workflow_dispatch:
 
@@ -72,7 +74,8 @@ jobs:
 
             - uses: docker/build-push-action@v6
               with:
-                  context: backend
+                  context: .
+                  file: backend/Dockerfile
                   platforms: linux/arm64
                   push: ${{ github.event_name != 'pull_request' }}
                   tags: ${{ steps.meta.outputs.tags }}
