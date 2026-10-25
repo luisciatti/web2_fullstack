@@ -1,0 +1,305 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f3f4f6;
+    color: #111827;
+}
+
+button,
+input,
+textarea,
+select {
+    font: inherit;
+}
+
+button {
+    background: #111827;
+    color: white;
+    border: 0;
+    border-radius: 6px;
+    padding: 0.6rem 1rem;
+    cursor: pointer;
+}
+
+button.muted {
+    background: #e5e7eb;
+    color: #111827;
+}
+
+button.danger {
+    background: #b91c1c;
+}
+
+button.active {
+    background: #2563eb;
+}
+
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.shell {
+    min-height: 100vh;
+    padding: 1rem;
+    display: grid;
+    place-items: center;
+}
+
+.card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    padding: 1.25rem;
+}
+
+.card.small {
+    width: min(420px, 100%);
+}
+
+.card.wide {
+    width: min(1100px, 100%);
+}
+
+form {
+    display: grid;
+    gap: 0.85rem;
+}
+
+label {
+    display: grid;
+    gap: 0.35rem;
+    font-weight: 600;
+}
+
+input,
+select,
+textarea {
+    width: 100%;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+}
+
+textarea {
+    resize: vertical;
+}
+
+.segmented {
+    display: flex;
+    gap: 0.5rem;
+    margin: 1rem 0;
+}
+
+.segmented button {
+    flex: 1;
+}
+
+.topline {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.actions.end {
+    justify-content: flex-end;
+}
+
+.inline {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.error {
+    background: #fee2e2;
+    color: #991b1b;
+    border-radius: 8px;
+    padding: 0.7rem 0.8rem;
+    margin: 0.8rem 0;
+}
+
+.list-error ul {
+    margin: 0.5rem 0 0 1.25rem;
+    padding: 0;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    border-bottom: 1px solid #e5e7eb;
+    padding: 0.75rem;
+    text-align: left;
+}
+
+.editor-stack {
+    display: grid;
+    gap: 1rem;
+}
+
+fieldset {
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 1rem;
+    background: #f9fafb;
+}
+
+legend {
+    font-weight: bold;
+    padding: 0 0.5rem;
+}
+
+.grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.card-inside {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 0.75rem;
+    margin-top: 0.75rem;
+}
+
+.nested-list {
+    display: grid;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+}
+
+.row-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1fr;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.mini-note {
+    color: #4b5563;
+    font-size: 0.9rem;
+    margin: 0 0 1rem;
+}
+
+.editor-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.9fr);
+    gap: 1rem;
+    align-items: start;
+}
+
+.uml-panel {
+    position: sticky;
+    top: 16px;
+}
+
+.diagrams {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+.diagram-box,
+.grupo {
+    background: #f9fafb;
+    border-radius: 10px;
+    padding: 1rem;
+}
+
+.diagram-placeholder,
+.diagram-status {
+    margin: 0;
+    min-height: 120px;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    color: #4b5563;
+    border: 1px dashed #d1d5db;
+    border-radius: 8px;
+    background: #fff;
+    padding: 1rem;
+}
+
+.diagram-status.error {
+    color: #991b1b;
+    border-style: solid;
+    border-color: #fecaca;
+    background: #fff1f2;
+}
+
+.diagram-status.error p {
+    margin: 0.5rem 0 0;
+}
+
+.diagram-canvas {
+    overflow: auto;
+    max-height: 70vh;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: white;
+    padding: 0.5rem;
+}
+
+.artefatos {
+    display: grid;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+pre {
+    white-space: pre-wrap;
+    background: white;
+    border-radius: 8px;
+    padding: 0.75rem;
+    overflow: auto;
+}
+
+details {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+}
+
+summary {
+    cursor: pointer;
+    font-weight: 600;
+}
+
+@media (max-width: 900px) {
+    .editor-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .uml-panel {
+        position: static;
+    }
+}
+
+@media (max-width: 780px) {
+
+    .grid-2,
+    .row-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .topline {
+        display: block;
+    }
+}
