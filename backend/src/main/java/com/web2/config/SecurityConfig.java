@@ -1,7 +1,9 @@
 package com.web2.config;
 
+import com.web2.security.RateLimitFilter;
 import dao.UsuarioRepositorio;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,60 +19,67 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 public class SecurityConfig {
 
-    @Bean
-    SecurityFilterChain securityFilterChain(
-        HttpSecurity http,
-        JwtAuthenticationFilter jwtAuthenticationFilter)
-        throws Exception {
-        http
-                .csrf(csrf -> csrf.disable())
+        @Bean
+        RateLimitFilter rateLimitFilter(
+                        @Value("${app.rate-limit.auth.max-requests:10}") int maxRequests,
+                        @Value("${app.rate-limit.auth.window-seconds:60}") long windowSeconds) {
+                return new RateLimitFilter(maxRequests, windowSeconds);
+        }
 
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        @Bean
+        SecurityFilterChain securityFilterChain(
+                        HttpSecurity http,
+                        JwtAuthenticationFilter jwtAuthenticationFilter,
+                        RateLimitFilter rateLimitFilter)
+                        throws Exception {
+                http
+                                .csrf(csrf -> csrf.disable())
 
-                .authorizeHttpRequests(authorize -> authorize
+                                .sessionManagement(session -> session
+                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                        // Rotas públicas
-                        .requestMatchers(
-                                "/api/auth/**",
-                                "/docs",
-                                "/docs/**",
-                                "/swagger-ui/**",
-                                "/actuator/health"
-                        ).permitAll()
+                                .authorizeHttpRequests(authorize -> authorize
 
-                        // Rotas protegidas
-                        .requestMatchers("/api/projetos/**")
-                        .hasAnyRole("USER", "ADMIN")
+                                                // Rotas públicas
+                                                .requestMatchers(
+                                                                "/api/auth/**",
+                                                                "/docs",
+                                                                "/docs/**",
+                                                                "/swagger-ui/**",
+                                                                "/actuator/health")
+                                                .permitAll()
 
-                        // Qualquer outra rota exige autenticação
-                        .anyRequest()
-                        .authenticated()
-                )
+                                                // Rotas protegidas
+                                                .requestMatchers("/api/projetos/**")
+                                                .hasAnyRole("USER", "ADMIN")
 
-                .addFilterBefore(
-                        jwtAuthenticationFilter,
-                        UsernamePasswordAuthenticationFilter.class
-                );
+                                                // Qualquer outra rota exige autenticação
+                                                .anyRequest()
+                                                .authenticated())
+                                .addFilterBefore(
+                                                rateLimitFilter,
+                                                UsernamePasswordAuthenticationFilter.class)
+                                .addFilterBefore(
+                                                jwtAuthenticationFilter,
+                                                UsernamePasswordAuthenticationFilter.class);
 
-        return http.build();
-    }
+                return http.build();
+        }
 
-    @Bean
-    public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration authenticationConfiguration)
-            throws Exception {
+        @Bean
+        public AuthenticationManager authenticationManager(
+                        AuthenticationConfiguration authenticationConfiguration)
+                        throws Exception {
 
-        return authenticationConfiguration.getAuthenticationManager();
-    }
+                return authenticationConfiguration.getAuthenticationManager();
+        }
 
-    @Bean
-    public UserDetailsService userDetailsService(
-            UsuarioRepositorio usuarioRepositorio) {
+        @Bean
+        public UserDetailsService userDetailsService(
+                        UsuarioRepositorio usuarioRepositorio) {
 
-        return username -> usuarioRepositorio
-                .findByEmail(username)
-                .orElseThrow(() ->
-                        new UsernameNotFoundException("Usuário não encontrado"));
-    }
+                return username -> usuarioRepositorio
+                                .findByEmail(username)
+                                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
+        }
 }

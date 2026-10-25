@@ -1,5 +1,8 @@
 package servico;
 
+import com.web2.excecao.CadastroDesabilitadoException;
+import com.web2.excecao.EmailJaCadastradoException;
+import com.web2.excecao.TokenInvalidoException;
 import com.web2.security.JwtService;
 import dao.RoleRepositorio;
 import dao.UsuarioRepositorio;
@@ -9,6 +12,7 @@ import dto.RegistroRequest;
 import modelo.RefreshToken;
 import modelo.Role;
 import modelo.Usuario;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -16,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Locale;
 import java.util.Set;
 
 @Service
@@ -26,6 +31,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final RefreshTokenService refreshTokenService;
     private final AuthenticationManager authenticationManager;
+    private final boolean registrationEnabled;
 
     public AuthService(
             UsuarioRepositorio usuarioRepositorio,
@@ -33,24 +39,31 @@ public class AuthService {
             PasswordEncoder passwordEncoder,
             JwtService jwtService,
             RefreshTokenService refreshTokenService,
-            AuthenticationManager authenticationManager) {
+            AuthenticationManager authenticationManager,
+            @Value("${app.registration.enabled:true}") boolean registrationEnabled) {
         this.usuarioRepositorio = usuarioRepositorio;
         this.roleRepositorio = roleRepositorio;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.refreshTokenService = refreshTokenService;
         this.authenticationManager = authenticationManager;
+        this.registrationEnabled = registrationEnabled;
     }
 
     @Transactional
     public AuthResponse registrar(RegistroRequest request) {
-        if (usuarioRepositorio.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email já está em uso");
+        if (!registrationEnabled) {
+            throw new CadastroDesabilitadoException();
+        }
+
+        String email = normalizarEmail(request.getEmail());
+        if (usuarioRepositorio.existsByEmail(email)) {
+            throw new EmailJaCadastradoException();
         }
 
         Usuario usuario = new Usuario();
         usuario.setNome(request.getNome());
-        usuario.setEmail(request.getEmail());
+        usuario.setEmail(email);
         usuario.setSenhaHash(passwordEncoder.encode(request.getSenha()));
         usuario.setAtivo(true);
 
@@ -65,8 +78,10 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
+        String email = normalizarEmail(request.getEmail());
+
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getSenha()));
+                new UsernamePasswordAuthenticationToken(email, request.getSenha()));
 
         Usuario usuario = (Usuario) authentication.getPrincipal();
         return gerarTokens(usuario);
@@ -77,7 +92,7 @@ public class AuthService {
         RefreshToken tokenEntity = refreshTokenService.findByToken(refreshToken);
 
         if (!refreshTokenService.isValid(tokenEntity)) {
-            throw new RuntimeException("Refresh token inválido ou expirado");
+            throw new TokenInvalidoException();
         }
 
         Usuario usuario = tokenEntity.getUsuario();
@@ -97,6 +112,10 @@ public class AuthService {
         if (tokenEntity != null) {
             refreshTokenService.revokeRefreshToken(tokenEntity);
         }
+    }
+
+    private String normalizarEmail(String email) {
+        return email == null ? null : email.trim().toLowerCase(Locale.ROOT);
     }
 
     private AuthResponse gerarTokens(Usuario usuario) {

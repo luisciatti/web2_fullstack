@@ -27,5 +27,7 @@ springdoc:
     enabled: false
 
 app:
+  registration:
+    enabled: ${REGISTRATION_ENABLED:true}
   jwt:
     secret: ${JWT_SECRET}
