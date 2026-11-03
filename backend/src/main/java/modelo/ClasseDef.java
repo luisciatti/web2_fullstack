@@ -4,9 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 
 public record ClasseDef(
-        @NotBlank String nome,
+        @NotBlank @Pattern(regexp = Projeto.TEXTO_DIAGRAMA) String nome,
         @Valid List<AtributoDef> atributos, // @Valid cascateia validação para dentro da lista
         @Valid List<MetodoDef> metodos) {
 

@@ -207,7 +207,7 @@ const loadMermaid = async () => {
     if (!mermaidInstancePromise) {
         mermaidInstancePromise = import('mermaid').then((module) => {
             const mermaid = module.default
-            mermaid.initialize({ startOnLoad: false, securityLevel: 'loose' })
+            mermaid.initialize({ startOnLoad: false, securityLevel: 'strict' })
             return mermaid
         })
     }

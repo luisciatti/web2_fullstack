@@ -14,6 +14,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Setter
 @NoArgsConstructor // gera o construtor vazio exigido pelo Jackson
 public class Projeto {
+    // Nomes viram texto Mermaid: bloqueia só o que fecha a linha/bloco e permite injetar diretivas
+    // (quebra de linha, aspas, ;, |, { }). Acentos, espaços e List<String> continuam válidos.
+    public static final String TEXTO_DIAGRAMA = "[^\\r\\n\";|{}]*";
+
     @Id
     private String id; // sem @NotBlank: será gerado pelo sistema
 
