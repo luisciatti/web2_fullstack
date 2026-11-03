@@ -4,11 +4,12 @@
 package modelo;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 
 public record RelacaoDef(
-                @NotBlank String origem, // nome da classe de origem
-                @NotBlank String destino, // nome da classe de destino
-                @NotBlank String tipo // tipo da relação (ONE_TO_MANY etc.)
+                @NotBlank @Pattern(regexp = Projeto.TEXTO_DIAGRAMA) String origem, // nome da classe de origem
+                @NotBlank @Pattern(regexp = Projeto.TEXTO_DIAGRAMA) String destino, // nome da classe de destino
+                @NotBlank @Pattern(regexp = Projeto.TEXTO_DIAGRAMA) String tipo // tipo da relação (ONE_TO_MANY etc.)
 ) {
         public String getOrigem() {
                 return origem;
