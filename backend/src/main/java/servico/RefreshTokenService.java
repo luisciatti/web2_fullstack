@@ -25,8 +25,7 @@ public class RefreshTokenService {
     @Transactional
     public RefreshToken createRefreshToken(Usuario usuario) {
         // Revoga refresh tokens anteriores do usuário (opcional, mas recomendado)
-        refreshTokenRepositorio.findByUsuarioIdAndRevogadoFalse(usuario.getId())
-                .ifPresent(this::revokeRefreshToken);
+        refreshTokenRepositorio.revokeAllActiveByUsuarioId(usuario.getId());
 
         RefreshToken refreshToken = new RefreshToken();
         refreshToken.setToken(UUID.randomUUID().toString());

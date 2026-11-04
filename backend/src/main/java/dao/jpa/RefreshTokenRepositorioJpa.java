@@ -30,8 +30,8 @@ public class RefreshTokenRepositorioJpa implements RefreshTokenRepositorio {
     }
 
     @Override
-    public Optional<RefreshToken> findByUsuarioIdAndRevogadoFalse(String usuarioId) {
-        return refreshTokenRepository.findByUsuarioIdAndRevogadoFalse(usuarioId).map(mapper::toModel);
+    public void revokeAllActiveByUsuarioId(String usuarioId) {
+        refreshTokenRepository.revokeAllActive(usuarioId);
     }
 
     @Override
