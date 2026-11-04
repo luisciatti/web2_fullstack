@@ -3,11 +3,14 @@ package com.web2.controlador;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.web2.Web2BackendApplication;
+import dao.RefreshTokenRepositorio;
 import dao.UsuarioRepositorio;
 import dto.LoginRequest;
 import dto.RefreshTokenRequest;
 import dto.RegistroRequest;
+import java.time.Instant;
 import java.util.UUID;
+import modelo.RefreshToken;
 import modelo.Usuario;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +40,9 @@ class AuthControllerTest {
 
     @Autowired
     private UsuarioRepositorio usuarioRepositorio;
+
+    @Autowired
+    private RefreshTokenRepositorio refreshTokenRepositorio;
 
     @Test
     void registerValido_retorna201ComTokens() throws Exception {
@@ -176,6 +182,52 @@ class AuthControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accessToken").isNotEmpty())
                 .andExpect(jsonPath("$.refreshToken").isNotEmpty());
+    }
+
+    @Test
+    void loginComDoisTokensAtivos_retorna200ERevogaAmbos() throws Exception {
+        String email = "corrida." + UUID.randomUUID() + "@example.com";
+        RegistroRequest criar = new RegistroRequest();
+        criar.setNome("Corrida");
+        criar.setEmail(email);
+        criar.setSenha("senhaValida123");
+
+        mockMvc.perform(post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(criar)))
+                .andExpect(status().isCreated());
+
+        // Simula dois logins simultâneos: dois tokens ativos para o mesmo usuário
+        Usuario usuario = usuarioRepositorio.findByEmail(email).orElseThrow();
+        String token1 = salvarTokenAtivo(usuario);
+        String token2 = salvarTokenAtivo(usuario);
+
+        LoginRequest login = new LoginRequest();
+        login.setEmail(email);
+        login.setSenha("senhaValida123");
+
+        mockMvc.perform(post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(login)))
+                .andExpect(status().isOk());
+
+        for (String antigo : new String[] { token1, token2 }) {
+            RefreshTokenRequest refresh = new RefreshTokenRequest();
+            refresh.setRefreshToken(antigo);
+            mockMvc.perform(post("/api/auth/refresh")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(refresh)))
+                    .andExpect(status().isUnauthorized());
+        }
+    }
+
+    private String salvarTokenAtivo(Usuario usuario) {
+        RefreshToken token = new RefreshToken();
+        token.setToken(UUID.randomUUID().toString());
+        token.setUsuario(usuario);
+        token.setExpiraEm(Instant.now().plusSeconds(3600));
+        token.setRevogado(false);
+        return refreshTokenRepositorio.save(token).getToken();
     }
 
     @Test
