@@ -15,6 +15,13 @@ public class ProjetoRepositorioEmMemoria implements ProjetoRepositorio {
     }
 
     @Override
+    public List<Projeto> buscarPorUsuario(String usuarioId) {
+        return armazenamento.values().stream()
+                .filter(projeto -> Objects.equals(projeto.getUsuarioId(), usuarioId))
+                .toList();
+    }
+
+    @Override
     public Optional<Projeto> buscarPorId(String id) {
         if (armazenamento.containsKey(id)) {
             return Optional.ofNullable(armazenamento.get(id));

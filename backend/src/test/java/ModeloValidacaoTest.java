@@ -1,5 +1,6 @@
 import jakarta.validation.*;
 import modelo.AtributoDef;
+import modelo.ClasseDef;
 import modelo.ConexaoCloudDef;
 import modelo.MetodoDef;
 import modelo.ServicoCloudDef;
@@ -58,6 +59,26 @@ public class ModeloValidacaoTest {
         assertTrue(validator.validate(new MetodoDef("calcular total", "void")).isEmpty());
         assertTrue(validator.validate(new ServicoCloudDef("db-principal", "aws-rds", "DATA", null)).isEmpty());
         assertTrue(validator.validate(new ConexaoCloudDef("api", "db", "API → Database (SQL)")).isEmpty());
+    }
+
+    @Test
+    void projetoGrandeDemais_deveRetornarViolation() {
+        var projeto = new Projeto();
+        projeto.setNome("p");
+        projeto.setLinguagem("java");
+        projeto.setFramework("spring-boot");
+        projeto.setProvedorCloud("aws");
+        assertTrue(validator.validate(projeto).isEmpty());
+
+        var classes = new java.util.ArrayList<ClasseDef>();
+        for (int i = 0; i <= Projeto.MAX_ITENS; i++) {
+            classes.add(new ClasseDef("C" + i, null, null));
+        }
+        projeto.setClasses(classes);
+        assertFalse(validator.validate(projeto).isEmpty());
+
+        assertTrue(validator.validate(new AtributoDef("a".repeat(255), "String")).isEmpty());
+        assertFalse(validator.validate(new AtributoDef("a".repeat(256), "String")).isEmpty());
     }
 
     @Test

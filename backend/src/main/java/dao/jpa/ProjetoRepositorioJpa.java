@@ -31,6 +31,14 @@ public class ProjetoRepositorioJpa implements ProjetoRepositorio {
 
     @Override
     @Transactional
+    public List<Projeto> buscarPorUsuario(String usuarioId) {
+        return jpaRepository.findByUsuarioId(usuarioId).stream()
+                .map(mapper::toModel)
+                .toList();
+    }
+
+    @Override
+    @Transactional
     public Optional<Projeto> buscarPorId(String id) {
         return jpaRepository.findById(id)
                 .map(mapper::toModel);
