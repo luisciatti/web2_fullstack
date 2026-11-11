@@ -113,13 +113,8 @@ public class AuthService {
 
         Usuario usuario = tokenEntity.getUsuario();
 
-        // Gera novos tokens
-        AuthResponse response = gerarTokens(usuario);
-
-        // Revoga o refresh token antigo (rotation)
-        refreshTokenService.revokeRefreshToken(tokenEntity);
-
-        return response;
+        // Gera novos tokens; o antigo é apagado em createRefreshToken (rotation)
+        return gerarTokens(usuario);
     }
 
     @Transactional

@@ -24,8 +24,8 @@ public class RefreshTokenService {
 
     @Transactional
     public RefreshToken createRefreshToken(Usuario usuario) {
-        // Revoga refresh tokens anteriores do usuário (opcional, mas recomendado)
-        refreshTokenRepositorio.revokeAllActiveByUsuarioId(usuario.getId());
+        // Apaga (não só revoga) os tokens anteriores: a tabela fica com no máximo um por usuário
+        refreshTokenRepositorio.deleteByUsuarioId(usuario.getId());
 
         RefreshToken refreshToken = new RefreshToken();
         refreshToken.setToken(UUID.randomUUID().toString());
@@ -52,10 +52,5 @@ public class RefreshTokenService {
             refreshToken.setRevogado(true);
             refreshTokenRepositorio.save(refreshToken);
         }
-    }
-
-    @Transactional
-    public void revokeAllByUsuarioId(String usuarioId) {
-        refreshTokenRepositorio.deleteByUsuarioId(usuarioId);
     }
 }

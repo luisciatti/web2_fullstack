@@ -30,11 +30,6 @@ public class RefreshTokenRepositorioJpa implements RefreshTokenRepositorio {
     }
 
     @Override
-    public void revokeAllActiveByUsuarioId(String usuarioId) {
-        refreshTokenRepository.revokeAllActive(usuarioId);
-    }
-
-    @Override
     public void deleteByUsuarioId(String usuarioId) {
         refreshTokenRepository.deleteByUsuarioId(usuarioId);
     }
