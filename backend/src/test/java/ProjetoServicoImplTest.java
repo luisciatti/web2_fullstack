@@ -16,6 +16,7 @@ import modelo.Usuario;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -113,6 +114,25 @@ class ProjetoServicoImplTest {
         assertEquals(List.of(meu), servico.buscarTodos());
         // não pode carregar os projetos de todos os usuários
         Mockito.verify(repositorio, Mockito.never()).buscarTodos();
+    }
+
+    @Test
+    void projetoDeOutroUsuario_naoPodeSerLidoAlteradoExcluidoOuGerado() {
+        Projeto alheio = new Projeto();
+        alheio.setId("p1");
+        alheio.setUsuarioId("outro-usuario");
+        when(repositorio.buscarPorId("p1")).thenReturn(Optional.of(alheio));
+
+        Projeto alteracao = new Projeto();
+        alteracao.setId("p1");
+
+        assertThrows(AccessDeniedException.class, () -> servico.buscarPorId("p1"));
+        assertThrows(AccessDeniedException.class, () -> servico.salvar(alteracao));
+        assertThrows(AccessDeniedException.class, () -> servico.deletarPorId("p1"));
+        assertThrows(AccessDeniedException.class, () -> servico.gerar("p1"));
+
+        Mockito.verify(repositorio, Mockito.never()).salvar(Mockito.any());
+        Mockito.verify(repositorio, Mockito.never()).deletarPorId(Mockito.any());
     }
 
     @Test
