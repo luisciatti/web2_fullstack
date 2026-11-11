@@ -36,6 +36,14 @@ public class SecurityConfig {
                 http
                                 .csrf(csrf -> csrf.disable())
 
+                                // Bloqueia scripts injetados (XSS). 'unsafe-inline' só em estilos:
+                                // o Mermaid gera <style> dentro do SVG.
+                                .headers(headers -> headers
+                                                .contentSecurityPolicy(csp -> csp.policyDirectives(
+                                                                "default-src 'self'; script-src 'self'; "
+                                                                                + "style-src 'self' 'unsafe-inline'; img-src 'self' data:; "
+                                                                                + "object-src 'none'; base-uri 'self'; frame-ancestors 'none'")))
+
                                 .sessionManagement(session -> session
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
