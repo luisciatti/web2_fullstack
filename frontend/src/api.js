@@ -21,6 +21,13 @@ export function clearAuth() {
     localStorage.removeItem(AUTH_KEY)
 }
 
+export function logout() {
+    const { refreshToken } = readAuth()
+    clearAuth()
+    // Revoga no servidor; se falhar, o usuário sai localmente mesmo assim
+    if (refreshToken) authRequest('/api/auth/logout', { refreshToken }).catch(() => {})
+}
+
 async function refreshOnce() {
     if (refreshPromise) return refreshPromise
     const auth = readAuth()

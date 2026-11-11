@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { apiFetch, saveAuth } from './api.js'
+import { apiFetch, logout, readAuth, saveAuth } from './api.js'
 
 describe('apiFetch', () => {
     beforeEach(() => {
@@ -44,5 +44,28 @@ describe('apiFetch', () => {
             'Sem permissão para esta ação.',
             'Sem permissão para esta ação.',
         ])
+    })
+
+    it('logout revoga o refresh token no servidor e limpa o navegador', () => {
+        saveAuth({ accessToken: 'acesso', refreshToken: 'refresh-atual' })
+        const fetchMock = vi.fn(async () => ({ ok: true, status: 204, headers: { get: () => '' } }))
+        vi.stubGlobal('fetch', fetchMock)
+
+        logout()
+
+        expect(fetchMock).toHaveBeenCalledWith('/api/auth/logout', expect.objectContaining({
+            method: 'POST',
+            body: JSON.stringify({ refreshToken: 'refresh-atual' }),
+        }))
+        expect(readAuth()).toEqual({ accessToken: '', refreshToken: '' })
+    })
+
+    it('logout sem token não chama o servidor', () => {
+        const fetchMock = vi.fn()
+        vi.stubGlobal('fetch', fetchMock)
+
+        logout()
+
+        expect(fetchMock).not.toHaveBeenCalled()
     })
 })
