@@ -26,6 +26,14 @@ class FrontendPublicAccessTest {
     }
 
     @Test
+    void respostasTrazemContentSecurityPolicy() throws Exception {
+        mockMvc.perform(get("/index.html"))
+                .andExpect(result -> assertThat(result.getResponse().getHeader("Content-Security-Policy"))
+                        .contains("script-src 'self'")
+                        .doesNotContain("unsafe-eval"));
+    }
+
+    @Test
     void apiProjetosSemTokenContinuaNegada() throws Exception {
         mockMvc.perform(get("/api/projetos"))
                 .andExpect(status().isForbidden());
