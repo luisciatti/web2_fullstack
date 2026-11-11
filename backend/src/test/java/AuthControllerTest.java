@@ -44,6 +44,9 @@ class AuthControllerTest {
     @Autowired
     private RefreshTokenRepositorio refreshTokenRepositorio;
 
+    @Autowired
+    private dao.jpa.RefreshTokenRepository refreshTokenRepository;
+
     @Test
     void registerValido_retorna201ComTokens() throws Exception {
         String email = "novo." + UUID.randomUUID() + "@example.com";
@@ -219,6 +222,46 @@ class AuthControllerTest {
                     .content(objectMapper.writeValueAsString(refresh)))
                     .andExpect(status().isUnauthorized());
         }
+    }
+
+    @Test
+    void loginsERefresh_deixamUmaUnicaLinhaDeTokenPorUsuario() throws Exception {
+        String email = "tabela." + UUID.randomUUID() + "@example.com";
+        RegistroRequest criar = new RegistroRequest();
+        criar.setNome("Tabela");
+        criar.setEmail(email);
+        criar.setSenha("senhaValida123");
+        mockMvc.perform(post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(criar)))
+                .andExpect(status().isCreated());
+
+        LoginRequest login = new LoginRequest();
+        login.setEmail(email);
+        login.setSenha("senhaValida123");
+        String loginJson = mockMvc.perform(post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(login)))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        RefreshTokenRequest refresh = new RefreshTokenRequest();
+        refresh.setRefreshToken(objectMapper.readTree(loginJson).get("refreshToken").asText());
+        mockMvc.perform(post("/api/auth/refresh")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(refresh)))
+                .andExpect(status().isOk());
+
+        // token antigo foi apagado: não renova de novo
+        mockMvc.perform(post("/api/auth/refresh")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(refresh)))
+                .andExpect(status().isUnauthorized());
+
+        String usuarioId = usuarioRepositorio.findByEmail(email).orElseThrow().getId();
+        assertThat(refreshTokenRepository.findAll())
+                .filteredOn(token -> token.getUsuario().getId().equals(usuarioId))
+                .hasSize(1);
     }
 
     private String salvarTokenAtivo(Usuario usuario) {

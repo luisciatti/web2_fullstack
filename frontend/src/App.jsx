@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import Editor from './Editor.jsx'
 import Login from './Login.jsx'
 import Projetos from './Projetos.jsx'
-import { readAuth } from './api.js'
+import { logout as encerrarSessao, readAuth } from './api.js'
 
 export default function App() {
   const [tela, setTela] = useState('login')
@@ -14,7 +14,7 @@ export default function App() {
   }, [])
 
   const logout = () => {
-    localStorage.removeItem('web2_min_auth')
+    encerrarSessao()
     setTela('login')
   }
 

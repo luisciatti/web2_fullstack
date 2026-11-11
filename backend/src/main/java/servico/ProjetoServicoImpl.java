@@ -101,30 +101,35 @@ public class ProjetoServicoImpl implements ProjetoServico {
         @Override
         public ResultadoGeracao gerar(String id) {
                 try {
-                        Authentication authentication = autenticacaoAtual();
-
-                        Projeto projeto = repositorio.buscarPorId(id)
-                                        .orElseThrow(() -> new IllegalArgumentException(
-                                                        "Projeto não encontrado: " + id));
-
-                        validarAcesso(projeto, authentication);
-
-                        String uml = geradorTemplate.gerarUml(projeto);
-                        String cloud = geradorTemplate.gerarDiagramaCloud(projeto);
-
-                        List<ArtefatoGerado> artefatos = geradorTemplate.gerarArtefatos(projeto);
-
-                        ResultadoGeracao resultado = new ResultadoGeracao(
-                                        projeto.getId(),
-                                        uml,
-                                        cloud,
-                                        artefatos);
+                        ResultadoGeracao resultado = visualizar(id);
                         metricasNegocio.registrarProjetoGeracaoSucesso();
                         return resultado;
                 } catch (RuntimeException e) {
                         metricasNegocio.registrarProjetoGeracaoFalha();
                         throw e;
                 }
+        }
+
+        @Override
+        public ResultadoGeracao visualizar(String id) {
+                Authentication authentication = autenticacaoAtual();
+
+                Projeto projeto = repositorio.buscarPorId(id)
+                                .orElseThrow(() -> new IllegalArgumentException(
+                                                "Projeto não encontrado: " + id));
+
+                validarAcesso(projeto, authentication);
+
+                String uml = geradorTemplate.gerarUml(projeto);
+                String cloud = geradorTemplate.gerarDiagramaCloud(projeto);
+
+                List<ArtefatoGerado> artefatos = geradorTemplate.gerarArtefatos(projeto);
+
+                return new ResultadoGeracao(
+                                projeto.getId(),
+                                uml,
+                                cloud,
+                                artefatos);
         }
 
         private Authentication autenticacaoAtual() {
