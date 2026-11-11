@@ -97,6 +97,20 @@ class ProjetoServicoImplTest {
     }
 
     @Test
+    void soGerarContaNaMetrica_visualizarNao() {
+        Projeto projeto = new Projeto();
+        projeto.setUsuarioId("usuario-teste");
+        when(repositorio.buscarPorId("1")).thenReturn(Optional.of(projeto));
+
+        servico.visualizar("1");
+        Mockito.verifyNoInteractions(metricasNegocio);
+
+        servico.gerar("1");
+        Mockito.verify(metricasNegocio).registrarProjetoGeracaoSucesso();
+        Mockito.verifyNoMoreInteractions(metricasNegocio);
+    }
+
+    @Test
     void gerar_comIdInexistente_deveLancarExcecao() {
         when(repositorio.buscarPorId("nao-existe")).thenReturn(Optional.empty());
 

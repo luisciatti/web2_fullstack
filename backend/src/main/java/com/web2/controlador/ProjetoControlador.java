@@ -124,7 +124,7 @@ public class ProjetoControlador {
             @ApiResponse(responseCode = "404", description = "Projeto não encontrado")
     })
     public List<ArtefatoGerado> artefatos(@PathVariable String id) {
-        return servico.gerar(id).artefatos();
+        return servico.visualizar(id).artefatos();
     }
 
     // GET /api/projetos/{id}/diagrama/uml
@@ -135,7 +135,7 @@ public class ProjetoControlador {
             @ApiResponse(responseCode = "404", description = "Projeto não encontrado")
     })
     public Map<String, String> diagramaUml(@PathVariable String id) {
-        return Map.of("uml", servico.gerar(id).uml());
+        return Map.of("uml", servico.visualizar(id).uml());
     }
 
     // GET /api/projetos/{id}/diagrama/cloud
@@ -146,7 +146,7 @@ public class ProjetoControlador {
             @ApiResponse(responseCode = "404", description = "Projeto não encontrado")
     })
     public Map<String, String> diagramaCloud(@PathVariable String id) {
-        return Map.of("cloud", servico.gerar(id).cloud());
+        return Map.of("cloud", servico.visualizar(id).cloud());
     }
 
     // Trata projeto não encontrado
