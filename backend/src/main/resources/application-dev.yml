@@ -1,0 +1,17 @@
+# Só para rodar na sua máquina: mvn spring-boot:run -Dspring-boot.run.profiles=dev
+# Nunca use este perfil num servidor acessível: o segredo JWT abaixo é público.
+spring:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:dev-only-secret-key-that-is-at-least-32-bytes-long}

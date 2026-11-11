@@ -43,12 +43,7 @@ public class ProjetoServicoImpl implements ProjetoServico {
                         return repositorio.buscarTodos();
                 }
 
-                String usuarioId = usuarioIdAtual(authentication);
-
-                return repositorio.buscarTodos()
-                                .stream()
-                                .filter(projeto -> Objects.equals(projeto.getUsuarioId(), usuarioId))
-                                .toList();
+                return repositorio.buscarPorUsuario(usuarioIdAtual(authentication));
         }
 
         @Override

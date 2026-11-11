@@ -11,6 +11,8 @@ import java.util.Optional;
 public interface ProjetoRepositorio {
     List<Projeto> buscarTodos();
 
+    List<Projeto> buscarPorUsuario(String usuarioId);
+
     // Optional força quem chama a tratar o caso "não encontrado"
     // por que Optional e não Projeto (que pode ser null)?
     Optional<Projeto> buscarPorId(String id);

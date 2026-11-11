@@ -105,6 +105,17 @@ class ProjetoServicoImplTest {
     }
 
     @Test
+    void buscarTodos_usuarioComum_consultaSoProjetosDele() {
+        Projeto meu = new Projeto();
+        meu.setUsuarioId("usuario-teste");
+        when(repositorio.buscarPorUsuario("usuario-teste")).thenReturn(List.of(meu));
+
+        assertEquals(List.of(meu), servico.buscarTodos());
+        // não pode carregar os projetos de todos os usuários
+        Mockito.verify(repositorio, Mockito.never()).buscarTodos();
+    }
+
+    @Test
     void salvar_deveDelegarParaRepositorio() {
         var projeto = new Projeto();
 
