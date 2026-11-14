@@ -1,12 +1,17 @@
-* {
+/* Importa os tokens */
+@import url('./styles/tokens.css');
+
+*,
+*::before,
+*::after {
     box-sizing: border-box;
 }
 
 body {
     margin: 0;
-    font-family: Arial, sans-serif;
-    background: #f3f4f6;
-    color: #111827;
+    font-family: var(--font-family);
+    background: var(--color-bg-page);
+    color: var(--color-text);
 }
 
 button,
@@ -16,26 +21,45 @@ select {
     font: inherit;
 }
 
+/* --- BOTÕES E ESTADOS DE INTERAÇÃO --- */
 button {
-    background: #111827;
-    color: white;
+    background: var(--color-primary);
+    color: var(--color-text-inverse);
     border: 0;
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     padding: 0.6rem 1rem;
     cursor: pointer;
+    transition: background-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+button:hover {
+    background: var(--color-primary-hover);
+}
+
+button:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-focus);
 }
 
 button.muted {
-    background: #e5e7eb;
-    color: #111827;
+    background: var(--color-border);
+    color: var(--color-text);
+}
+
+button.muted:hover {
+    background: var(--color-border-strong);
 }
 
 button.danger {
-    background: #b91c1c;
+    background: var(--color-danger);
+}
+
+button.danger:hover {
+    background: #991b1b;
 }
 
 button.active {
-    background: #2563eb;
+    background: var(--color-active);
 }
 
 button:disabled {
@@ -43,18 +67,53 @@ button:disabled {
     cursor: not-allowed;
 }
 
+/* --- FORMULÁRIOS E INPUTS --- */
+form {
+    display: grid;
+    gap: var(--space-4);
+}
+
+label {
+    display: grid;
+    gap: var(--space-1);
+    font-weight: var(--font-weight-semibold);
+}
+
+input,
+select,
+textarea {
+    width: 100%;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: var(--ring-focus);
+}
+
+textarea {
+    resize: vertical;
+}
+
+/* --- LAYOUT E COMPONENTES --- */
 .shell {
     min-height: 100vh;
-    padding: 1rem;
+    padding: var(--space-4);
     display: grid;
     place-items: center;
 }
 
 .card {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-    padding: 1.25rem;
+    background: var(--color-bg-white);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-card);
+    padding: var(--space-5);
 }
 
 .card.small {
@@ -65,34 +124,10 @@ button:disabled {
     width: min(1100px, 100%);
 }
 
-form {
-    display: grid;
-    gap: 0.85rem;
-}
-
-label {
-    display: grid;
-    gap: 0.35rem;
-    font-weight: 600;
-}
-
-input,
-select,
-textarea {
-    width: 100%;
-    padding: 0.65rem 0.75rem;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-}
-
-textarea {
-    resize: vertical;
-}
-
 .segmented {
     display: flex;
-    gap: 0.5rem;
-    margin: 1rem 0;
+    gap: var(--space-2);
+    margin: var(--space-4) 0;
 }
 
 .segmented button {
@@ -103,13 +138,13 @@ textarea {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
+    gap: var(--space-4);
+    margin-bottom: var(--space-4);
 }
 
 .actions {
     display: flex;
-    gap: 0.5rem;
+    gap: var(--space-2);
     flex-wrap: wrap;
 }
 
@@ -119,19 +154,20 @@ textarea {
 
 .inline {
     display: flex;
-    gap: 0.5rem;
+    gap: var(--space-2);
 }
 
+/* --- FEEDBACK E TABELAS --- */
 .error {
-    background: #fee2e2;
-    color: #991b1b;
-    border-radius: 8px;
+    background: var(--color-danger-bg);
+    color: var(--color-text-danger);
+    border-radius: var(--radius-md);
     padding: 0.7rem 0.8rem;
-    margin: 0.8rem 0;
+    margin: var(--space-3) 0;
 }
 
 .list-error ul {
-    margin: 0.5rem 0 0 1.25rem;
+    margin: var(--space-2) 0 0 1.25rem;
     padding: 0;
 }
 
@@ -142,65 +178,66 @@ table {
 
 th,
 td {
-    border-bottom: 1px solid #e5e7eb;
-    padding: 0.75rem;
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--space-3);
     text-align: left;
 }
 
+/* --- EDITOR E DIAGRAMAS --- */
 .editor-stack {
     display: grid;
-    gap: 1rem;
+    gap: var(--space-4);
 }
 
 fieldset {
-    border: 1px solid #d1d5db;
-    border-radius: 12px;
-    padding: 1rem;
-    background: #f9fafb;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-xl);
+    padding: var(--space-4);
+    background: var(--color-bg-subtle);
 }
 
 legend {
-    font-weight: bold;
-    padding: 0 0.5rem;
+    font-weight: var(--font-weight-bold);
+    padding: 0 var(--space-2);
 }
 
 .grid-2 {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1rem;
+    gap: var(--space-4);
 }
 
 .card-inside {
-    background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
-    padding: 0.75rem;
-    margin-top: 0.75rem;
+    background: var(--color-bg-white);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-3);
+    margin-top: var(--space-3);
 }
 
 .nested-list {
     display: grid;
-    gap: 0.75rem;
-    margin-top: 0.75rem;
+    gap: var(--space-3);
+    margin-top: var(--space-3);
 }
 
 .row-grid {
     display: grid;
     grid-template-columns: 1.2fr 1fr 1fr;
-    gap: 0.5rem;
+    gap: var(--space-2);
     align-items: center;
 }
 
 .mini-note {
-    color: #4b5563;
-    font-size: 0.9rem;
-    margin: 0 0 1rem;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    margin: 0 0 var(--space-4);
 }
 
 .editor-layout {
     display: grid;
     grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.9fr);
-    gap: 1rem;
+    gap: var(--space-4);
     align-items: start;
 }
 
@@ -212,14 +249,14 @@ legend {
 .diagrams {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 1rem;
+    gap: var(--space-4);
 }
 
 .diagram-box,
 .grupo {
-    background: #f9fafb;
-    border-radius: 10px;
-    padding: 1rem;
+    background: var(--color-bg-subtle);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
 }
 
 .diagram-placeholder,
@@ -229,59 +266,60 @@ legend {
     display: grid;
     place-items: center;
     text-align: center;
-    color: #4b5563;
-    border: 1px dashed #d1d5db;
-    border-radius: 8px;
-    background: #fff;
-    padding: 1rem;
+    color: var(--color-text-muted);
+    border: 1px dashed var(--color-border-strong);
+    border-radius: var(--radius-md);
+    background: var(--color-bg-white);
+    padding: var(--space-4);
 }
 
 .diagram-status.error {
-    color: #991b1b;
+    color: var(--color-text-danger);
     border-style: solid;
-    border-color: #fecaca;
-    background: #fff1f2;
+    border-color: var(--color-border-danger);
+    background: var(--color-danger-bg-alt);
 }
 
 .diagram-status.error p {
-    margin: 0.5rem 0 0;
+    margin: var(--space-2) 0 0;
 }
 
 .diagram-canvas {
     overflow: auto;
     max-height: 70vh;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    background: white;
-    padding: 0.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-bg-white);
+    padding: var(--space-2);
 }
 
 .artefatos {
     display: grid;
-    gap: 1rem;
-    margin-top: 1rem;
+    gap: var(--space-4);
+    margin-top: var(--space-4);
 }
 
 pre {
     white-space: pre-wrap;
-    background: white;
-    border-radius: 8px;
-    padding: 0.75rem;
+    background: var(--color-bg-white);
+    border-radius: var(--radius-md);
+    padding: var(--space-3);
     overflow: auto;
 }
 
 details {
-    background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 0.5rem 0.75rem;
+    background: var(--color-bg-white);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-2) var(--space-3);
 }
 
 summary {
     cursor: pointer;
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
 }
 
+/* --- RESPONSIVIDADE --- */
 @media (max-width: 900px) {
     .editor-layout {
         grid-template-columns: 1fr;
