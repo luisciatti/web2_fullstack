@@ -1,0 +1,343 @@
+/* Importa os tokens */
+@import url('./styles/tokens.css');
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: var(--font-family);
+    background: var(--color-bg-page);
+    color: var(--color-text);
+}
+
+button,
+input,
+textarea,
+select {
+    font: inherit;
+}
+
+/* --- BOTÕES E ESTADOS DE INTERAÇÃO --- */
+button {
+    background: var(--color-primary);
+    color: var(--color-text-inverse);
+    border: 0;
+    border-radius: var(--radius-sm);
+    padding: 0.6rem 1rem;
+    cursor: pointer;
+    transition: background-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+button:hover {
+    background: var(--color-primary-hover);
+}
+
+button:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-focus);
+}
+
+button.muted {
+    background: var(--color-border);
+    color: var(--color-text);
+}
+
+button.muted:hover {
+    background: var(--color-border-strong);
+}
+
+button.danger {
+    background: var(--color-danger);
+}
+
+button.danger:hover {
+    background: #991b1b;
+}
+
+button.active {
+    background: var(--color-active);
+}
+
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* --- FORMULÁRIOS E INPUTS --- */
+form {
+    display: grid;
+    gap: var(--space-4);
+}
+
+label {
+    display: grid;
+    gap: var(--space-1);
+    font-weight: var(--font-weight-semibold);
+}
+
+input,
+select,
+textarea {
+    width: 100%;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: var(--ring-focus);
+}
+
+textarea {
+    resize: vertical;
+}
+
+/* --- LAYOUT E COMPONENTES --- */
+.shell {
+    min-height: 100vh;
+    padding: var(--space-4);
+    display: grid;
+    place-items: center;
+}
+
+.card {
+    background: var(--color-bg-white);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-card);
+    padding: var(--space-5);
+}
+
+.card.small {
+    width: min(420px, 100%);
+}
+
+.card.wide {
+    width: min(1100px, 100%);
+}
+
+.segmented {
+    display: flex;
+    gap: var(--space-2);
+    margin: var(--space-4) 0;
+}
+
+.segmented button {
+    flex: 1;
+}
+
+.topline {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-4);
+    margin-bottom: var(--space-4);
+}
+
+.actions {
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+}
+
+.actions.end {
+    justify-content: flex-end;
+}
+
+.inline {
+    display: flex;
+    gap: var(--space-2);
+}
+
+/* --- FEEDBACK E TABELAS --- */
+.error {
+    background: var(--color-danger-bg);
+    color: var(--color-text-danger);
+    border-radius: var(--radius-md);
+    padding: 0.7rem 0.8rem;
+    margin: var(--space-3) 0;
+}
+
+.list-error ul {
+    margin: var(--space-2) 0 0 1.25rem;
+    padding: 0;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--space-3);
+    text-align: left;
+}
+
+/* --- EDITOR E DIAGRAMAS --- */
+.editor-stack {
+    display: grid;
+    gap: var(--space-4);
+}
+
+fieldset {
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-xl);
+    padding: var(--space-4);
+    background: var(--color-bg-subtle);
+}
+
+legend {
+    font-weight: var(--font-weight-bold);
+    padding: 0 var(--space-2);
+}
+
+.grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-4);
+}
+
+.card-inside {
+    background: var(--color-bg-white);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-3);
+    margin-top: var(--space-3);
+}
+
+.nested-list {
+    display: grid;
+    gap: var(--space-3);
+    margin-top: var(--space-3);
+}
+
+.row-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1fr;
+    gap: var(--space-2);
+    align-items: center;
+}
+
+.mini-note {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    margin: 0 0 var(--space-4);
+}
+
+.editor-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.9fr);
+    gap: var(--space-4);
+    align-items: start;
+}
+
+.uml-panel {
+    position: sticky;
+    top: 16px;
+}
+
+.diagrams {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+}
+
+.diagram-box,
+.grupo {
+    background: var(--color-bg-subtle);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+}
+
+.diagram-placeholder,
+.diagram-status {
+    margin: 0;
+    min-height: 120px;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    color: var(--color-text-muted);
+    border: 1px dashed var(--color-border-strong);
+    border-radius: var(--radius-md);
+    background: var(--color-bg-white);
+    padding: var(--space-4);
+}
+
+.diagram-status.error {
+    color: var(--color-text-danger);
+    border-style: solid;
+    border-color: var(--color-border-danger);
+    background: var(--color-danger-bg-alt);
+}
+
+.diagram-status.error p {
+    margin: var(--space-2) 0 0;
+}
+
+.diagram-canvas {
+    overflow: auto;
+    max-height: 70vh;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-bg-white);
+    padding: var(--space-2);
+}
+
+.artefatos {
+    display: grid;
+    gap: var(--space-4);
+    margin-top: var(--space-4);
+}
+
+pre {
+    white-space: pre-wrap;
+    background: var(--color-bg-white);
+    border-radius: var(--radius-md);
+    padding: var(--space-3);
+    overflow: auto;
+}
+
+details {
+    background: var(--color-bg-white);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-2) var(--space-3);
+}
+
+summary {
+    cursor: pointer;
+    font-weight: var(--font-weight-semibold);
+}
+
+/* --- RESPONSIVIDADE --- */
+@media (max-width: 900px) {
+    .editor-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .uml-panel {
+        position: static;
+    }
+}
+
+@media (max-width: 780px) {
+
+    .grid-2,
+    .row-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .topline {
+        display: block;
+    }
+}
