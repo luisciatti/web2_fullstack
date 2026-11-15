@@ -3,6 +3,41 @@ import { useEffect, useMemo, useState } from 'react'
 import { apiFetch } from './api.js'
 import './Projetos.css'
 
+function normalizarTexto(valor) {
+    return String(valor ?? '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLocaleLowerCase('pt-BR')
+}
+
+export function filtrarEOrdenarProjetos(
+    lista,
+    busca,
+    ordenacao = 'az'
+) {
+    const termo = normalizarTexto(busca).trim()
+
+    const comparador = new Intl.Collator('pt-BR', {
+        sensitivity: 'base',
+        numeric: true
+    })
+
+    return (Array.isArray(lista) ? lista : [])
+        .filter((projeto) =>
+            normalizarTexto(projeto?.nome).includes(termo)
+        )
+        .sort((a, b) => {
+            const resultado = comparador.compare(
+                String(a?.nome ?? ''),
+                String(b?.nome ?? '')
+            )
+
+            return ordenacao === 'za'
+                ? -resultado
+                : resultado
+        })
+}
+
 export async function buscarProjetos() {
     const dados = await apiFetch('/api/projetos')
 
@@ -115,6 +150,7 @@ export default function Projetos({ onNew, onOpen, onLogout }) {
     const [erro, setErro] = useState('')
     const [carregando, setCarregando] = useState(true)
     const [busca, setBusca] = useState('')
+    const [ordenacao, setOrdenacao] = useState('az')
     const [sessaoExpirada, setSessaoExpirada] = useState(false)
 
     // Busca a lista de projetos do usuário.
@@ -159,21 +195,8 @@ export default function Projetos({ onNew, onOpen, onLogout }) {
 
     // Filtra os projetos localmente.
     const projetosFiltrados = useMemo(() => {
-        const termo = busca.trim().toLowerCase()
-
-        if (!termo) return lista
-
-        return lista.filter((projeto) =>
-            [
-                projeto.nome,
-                projeto.linguagem,
-                projeto.framework,
-                projeto.provedorCloud
-            ].some((campo) =>
-                String(campo || '').toLowerCase().includes(termo)
-            )
-        )
-    }, [lista, busca])
+        return filtrarEOrdenarProjetos(lista, busca, ordenacao)
+    }, [lista, busca, ordenacao])
 
     // Indicadores calculados a partir dos dados recebidos.
     const projetosComClasses = lista.filter(
@@ -268,7 +291,8 @@ export default function Projetos({ onNew, onOpen, onLogout }) {
                     className="projects-section"
                     aria-label="Lista de projetos"
                 >
-                    <div className="projects-toolbar">
+                <div className="projects-toolbar">
+                    <div className="projects-filters">
                         <input
                             type="search"
                             className="projects-search"
@@ -277,6 +301,22 @@ export default function Projetos({ onNew, onOpen, onLogout }) {
                             value={busca}
                             onChange={(event) => setBusca(event.target.value)}
                         />
+
+                        <label className="projects-sort-control">
+                            <span>Ordenar por</span>
+
+                            <select
+                                className="projects-sort"
+                                value={ordenacao}
+                                onChange={(event) =>
+                                    setOrdenacao(event.target.value)
+                                }
+                            >
+                                <option value="az">Nome: A–Z</option>
+                                <option value="za">Nome: Z–A</option>
+                            </select>
+                        </label>
+                    </div>
 
                         <span
                             className="projects-count"
@@ -345,14 +385,14 @@ export default function Projetos({ onNew, onOpen, onLogout }) {
                             </span>
 
                             <h2>
-                                {busca
+                                {busca.trim()
                                     ? 'Nenhum projeto encontrado'
                                     : 'Você ainda não tem projetos'
                                 }
                             </h2>
 
                             <p>
-                                {busca
+                                {busca.trim()
                                     ? 'Tente pesquisar outro nome ou tecnologia.'
                                     : 'Crie seu primeiro projeto para começar seus diagramas.'
                                 }
@@ -361,9 +401,9 @@ export default function Projetos({ onNew, onOpen, onLogout }) {
                             <button
                                 type="button"
                                 className="projects-btn projects-btn-primary"
-                                onClick={busca ? () => setBusca('') : onNew}
+                                onClick={busca.trim() ? () => setBusca('') : onNew}
                             >
-                                {busca ? 'Limpar busca' : '+ Criar projeto'}
+                                {busca.trim() ? 'Limpar busca' : '+ Criar projeto'}
                             </button>
                         </div>
                     )}

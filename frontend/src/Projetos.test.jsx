@@ -2,7 +2,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { apiFetch } from './api.js'
 import {
     buscarProjetos,
-    interpretarErroProjetos
+    interpretarErroProjetos,
+    filtrarEOrdenarProjetos
 } from './Projetos.jsx'
 
 vi.mock('./api.js', () => ({
@@ -82,5 +83,97 @@ describe('FE-12 — Listagem de projetos', () => {
         expect(resultado.mensagem).toBe(
             'Não consegui falar com o servidor'
         )
+    })
+})
+
+describe('FE-13 — Busca e ordenação de projetos', () => {
+    const projetos = [
+        { id: 1, nome: 'Zebra' },
+        { id: 2, nome: 'Árvore' },
+        { id: 3, nome: 'Biblioteca' },
+        { id: 4, nome: 'Ética' }
+    ]
+
+    it('encontra projetos pelo nome parcial', () => {
+        const resultado = filtrarEOrdenarProjetos(
+            [{ id: 1, nome: 'PedidoOnline' },
+             { id: 2, nome: 'Cliente' }],
+            'ped',
+            'az'
+        )
+
+        expect(resultado.map((p) => p.nome)).toEqual([
+            'PedidoOnline'
+        ])
+    })
+
+    it('ignora maiúsculas, minúsculas e acentos na busca', () => {
+        const resultado = filtrarEOrdenarProjetos(
+            projetos,
+            'ARVORE',
+            'az'
+        )
+
+        expect(resultado.map((p) => p.nome)).toEqual([
+            'Árvore'
+        ])
+    })
+
+    it('mostra todos os projetos quando a busca está vazia', () => {
+        const resultado = filtrarEOrdenarProjetos(
+            projetos,
+            '',
+            'az'
+        )
+
+        expect(resultado).toHaveLength(4)
+    })
+
+    it('ordena A–Z respeitando caracteres acentuados', () => {
+        const resultado = filtrarEOrdenarProjetos(
+            projetos,
+            '',
+            'az'
+        )
+
+        expect(resultado.map((p) => p.nome)).toEqual([
+            'Árvore',
+            'Biblioteca',
+            'Ética',
+            'Zebra'
+        ])
+    })
+
+    it('ordena Z–A respeitando caracteres acentuados', () => {
+        const resultado = filtrarEOrdenarProjetos(
+            projetos,
+            '',
+            'za'
+        )
+
+        expect(resultado.map((p) => p.nome)).toEqual([
+            'Zebra',
+            'Ética',
+            'Biblioteca',
+            'Árvore'
+        ])
+    })
+
+    it('retorna vazio quando nenhum nome corresponde', () => {
+        const resultado = filtrarEOrdenarProjetos(
+            projetos,
+            'Inexistente',
+            'az'
+        )
+
+        expect(resultado).toEqual([])
+    })
+
+    it('não modifica a ordem da lista original', () => {
+        const original = projetos.map((p) => p.nome)
+
+        filtrarEOrdenarProjetos(projetos, '', 'az')
+
+        expect(projetos.map((p) => p.nome)).toEqual(original)
     })
 })
