@@ -1,7 +1,45 @@
 
 import { useEffect, useMemo, useState } from 'react'
-import { apiFetch, clearAuth } from './api.js'
+import { apiFetch } from './api.js'
 import './Projetos.css'
+
+export async function buscarProjetos() {
+    const dados = await apiFetch('/api/projetos')
+
+    if (!Array.isArray(dados)) {
+        throw new Error(
+            'Resposta inesperada do servidor ao listar projetos.'
+        )
+    }
+
+    if (dados.some((projeto) =>
+        !projeto ||
+        typeof projeto !== 'object' ||
+        projeto.id == null
+    )) {
+        throw new Error(
+            'A lista contém informações inválidas de projetos.'
+        )
+    }
+
+    return dados
+}
+
+export function interpretarErroProjetos(error) {
+    const mensagemOriginal = error instanceof Error
+        ? error.message
+        : 'Não foi possível carregar os projetos.'
+
+    const sessaoExpirada =
+        mensagemOriginal === 'Sessão expirada. Entre novamente.'
+
+    return {
+        sessaoExpirada,
+        mensagem: sessaoExpirada
+            ? 'Sua sessão expirou. Entre novamente para acessar seus projetos.'
+            : mensagemOriginal
+    }
+}
 
 // Representa visualmente um projeto na listagem.
 function ProjetoCard({ projeto, onOpen, onDelete }) {
@@ -77,27 +115,28 @@ export default function Projetos({ onNew, onOpen, onLogout }) {
     const [erro, setErro] = useState('')
     const [carregando, setCarregando] = useState(true)
     const [busca, setBusca] = useState('')
+    const [sessaoExpirada, setSessaoExpirada] = useState(false)
 
     // Busca a lista de projetos do usuário.
     const carregar = async () => {
-        setCarregando(true)
+    setCarregando(true)
+    setErro('')
+    setSessaoExpirada(false)
 
-        try {
-            const dados = await apiFetch('/api/projetos')
+    try {
+        const projetos = await buscarProjetos()
 
-            setLista(Array.isArray(dados) ? dados : [])
-            setErro('')
-        } catch (err) {
-            setErro(err.message)
+        setLista(projetos)
+    } catch (error) {
+        const resultado = interpretarErroProjetos(error)
 
-            if (err.message === 'Sessão expirada. Entre novamente.') {
-                clearAuth()
-                onLogout()
-            }
-        } finally {
-            setCarregando(false)
-        }
+        setLista([])
+        setErro(resultado.mensagem)
+        setSessaoExpirada(resultado.sessaoExpirada)
+    } finally {
+        setCarregando(false)
     }
+}
 
     useEffect(() => {
         carregar()
@@ -245,25 +284,37 @@ export default function Projetos({ onNew, onOpen, onLogout }) {
                         >
                             {carregando
                                 ? 'Carregando...'
-                                : `${projetosFiltrados.length} ${
-                                    projetosFiltrados.length === 1
-                                        ? 'projeto encontrado'
-                                        : 'projetos encontrados'
-                                }`
+                                : erro
+                                    ? 'Projetos indisponíveis'
+                                    : `${projetosFiltrados.length} ${
+                                        projetosFiltrados.length === 1
+                                            ? 'projeto encontrado'
+                                            : 'projetos encontrados'
+                                    }`
                             }
                         </span>
                     </div>
 
-                    {erro && (
+                    {erro && !carregando && (
                         <div className="projects-error" role="alert">
+                            <h2>
+                                {sessaoExpirada
+                                    ? 'Sessão expirada'
+                                    : 'Não foi possível carregar seus projetos'
+                                }
+                            </h2>
+
                             <p>{erro}</p>
 
                             <button
                                 type="button"
                                 className="projects-btn projects-btn-secondary"
-                                onClick={carregar}
+                                onClick={sessaoExpirada ? onLogout : carregar}
                             >
-                                Tentar novamente
+                                {sessaoExpirada
+                                    ? 'Entrar novamente'
+                                    : 'Tentar novamente'
+                                }
                             </button>
                         </div>
                     )}
