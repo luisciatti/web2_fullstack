@@ -5,8 +5,8 @@ import DiagramPreview from './components/public/DiagramPreview.jsx'
 import PublicButton from './components/public/PublicButton.jsx'
 import './Login.css'
 
-export default function Login({ onLoggedIn, onLogin, onSignup }) {
-    const [modo, setModo] = useState('login')
+export default function Login({ onLoggedIn, onLogin, onSignup, modoInicial = 'login' }) {
+    const [modo, setModo] = useState(modoInicial === 'cadastro' ? 'cadastro' : 'login')
     const [form, setForm] = useState({ nome: '', email: '', senha: '' })
     const [erro, setErro] = useState('')
     const [loading, setLoading] = useState(false)
@@ -70,7 +70,7 @@ export default function Login({ onLoggedIn, onLogin, onSignup }) {
                             Início
                         </a>
                         <a href="#sobre-o-projeto" className="public-nav__about">
-                            Sobre o projeto
+                            Sobre nós
                         </a>
                         <PublicButton
                             className="public-nav__signup"

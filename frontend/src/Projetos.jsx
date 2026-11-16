@@ -318,13 +318,19 @@ export default function Projetos({ onNew, onOpen, onLogout }) {
                         Meus projetos
                     </span>
 
-                    <button
-                        type="button"
-                        className="projects-btn projects-btn-secondary"
-                        onClick={onLogout}
-                    >
-                        Sair
-                    </button>
+                    <div className="projects-header-actions">
+                        <a href="#sobre-o-projeto" className="projects-about-link">
+                            Sobre nós
+                        </a>
+
+                        <button
+                            type="button"
+                            className="projects-btn projects-btn-secondary"
+                            onClick={onLogout}
+                        >
+                            Sair
+                        </button>
+                    </div>
                 </div>
             </header>
 
