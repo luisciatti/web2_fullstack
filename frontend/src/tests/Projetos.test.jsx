@@ -8,7 +8,7 @@ import {
     removerProjetoDaLista
 } from '../Projetos.jsx'
 
-vi.mock('./api.js', () => ({
+vi.mock('../api.js', () => ({
     apiFetch: vi.fn()
 }))
 
