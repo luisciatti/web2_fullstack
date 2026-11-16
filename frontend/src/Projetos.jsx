@@ -1,5 +1,4 @@
-
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { apiFetch } from './api.js'
 import './Projetos.css'
 
@@ -76,8 +75,53 @@ export function interpretarErroProjetos(error) {
     }
 }
 
+export async function excluirProjetoConfirmado(
+    projeto,
+    {
+        confirmar = (mensagem) => window.confirm(mensagem),
+        aoConfirmar = () => {},
+        requisicao = apiFetch
+    } = {}
+) {
+    if (projeto?.id == null) {
+        throw new Error('Projeto sem identificador válido.')
+    }
+
+    const nome = String(projeto.nome || 'sem nome')
+
+    const confirmado = confirmar(
+        `Deseja excluir permanentemente o projeto "${nome}"?\n\n` +
+        'Esta ação não pode ser desfeita.'
+    )
+
+    if (!confirmado) {
+        return false
+    }
+
+    aoConfirmar()
+
+    await requisicao(
+        `/api/projetos/${encodeURIComponent(String(projeto.id))}`,
+        { method: 'DELETE' }
+    )
+
+    return true
+}
+
+export function removerProjetoDaLista(lista, id) {
+    return lista.filter(
+        (projeto) => String(projeto.id) !== String(id)
+    )
+}
+
 // Representa visualmente um projeto na listagem.
-function ProjetoCard({ projeto, onOpen, onDelete }) {
+function ProjetoCard({
+    projeto,
+    onOpen,
+    onDelete,
+    excluindo,
+    exclusaoEmAndamento
+}) {
     const quantidadeClasses = Array.isArray(projeto.classes)
         ? projeto.classes.length
         : 0
@@ -133,11 +177,17 @@ function ProjetoCard({ projeto, onOpen, onDelete }) {
                 <button
                     type="button"
                     className="projects-btn projects-btn-delete"
-                    onClick={() => onDelete(projeto.id)}
-                    aria-label={`Excluir projeto ${projeto.nome || 'sem nome'}`}
+                    onClick={() => onDelete(projeto)}
+                    disabled={exclusaoEmAndamento}
+                    aria-busy={excluindo}
+                    aria-label={
+                        excluindo
+                            ? `Excluindo projeto ${projeto.nome || 'sem nome'}`
+                            : `Excluir projeto ${projeto.nome || 'sem nome'}`
+                    }
                     title="Excluir projeto"
                 >
-                    Excluir
+                    {excluindo ? 'Excluindo...' : 'Excluir'}
                 </button>
             </div>
         </article>
@@ -152,6 +202,21 @@ export default function Projetos({ onNew, onOpen, onLogout }) {
     const [busca, setBusca] = useState('')
     const [ordenacao, setOrdenacao] = useState('az')
     const [sessaoExpirada, setSessaoExpirada] = useState(false)
+    const [excluindoId, setExcluindoId] = useState(null)
+    const [erroExclusao, setErroExclusao] = useState('')
+    const [sessaoExpiradaExclusao, setSessaoExpiradaExclusao] = useState(false)
+    const [projetoParaExcluir, setProjetoParaExcluir] = useState(null)
+    const dialogExclusaoRef = useRef(null)
+
+    useEffect(() => {
+        if (
+            projetoParaExcluir &&
+            dialogExclusaoRef.current &&
+            !dialogExclusaoRef.current.open
+        ) {
+            dialogExclusaoRef.current.showModal()
+        }
+    }, [projetoParaExcluir])
 
     // Busca a lista de projetos do usuário.
     const carregar = async () => {
@@ -179,17 +244,43 @@ export default function Projetos({ onNew, onOpen, onLogout }) {
     }, [])
 
     // Mantém a exclusão que já funcionava antes.
-    const excluir = async (id) => {
-        if (!window.confirm('Excluir este projeto?')) return
+    const solicitarExclusao = (projeto) => {
+        if (excluindoId !== null) return
+
+        setErroExclusao('')
+        setSessaoExpiradaExclusao(false)
+        setProjetoParaExcluir(projeto)
+    }
+
+    const excluir = async () => {
+        const projeto = projetoParaExcluir
+
+        if (!projeto || excluindoId !== null) return
 
         try {
-            await apiFetch(`/api/projetos/${id}`, {
-                method: 'DELETE'
-            })
+            const excluido = await excluirProjetoConfirmado(
+                projeto,
+                {
+                    confirmar: () => true,
+                    aoConfirmar: () => setExcluindoId(projeto.id)
+                }
+            )
 
-            await carregar()
-        } catch (err) {
-            setErro(err.message)
+            if (excluido) {
+                setLista((anterior) =>
+                    removerProjetoDaLista(anterior, projeto.id)
+                )
+
+                setProjetoParaExcluir(null)
+            }
+        } catch (error) {
+            const resultado = interpretarErroProjetos(error)
+
+            setErroExclusao(resultado.mensagem)
+            setSessaoExpiradaExclusao(resultado.sessaoExpirada)
+            setProjetoParaExcluir(null)
+        } finally {
+            setExcluindoId(null)
         }
     }
 
@@ -335,6 +426,34 @@ export default function Projetos({ onNew, onOpen, onLogout }) {
                         </span>
                     </div>
 
+                    {erroExclusao && (
+                        <div className="projects-action-error" role="alert">
+                            <p>
+                                <strong>Não foi possível excluir o projeto.</strong>
+                                {' '}
+                                {erroExclusao}
+                            </p>
+
+                            {sessaoExpiradaExclusao ? (
+                                <button
+                                    type="button"
+                                    className="projects-btn projects-btn-secondary"
+                                    onClick={onLogout}
+                                >
+                                    Entrar novamente
+                                </button>
+                            ) : (
+                                <button
+                                    type="button"
+                                    className="projects-btn projects-btn-secondary"
+                                    onClick={() => setErroExclusao('')}
+                                >
+                                    Fechar
+                                </button>
+                            )}
+                        </div>
+                    )}
+
                     {erro && !carregando && (
                         <div className="projects-error" role="alert">
                             <h2>
@@ -372,7 +491,12 @@ export default function Projetos({ onNew, onOpen, onLogout }) {
                                     key={projeto.id}
                                     projeto={projeto}
                                     onOpen={onOpen}
-                                    onDelete={excluir}
+                                    onDelete={solicitarExclusao}
+                                    excluindo={
+                                        excluindoId !== null &&
+                                        String(excluindoId) === String(projeto.id)
+                                    }
+                                    exclusaoEmAndamento={excluindoId !== null}
                                 />
                             ))}
                         </div>
@@ -408,6 +532,59 @@ export default function Projetos({ onNew, onOpen, onLogout }) {
                         </div>
                     )}
                 </section>
+                {/* Modal de confirmação de exclusão */}
+                {projetoParaExcluir && (
+                    <dialog
+                        ref={dialogExclusaoRef}
+                        className="projects-delete-dialog"
+                        aria-labelledby="projects-delete-title"
+                        aria-describedby="projects-delete-description"
+                        onCancel={(event) => {
+                            event.preventDefault()
+
+                            if (excluindoId === null) {
+                                setProjetoParaExcluir(null)
+                            }
+                        }}
+                    >
+                        <h2 id="projects-delete-title">
+                            Excluir projeto?
+                        </h2>
+
+                        <p id="projects-delete-description">
+                            Você está prestes a excluir permanentemente o projeto{' '}
+                            <strong>
+                                "{projetoParaExcluir.nome || 'sem nome'}"
+                            </strong>.
+                            {' '}Esta ação não pode ser desfeita.
+                        </p>
+
+                        <div className="projects-delete-dialog-actions">
+                            <button
+                                type="button"
+                                className="projects-btn projects-btn-secondary"
+                                onClick={() => setProjetoParaExcluir(null)}
+                                disabled={excluindoId !== null}
+                                autoFocus
+                            >
+                                Cancelar
+                            </button>
+
+                            <button
+                                type="button"
+                                className="projects-btn projects-btn-danger"
+                                onClick={excluir}
+                                disabled={excluindoId !== null}
+                                aria-busy={excluindoId !== null}
+                            >
+                                {excluindoId !== null
+                                    ? 'Excluindo...'
+                                    : 'Sim, excluir projeto'
+                                }
+                            </button>
+                        </div>
+                    </dialog>
+                )}
 
                 <p className="projects-footer">
                     Seus projetos ficam disponíveis apenas para sua conta.
