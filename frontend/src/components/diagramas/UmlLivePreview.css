@@ -1,0 +1,63 @@
+.uml-live-preview {
+    box-sizing: border-box;
+    min-width: 0;
+    padding: 1.5rem;
+    border: 1px solid var(--color-border, #e5e7eb);
+    border-radius: var(--radius-lg, 10px);
+    background: #f5f8fa;
+    color: var(--color-text, #111827);
+    font-family: var(--font-family, system-ui, sans-serif);
+}
+
+.uml-live-preview__header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: .5rem;
+    margin-bottom: 1rem;
+}
+
+.uml-live-preview__header h3 { margin: 0; font-size: .6875rem; font-weight: 600; text-transform: uppercase; color: #697882; }
+.uml-live-preview__header span { font-size: .875rem; color: var(--color-text-muted, #4b5563); }
+
+.uml-live-preview__message {
+    box-sizing: border-box;
+    display: grid;
+    place-items: center;
+    min-height: 180px;
+    margin: 0;
+    padding: 1rem;
+    text-align: center;
+    border: 1px dashed var(--color-border-strong, #d1d5db);
+    border-radius: var(--radius-md, 8px);
+    background: var(--color-bg-white, #fff);
+    color: var(--color-text-muted, #4b5563);
+}
+
+.uml-live-preview__message--error {
+    border-style: solid;
+    border-color: var(--color-border-danger, #fecaca);
+    background: var(--color-danger-bg-alt, #fff1f2);
+    color: var(--color-text-danger, #991b1b);
+}
+
+.uml-live-preview__canvas {
+    overflow: auto;
+    max-height: 70vh;
+    padding: .5rem;
+    border: 1px solid var(--color-border, #e5e7eb);
+    border-radius: var(--radius-md, 8px);
+    background: transparent;
+    min-height: 360px;
+}
+
+.uml-live-preview__canvas svg { display: block; margin: auto; zoom: var(--uml-zoom, 1); }
+.uml-live-preview__temporary { position: absolute; left: -100000px; top: 0; visibility: hidden; pointer-events: none; }
+
+.uml-live-preview__zoom { display: flex; align-items: center; border: 1px solid #dee5eb; border-radius: 9px; background: #fff; color: var(--color-primary, #0b3b50); }
+.uml-live-preview__zoom output { min-width: 3rem; text-align: center; font-size: .8125rem; }
+.uml-live-preview__zoom button { padding: .5rem; border: 0; background: transparent; color: inherit; box-shadow: none; min-width: 2rem; cursor: pointer; }
+.uml-live-preview__zoom button:disabled { opacity: .4; cursor: default; }
+.uml-live-preview__zoom button:focus-visible, .uml-live-preview__canvas:focus-visible { outline: 2px solid var(--color-primary, #0b3b50); outline-offset: 2px; }
+@media (max-width: 600px) { .uml-live-preview { padding: 1rem; } .uml-live-preview__canvas { min-height: 240px; } }

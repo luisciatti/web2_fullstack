@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import JSZip from 'jszip'
+import UmlLivePreview from './components/diagramas/UmlLivePreview.jsx'
 import { apiFetch, clearAuth } from './api.js'
 
 const TIPOS_ATRIBUTO = ['String', 'Long', 'Integer', 'Double', 'BigDecimal', 'Boolean', 'LocalDate', 'LocalDateTime']
@@ -326,7 +327,6 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
             }
         }
 
-        renderDiagram('uml', 'uml-diagram', resultado?.uml)
         renderDiagram('cloud', 'cloud-diagram', resultado?.cloud)
 
         return () => {
@@ -794,13 +794,7 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
                     </div>
 
                     <aside className="uml-panel">
-                        <DiagramPanel
-                            title="UML"
-                            status={diagramState.uml.status}
-                            diagram={diagramState.uml.diagram || resultado?.uml || ''}
-                            error={diagramState.uml.error}
-                            emptyMessage="A UML aparece aqui depois de Salvar e gerar."
-                        />
+                        <UmlLivePreview projeto={project} />
                     </aside>
                 </div>
 
