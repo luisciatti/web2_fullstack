@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { apiFetch } from './api.js'
+import { apiFetch } from '../api.js'
 import {
     buscarProjetos,
     interpretarErroProjetos,
     filtrarEOrdenarProjetos,
     excluirProjetoConfirmado,
     removerProjetoDaLista
-} from './Projetos.jsx'
+} from '../Projetos.jsx'
 
 vi.mock('./api.js', () => ({
     apiFetch: vi.fn()
@@ -99,7 +99,7 @@ describe('FE-13 — Busca e ordenação de projetos', () => {
     it('encontra projetos pelo nome parcial', () => {
         const resultado = filtrarEOrdenarProjetos(
             [{ id: 1, nome: 'PedidoOnline' },
-             { id: 2, nome: 'Cliente' }],
+            { id: 2, nome: 'Cliente' }],
             'ped',
             'az'
         )
