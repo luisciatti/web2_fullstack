@@ -1,0 +1,152 @@
+import { describe, expect, it } from 'vitest'
+import { gerarMermaidUml } from './gerarMermaidUml.js'
+
+function obterIds(diagrama) {
+    return [...diagrama.matchAll(/^\s*class (\w+)\[/gm)].map((resultado) => resultado[1])
+}
+
+// Mesmo formato do EXEMPLO_PROJETO de Editor.jsx, sem importar a camada visual.
+function exemploProjeto() {
+    return {
+        nome: 'Pedido',
+        classes: [
+            {
+                nome: 'Pedido',
+                atributos: [{ nome: 'id', tipo: 'Long' }, { nome: 'valor', tipo: 'BigDecimal' }],
+                metodos: [{ nome: 'calcularTotal', tipoRetorno: 'BigDecimal' }],
+            },
+            {
+                nome: 'Cliente',
+                atributos: [{ nome: 'id', tipo: 'Long' }, { nome: 'nome', tipo: 'String' }],
+                metodos: [],
+            },
+        ],
+        relacoes: [{ origem: 'Pedido', destino: 'Cliente', tipo: 'MANY_TO_ONE' }],
+    }
+}
+
+describe('gerarMermaidUml', () => {
+    it('retorna classDiagram para projetos vazios ou ausentes', () => {
+        for (const projeto of [undefined, null, {}, { classes: [], relacoes: [] }]) {
+            expect(gerarMermaidUml(projeto)).toBe('classDiagram')
+        }
+    })
+
+    it('gera uma classe, atributo e método', () => {
+        const diagrama = gerarMermaidUml({ classes: [exemploProjeto().classes[0]] })
+        const [id] = obterIds(diagrama)
+        expect(obterIds(diagrama)).toHaveLength(1)
+        expect(diagrama.startsWith('classDiagram\n')).toBe(true)
+        expect(diagrama).toContain(`class ${id}["Pedido"]`)
+        expect(diagrama).toContain(`${id} : valor: BigDecimal`)
+        expect(diagrama).toContain(`${id} : calcularTotal() BigDecimal`)
+    })
+
+    it.each([
+        ['ONE_TO_ONE', '1', '1'],
+        ['ONE_TO_MANY', '1', '*'],
+        ['MANY_TO_ONE', '*', '1'],
+        ['MANY_TO_MANY', '*', '*'],
+    ])('converte a cardinalidade %s', (tipo, origem, destino) => {
+        const projeto = exemploProjeto()
+        projeto.relacoes[0].tipo = tipo
+        const diagrama = gerarMermaidUml(projeto)
+        const [pedido, cliente] = obterIds(diagrama)
+        expect(diagrama).toContain(`${pedido} "${origem}" -- "${destino}" ${cliente}`)
+    })
+
+    it('tolera nomes parciais e membros incompletos', () => {
+        const diagrama = gerarMermaidUml({
+            classes: [{ nome: '' }, { nome: '   ' }, {
+                nome: 'P',
+                atributos: [{ nome: '', tipo: 'String' }, { nome: 'descricao', tipo: '' }],
+                metodos: [{ nome: '', tipoRetorno: 'void' }, { nome: 'calcular', tipoRetorno: '' }],
+            }],
+        })
+        const [id] = obterIds(diagrama)
+        expect(obterIds(diagrama)).toHaveLength(1)
+        expect(diagrama).toContain(`class ${id}["P"]`)
+        expect(diagrama).toContain(`${id} : descricao`)
+        expect(diagrama).toContain(`${id} : calcular()`)
+        expect(diagrama).not.toContain('undefined')
+    })
+
+    it('ignora relações incompletas, desconhecidas e sem classes existentes', () => {
+        const projeto = exemploProjeto()
+        projeto.relacoes = [
+            { origem: '', destino: 'Cliente', tipo: 'ONE_TO_ONE' },
+            { origem: 'Pedido', destino: '', tipo: 'ONE_TO_ONE' },
+            { origem: 'Pedido', destino: 'Cliente', tipo: '' },
+            { origem: 'Pedido', destino: 'Inexistente', tipo: 'ONE_TO_ONE' },
+            { origem: 'Pedido', destino: 'Cliente', tipo: 'INVALIDO' },
+        ]
+        expect(gerarMermaidUml(projeto)).not.toContain(' -- ')
+    })
+
+    it('impede que símbolos e quebras de linha criem comandos', () => {
+        const diagrama = gerarMermaidUml({ classes: [{
+            nome: 'Pedido"]\nclick X "javascript:alert(1)',
+            atributos: [{ nome: 'valor\n}\nclass Injetada {', tipo: '<script>' }],
+            metodos: [{ nome: 'calcular()', tipoRetorno: 'void' }],
+        }] })
+        expect(obterIds(diagrama)).toHaveLength(1)
+        expect(diagrama.split('\n')).toHaveLength(4)
+        for (const simbolo of ['javascript:', '<script>', '{', '}']) {
+            expect(diagrama).not.toContain(simbolo)
+        }
+        expect(diagrama).toContain('calcular() void')
+    })
+
+    it('mantém IDs distintos para nomes com o mesmo rótulo sanitizado', () => {
+        const diagrama = gerarMermaidUml({
+            classes: [{ nome: 'A-B' }, { nome: 'A B' }],
+            relacoes: [{ origem: 'A-B', destino: 'A B', tipo: 'ONE_TO_ONE' }],
+        })
+        const [primeiro, segundo] = obterIds(diagrama)
+        expect(primeiro).not.toBe(segundo)
+        expect(diagrama).toContain(`${primeiro} "1" -- "1" ${segundo}`)
+    })
+
+    it('mantém os IDs quando a ordem das classes muda', () => {
+        const projeto = exemploProjeto()
+        const antes = obterIds(gerarMermaidUml(projeto))
+        projeto.classes.reverse()
+        expect(obterIds(gerarMermaidUml(projeto))).toEqual([...antes].reverse())
+    })
+
+    it('aceita o campo legado tipo dos métodos', () => {
+        expect(gerarMermaidUml({ classes: [{
+            nome: 'Pedido', metodos: [{ nome: 'salvar', tipo: 'void' }],
+        }] })).toContain('salvar() void')
+    })
+
+    it('não altera o projeto e retorna o mesmo texto para a mesma entrada', () => {
+        const projeto = exemploProjeto()
+        const antes = structuredClone(projeto)
+        function congelar(valor) {
+            if (valor && typeof valor === 'object') {
+                Object.values(valor).forEach(congelar)
+                Object.freeze(valor)
+            }
+        }
+        congelar(projeto)
+        const resultado = gerarMermaidUml(projeto)
+        expect(projeto).toEqual(antes)
+        expect(gerarMermaidUml(projeto)).toBe(resultado)
+    })
+
+    it('tolera coleções inválidas e entradas nulas', () => {
+        expect(gerarMermaidUml({ classes: null, relacoes: {} })).toBe('classDiagram')
+        expect(() => gerarMermaidUml({
+            classes: [null, { nome: 'Pedido', atributos: [null], metodos: [null] }],
+            relacoes: [null],
+        })).not.toThrow()
+    })
+
+    it('ignora nomes sem texto e evita classes duplicadas', () => {
+        const diagrama = gerarMermaidUml({
+            classes: [{ nome: '[]{}' }, { nome: 'Pedido' }, { nome: 'Pedido' }],
+        })
+        expect(obterIds(diagrama)).toHaveLength(1)
+    })
+})
