@@ -1,4 +1,6 @@
 import DiagramCodeLogo from './components/public/DiagramCodeLogo.jsx'
+import PublicButton from './components/public/PublicButton.jsx'
+import './Login.css'
 import './Sobre.css'
 
 const REPOS = [
@@ -111,20 +113,24 @@ export default function Sobre({ autenticado = false, onEntrar, onComecar }) {
     }
 
     return (
-        <div className="about-page">
-            <header className="about-header">
-                <div className="about-container about-header__inner">
-                    <a className="about-header__brand" href="#inicio" aria-label="DiagramCode — início" onClick={entrar}>
+        <div className="public-auth about-page">
+            <header className="public-header">
+                <div className="public-header__inner">
+                    <a className="public-header__brand" href="#inicio" aria-label="DiagramCode — início">
                         <DiagramCodeLogo />
                     </a>
 
-                    <nav className="about-nav" aria-label="Navegação principal">
-                        <a className="about-nav__link is-active" href="#sobre-o-projeto" aria-current="page">
-                            Sobre nós
+                    <nav className="public-nav" aria-label="Navegação principal">
+                        <a href="#inicio" className="public-nav__home" aria-current="page">
+                            Início
                         </a>
-                        <a className="about-btn about-btn--primary about-btn--sm" href="#inicio" onClick={entrar}>
-                            {autenticado ? 'Meus projetos' : 'Entrar'}
-                        </a>
+                        <PublicButton
+                            className="public-nav__signup"
+                            variant="outline"
+                            onClick={autenticado ? entrar : comecar}
+                        >
+                            {autenticado ? 'Meus projetos' : 'Criar conta'}
+                        </PublicButton>
                     </nav>
                 </div>
             </header>
@@ -133,7 +139,7 @@ export default function Sobre({ autenticado = false, onEntrar, onComecar }) {
                 <section className="about-hero" aria-labelledby="about-title">
                     <div className="about-container about-hero__grid">
                         <div className="about-hero__copy">
-                            <span className="about-badge">Sobre o projeto</span>
+                            <span className="public-eyebrow">Sobre o projeto</span>
                             <h1 id="about-title">Da modelagem UML ao código — rodando na Oracle Cloud.</h1>
                             <p>
                                 O DiagramCode é um editor web para modelar diagramas de classes UML, gerar artefatos
@@ -275,7 +281,7 @@ export default function Sobre({ autenticado = false, onEntrar, onComecar }) {
                             <h2 id="cta-title">Quer ver na prática?</h2>
                             <p>Crie uma conta e modele seu primeiro diagrama em poucos minutos.</p>
                         </div>
-                        <a className="about-btn about-btn--light" href="#inicio" onClick={comecar}>
+                        <a className="about-btn about-btn--light" href="#acesso" onClick={comecar}>
                             {autenticado ? 'Ir para meus projetos' : 'Começar agora'}
                         </a>
                     </div>

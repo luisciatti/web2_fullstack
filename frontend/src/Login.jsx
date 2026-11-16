@@ -49,42 +49,34 @@ export default function Login({ onLoggedIn, onLogin, onSignup, modoInicial = 'lo
     const cadastro = modo === 'cadastro'
 
     return (
-        <div className="public-auth" id="inicio">
+        <div className="public-auth" id="acesso">
             <header className="public-header">
                 <div className="public-header__inner">
                     <a
                         className="public-header__brand"
                         href="#inicio"
                         aria-label="DiagramCode — início"
-                        onClick={() => trocarModo('login')}
                     >
                         <DiagramCodeLogo />
                     </a>
 
                     <nav className="public-nav" aria-label="Navegação principal">
-                        <a
-                            href="#inicio"
-                            className="public-nav__home"
-                            onClick={() => trocarModo('login')}
-                        >
+                        <a href="#inicio" className="public-nav__home">
                             Início
-                        </a>
-                        <a href="#sobre-o-projeto" className="public-nav__about">
-                            Sobre nós
                         </a>
                         <PublicButton
                             className="public-nav__signup"
                             variant="outline"
-                            onClick={() => trocarModo('cadastro')}
+                            onClick={() => trocarModo(cadastro ? 'login' : 'cadastro')}
                         >
-                            Criar conta
+                            {cadastro ? 'Entrar' : 'Criar conta'}
                         </PublicButton>
                     </nav>
                 </div>
             </header>
 
             <main className="public-main">
-                <section className="public-hero-panel" id="sobre-o-projeto" aria-labelledby="public-hero-title">
+                <section className="public-hero-panel" aria-labelledby="public-hero-title">
                     <div className="public-hero-copy">
                         <span className="public-eyebrow">Editor de diagramas</span>
                         <h1 id="public-hero-title">Transforme suas ideias em diagramas.</h1>
