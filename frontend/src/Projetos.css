@@ -553,3 +553,99 @@
         max-width: 230px;
     }
 }
+
+/* FE-14 — Feedback das ações de projeto */
+
+.projects-action-error {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+    border: 1px solid #efc6c2;
+    border-radius: 10px;
+    background: #fff4f2;
+    color: #8b2b28;
+}
+
+.projects-action-error p {
+    flex: 1 1 260px;
+    margin: 0;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+.projects-page .projects-btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+/* FE-14 — Modal personalizado de exclusão */
+
+.projects-delete-dialog {
+    width: min(440px, calc(100% - 32px));
+    max-width: none;
+    margin: auto;
+    padding: 28px;
+
+    background: #fff;
+    color: #172e3c;
+    border: 1px solid #dce5eb;
+    border-radius: 16px;
+    box-shadow: 0 24px 64px rgba(8, 28, 40, 0.25);
+}
+
+.projects-delete-dialog::backdrop {
+    background: rgba(8, 28, 40, 0.6);
+}
+
+.projects-delete-dialog h2 {
+    margin: 0 0 14px;
+    color: #0b3b50;
+    font-size: 24px;
+}
+
+.projects-delete-dialog p {
+    margin: 0;
+    color: #526775;
+    font-size: 15px;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+}
+
+.projects-delete-dialog strong {
+    color: #0b3b50;
+}
+
+.projects-delete-dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 28px;
+}
+
+.projects-page .projects-btn-danger {
+    background: #b91c1c;
+    color: #fff;
+}
+
+.projects-page .projects-btn-danger:hover:not(:disabled) {
+    background: #991b1b;
+}
+
+@media (max-width: 480px) {
+    .projects-delete-dialog {
+        padding: 22px;
+    }
+
+    .projects-delete-dialog-actions {
+        flex-direction: column-reverse;
+    }
+
+    .projects-delete-dialog-actions button {
+        width: 100%;
+    }
+}

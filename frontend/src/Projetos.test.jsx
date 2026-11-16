@@ -3,7 +3,9 @@ import { apiFetch } from './api.js'
 import {
     buscarProjetos,
     interpretarErroProjetos,
-    filtrarEOrdenarProjetos
+    filtrarEOrdenarProjetos,
+    excluirProjetoConfirmado,
+    removerProjetoDaLista
 } from './Projetos.jsx'
 
 vi.mock('./api.js', () => ({
@@ -175,5 +177,110 @@ describe('FE-13 — Busca e ordenação de projetos', () => {
         filtrarEOrdenarProjetos(projetos, '', 'az')
 
         expect(projetos.map((p) => p.nome)).toEqual(original)
+    })
+})
+
+describe('FE-14 — Ações de projetos', () => {
+    const projeto = { id: 2, nome: 'Estoque' }
+
+    beforeEach(() => {
+        vi.clearAllMocks()
+    })
+
+    it('não executa DELETE quando a confirmação é cancelada', async () => {
+        const confirmar = vi.fn().mockReturnValue(false)
+
+        const resultado = await excluirProjetoConfirmado(
+            projeto,
+            { confirmar }
+        )
+
+        expect(confirmar).toHaveBeenCalledWith(
+            expect.stringContaining('"Estoque"')
+        )
+        expect(resultado).toBe(false)
+        expect(apiFetch).not.toHaveBeenCalled()
+    })
+
+    it('exclui o projeto e aceita uma resposta 204 sem corpo', async () => {
+        apiFetch.mockResolvedValue(null)
+
+        const aoConfirmar = vi.fn()
+
+        const resultado = await excluirProjetoConfirmado(
+            projeto,
+            {
+                confirmar: () => true,
+                aoConfirmar
+            }
+        )
+
+        expect(resultado).toBe(true)
+        expect(aoConfirmar).toHaveBeenCalledOnce()
+        expect(apiFetch).toHaveBeenCalledWith(
+            '/api/projetos/2',
+            { method: 'DELETE' }
+        )
+    })
+
+    it('remove apenas o projeto escolhido', () => {
+        const lista = [
+            { id: 1, nome: 'Biblioteca' },
+            { id: 2, nome: 'Estoque' },
+            { id: 3, nome: 'Loja' }
+        ]
+
+        const resultado = removerProjetoDaLista(lista, 2)
+
+        expect(resultado.map((p) => p.id)).toEqual([1, 3])
+        expect(lista).toHaveLength(3)
+    })
+
+    it('propaga erro de permissão na exclusão', async () => {
+        apiFetch.mockRejectedValue(
+            new Error('Sem permissão para esta ação.')
+        )
+
+        await expect(
+            excluirProjetoConfirmado(projeto, {
+                confirmar: () => true
+            })
+        ).rejects.toThrow('Sem permissão')
+    })
+
+    it('propaga erro quando o projeto não existe', async () => {
+        apiFetch.mockRejectedValue(
+            new Error('Projeto não encontrado')
+        )
+
+        await expect(
+            excluirProjetoConfirmado(projeto, {
+                confirmar: () => true
+            })
+        ).rejects.toThrow('Projeto não encontrado')
+    })
+
+    it('propaga erro de rede sem excluir localmente', async () => {
+        apiFetch.mockRejectedValue(
+            new Error('Não consegui falar com o servidor')
+        )
+
+        await expect(
+            excluirProjetoConfirmado(projeto, {
+                confirmar: () => true
+            })
+        ).rejects.toThrow('Não consegui falar com o servidor')
+    })
+
+    it('propaga sessão expirada durante a exclusão', async () => {
+        apiFetch.mockRejectedValue(
+            new Error('Sessão expirada. Entre novamente.')
+        )
+
+        await expect(
+            excluirProjetoConfirmado(projeto, {
+                confirmar: () => true
+            })
+        ).rejects.toThrow('Sessão expirada')
     })
 })
