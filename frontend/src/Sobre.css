@@ -1,26 +1,19 @@
-/* Página pública "Sobre nós" (#sobre-o-projeto). Estilos com escopo em .about-page. */
+/*
+ * Página inicial pública (#inicio) — sobre o projeto.
+ * O cabeçalho reaproveita o mesmo HTML/CSS do Login (Login.css, .public-header).
+ * A escala (largura, tipografia e espaçamentos) segue a densidade da tela #inicio.
+ * Estilos próprios ficam com escopo em .about-page.
+ */
 
 .about-page {
     --about-ink: #0b3b50;
     --about-ink-deep: #082f40;
-    --about-text: #1b2b37;
-    --about-muted: #6b7982;
+    --about-text: #172c36;
+    --about-muted: #667d88;
     --about-accent: #4d93b4;
-    --about-line: #dde5eb;
-    --about-pale: #e9f4f7;
+    --about-line: #e2ebef;
+    --about-pale: #eaf5f7;
     --about-bg: #f7fafb;
-    min-height: 100vh;
-    width: 100%;
-    overflow-x: clip;
-    background: var(--about-bg);
-    color: var(--about-text);
-    font-family: var(--font-family, Inter, system-ui, -apple-system, sans-serif);
-}
-
-.about-page *,
-.about-page *::before,
-.about-page *::after {
-    box-sizing: border-box;
 }
 
 .about-page h1,
@@ -40,87 +33,17 @@
     list-style: none;
 }
 
+/* Mesma largura útil do cabeçalho público */
 .about-container {
-    width: min(1168px, calc(100% - 112px));
+    width: min(1240px, calc(100% - 64px));
     margin: 0 auto;
 }
 
 .about-icon {
     display: block;
-    width: 20px;
-    height: 20px;
+    width: 16px;
+    height: 16px;
     flex: 0 0 auto;
-}
-
-/* Cabeçalho */
-
-.about-header {
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    background: #fff;
-    border-bottom: 1px solid var(--about-line);
-}
-
-.about-header__inner {
-    min-height: 77px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 24px;
-}
-
-.about-header__brand {
-    color: var(--about-ink);
-    text-decoration: none;
-}
-
-.about-header .diagramcode-logo {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--about-ink);
-    font-size: 22px;
-    font-weight: 700;
-    letter-spacing: -0.03em;
-    white-space: nowrap;
-}
-
-.about-header .diagramcode-logo__mark {
-    width: 20px;
-    height: 20px;
-}
-
-.about-nav {
-    display: flex;
-    align-items: center;
-    gap: 32px;
-}
-
-.about-nav__link {
-    position: relative;
-    padding: 6px 0 10px;
-    color: var(--about-muted);
-    font-size: 15px;
-    font-weight: 500;
-    text-decoration: none;
-}
-
-.about-nav__link.is-active {
-    color: var(--about-ink);
-    font-weight: 600;
-}
-
-.about-nav__link.is-active::after {
-    content: '';
-    position: absolute;
-    left: 50%;
-    bottom: 0;
-    width: 24px;
-    height: 2px;
-    border-radius: 2px;
-    background: var(--about-ink);
-    transform: translateX(-50%);
 }
 
 /* Botões (sobrescrevem o estilo global de button em style.css) */
@@ -129,14 +52,14 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    min-height: 48px;
-    padding: 0 20px;
-    border: 1.5px solid transparent;
-    border-radius: 8px;
+    gap: 7px;
+    min-height: 40px;
+    padding: 0 16px;
+    border: 1px solid transparent;
+    border-radius: 7px;
     font: inherit;
-    font-size: 15px;
-    font-weight: 600;
+    font-size: 13px;
+    font-weight: 650;
     line-height: 1.2;
     text-decoration: none;
     cursor: pointer;
@@ -144,14 +67,14 @@
 }
 
 .about-page .about-btn--sm {
-    min-height: 40px;
-    padding: 0 16px;
-    font-size: 14px;
+    min-height: 34px;
+    padding: 0 13px;
+    font-size: 12px;
 }
 
 .about-page .about-btn .about-icon {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
 }
 
 .about-page .about-btn--primary {
@@ -165,12 +88,13 @@
 
 .about-page .about-btn--outline {
     background: #fff;
-    border-color: var(--about-ink);
+    border-color: #d5e2e7;
     color: var(--about-ink);
 }
 
 .about-page .about-btn--outline:hover {
-    background: var(--about-pale);
+    border-color: #9bb8c4;
+    background: #f5fafb;
 }
 
 .about-page .about-btn--light {
@@ -182,9 +106,8 @@
     background: var(--about-pale);
 }
 
-.about-page .about-btn:focus-visible,
-.about-page a:focus-visible {
-    outline: 3px solid rgba(77, 147, 180, 0.45);
+.about-page .about-btn:focus-visible {
+    outline: 3px solid rgba(11, 59, 80, 0.22);
     outline-offset: 2px;
     box-shadow: none;
 }
@@ -193,12 +116,12 @@
 
 .about-hero {
     background: #fff;
-    padding: 72px 0 64px;
+    padding: 52px 0 48px;
 }
 
 .about-hero__grid {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 440px;
+    grid-template-columns: minmax(0, 1fr) 400px;
     align-items: center;
     gap: 48px;
 }
@@ -207,61 +130,53 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 20px;
-}
-
-.about-badge {
-    display: inline-flex;
-    padding: 6px 12px;
-    border-radius: 999px;
-    background: var(--about-pale);
-    color: var(--about-ink);
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
+    gap: 14px;
 }
 
 .about-hero h1 {
+    max-width: 620px;
+    margin-top: 3px;
     color: var(--about-ink);
-    font-size: clamp(30px, 4vw, 44px);
-    font-weight: 700;
-    line-height: 1.15;
-    letter-spacing: -0.02em;
+    font-size: clamp(30px, 3.1vw, 42px);
+    font-weight: 760;
+    letter-spacing: -0.055em;
+    line-height: 1.12;
 }
 
 .about-hero p {
+    max-width: 600px;
     color: var(--about-muted);
-    font-size: 17px;
-    line-height: 1.55;
+    font-size: 13px;
+    line-height: 1.65;
 }
 
 .about-actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 10px;
+    margin-top: 8px;
 }
 
 .about-summary {
-    padding: 28px;
+    padding: 22px 24px;
     border: 1px solid var(--about-line);
-    border-radius: 12px;
+    border-radius: 14px;
     background: var(--about-bg);
 }
 
 .about-summary__title {
     color: var(--about-accent);
-    font-size: 13px;
-    font-weight: 600;
+    font-size: 11px;
+    font-weight: 650;
 }
 
 .about-summary__row {
     display: flex;
     justify-content: space-between;
     gap: 16px;
-    padding: 14px 0;
+    padding: 11px 0;
     border-bottom: 1px solid var(--about-line);
-    font-size: 14px;
+    font-size: 12px;
 }
 
 .about-summary__row dt {
@@ -271,16 +186,16 @@
 
 .about-summary__row dd {
     color: var(--about-text);
-    font-weight: 600;
+    font-weight: 650;
     text-align: right;
 }
 
 /* Seções */
 
 .about-section {
-    padding: 64px 0;
+    padding: 48px 0;
     background: var(--about-bg);
-    scroll-margin-top: 77px;
+    scroll-margin-top: 0;
 }
 
 .about-section--white {
@@ -290,35 +205,36 @@
 .about-section__head {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    margin-bottom: 32px;
+    gap: 8px;
+    margin-bottom: 24px;
 }
 
 .about-eyebrow {
     color: var(--about-accent);
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 0.02em;
+    font-size: 10px;
+    font-weight: 750;
+    letter-spacing: 0.075em;
     text-transform: uppercase;
 }
 
 .about-section__head h2 {
     color: var(--about-ink);
-    font-size: clamp(23px, 3vw, 30px);
-    font-weight: 700;
+    font-size: clamp(22px, 2.2vw, 27px);
+    font-weight: 760;
+    letter-spacing: -0.04em;
     line-height: 1.2;
 }
 
 .about-section__head p {
-    max-width: 720px;
+    max-width: 620px;
     color: var(--about-muted);
-    font-size: 16px;
-    line-height: 1.5;
+    font-size: 13px;
+    line-height: 1.6;
 }
 
 .about-card {
     border: 1px solid var(--about-line);
-    border-radius: 12px;
+    border-radius: 14px;
     background: #fff;
 }
 
@@ -330,24 +246,24 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
+    width: 34px;
+    height: 34px;
     flex: 0 0 auto;
-    border-radius: 10px;
+    border-radius: 9px;
     background: var(--about-pale);
     color: var(--about-ink);
 }
 
 .about-icon-box--dark {
-    width: 44px;
-    height: 44px;
+    width: 36px;
+    height: 36px;
     background: var(--about-ink);
     color: #fff;
 }
 
 .about-icon-box--dark .about-icon {
-    width: 22px;
-    height: 22px;
+    width: 18px;
+    height: 18px;
 }
 
 /* Chips */
@@ -355,16 +271,16 @@
 .about-chips {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 6px;
 }
 
 .about-chip {
-    padding: 6px 12px;
+    padding: 5px 10px;
     border-radius: 999px;
     background: var(--about-pale);
     color: var(--about-ink);
-    font-size: 13px;
-    font-weight: 500;
+    font-size: 11px;
+    font-weight: 550;
     line-height: 1.2;
 }
 
@@ -377,31 +293,31 @@
 .about-tech-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 20px;
+    gap: 16px;
 }
 
 .about-tech {
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    padding: 28px;
+    gap: 16px;
+    padding: 22px;
 }
 
 .about-tech__top {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
 }
 
 .about-tech__top h3 {
     color: var(--about-ink);
-    font-size: 18px;
-    font-weight: 600;
+    font-size: 15px;
+    font-weight: 700;
 }
 
 .about-tech__top span {
     color: var(--about-muted);
-    font-size: 13px;
+    font-size: 11px;
 }
 
 /* Arquitetura */
@@ -409,36 +325,32 @@
 .about-arch {
     display: flex;
     flex-direction: column;
-    gap: 28px;
-    padding: 32px;
+    gap: 22px;
+    padding: 24px;
 }
 
 .about-flow {
     display: flex;
     align-items: stretch;
-    gap: 12px;
+    gap: 10px;
 }
 
 .about-flow__item {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     flex: 1 1 0;
     min-width: 0;
-}
-
-.about-flow__item:last-child {
-    flex: 1 1 0;
 }
 
 .about-flow__node {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     flex: 1 1 auto;
     min-width: 0;
-    padding: 18px;
+    padding: 14px;
     border-radius: 10px;
     background: var(--about-pale);
     color: var(--about-ink);
@@ -448,17 +360,17 @@
 .about-flow__node > div {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
 }
 
 .about-flow__node strong {
-    font-size: 15px;
-    font-weight: 600;
+    font-size: 13px;
+    font-weight: 650;
 }
 
 .about-flow__node span {
     color: var(--about-muted);
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 500;
 }
 
@@ -472,39 +384,39 @@
 }
 
 .about-flow__icon {
-    width: 26px;
-    height: 26px;
+    width: 22px;
+    height: 22px;
 }
 
 .about-flow__arrow {
     color: var(--about-accent);
-    width: 22px;
-    height: 22px;
+    width: 18px;
+    height: 18px;
 }
 
 .about-support {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 16px;
-    padding-top: 28px;
+    gap: 14px;
+    padding-top: 20px;
     border-top: 1px solid var(--about-line);
 }
 
 .about-support li {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 3px;
 }
 
 .about-support strong {
     color: var(--about-ink);
-    font-size: 14px;
-    font-weight: 600;
+    font-size: 12px;
+    font-weight: 650;
 }
 
 .about-support span {
     color: var(--about-muted);
-    font-size: 13px;
+    font-size: 11px;
     line-height: 1.45;
 }
 
@@ -513,20 +425,20 @@
 .about-repo-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 20px;
+    gap: 16px;
 }
 
 .about-repo {
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    padding: 28px;
+    gap: 14px;
+    padding: 22px;
 }
 
 .about-repo__top {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
 }
 
 .about-repo__name {
@@ -540,25 +452,25 @@
 
 .about-repo__name h3 {
     color: var(--about-ink);
-    font-size: 18px;
-    font-weight: 600;
+    font-size: 15px;
+    font-weight: 700;
     overflow-wrap: anywhere;
 }
 
 .about-repo__tag {
     flex: 0 0 auto;
-    padding: 4px 10px;
+    padding: 3px 9px;
     border: 1px solid var(--about-line);
     border-radius: 999px;
     color: var(--about-muted);
-    font-size: 12px;
-    font-weight: 600;
+    font-size: 10px;
+    font-weight: 650;
 }
 
 .about-repo > p {
     color: var(--about-muted);
-    font-size: 15px;
-    line-height: 1.55;
+    font-size: 12px;
+    line-height: 1.6;
 }
 
 .about-repo__footer {
@@ -567,14 +479,14 @@
     justify-content: space-between;
     gap: 12px;
     margin-top: auto;
-    padding-top: 16px;
+    padding-top: 14px;
     border-top: 1px solid var(--about-line);
 }
 
 .about-repo__url {
     min-width: 0;
     color: var(--about-muted);
-    font-size: 13px;
+    font-size: 11px;
     font-weight: 500;
     overflow-wrap: anywhere;
 }
@@ -582,7 +494,7 @@
 /* CTA */
 
 .about-cta {
-    padding: 48px 0;
+    padding: 36px 0;
     background: var(--about-ink);
     color: #fff;
 }
@@ -595,25 +507,23 @@
 }
 
 .about-cta h2 {
-    font-size: 26px;
-    font-weight: 700;
+    font-size: 22px;
+    font-weight: 760;
+    letter-spacing: -0.04em;
 }
 
 .about-cta p {
-    margin-top: 8px;
+    margin-top: 6px;
     color: var(--about-pale);
-    font-size: 16px;
+    font-size: 13px;
 }
 
 /* Tablet */
 
 @media (max-width: 1024px) {
-    .about-container {
-        width: calc(100% - 56px);
-    }
-
     .about-hero__grid {
         grid-template-columns: minmax(0, 1fr);
+        gap: 28px;
     }
 
     .about-tech-grid {
@@ -625,54 +535,19 @@
     }
 }
 
-/* Mobile */
+/* Mobile — mesma margem lateral do cabeçalho público */
 
 @media (max-width: 740px) {
     .about-container {
-        width: calc(100% - 40px);
-    }
-
-    .about-header__inner {
-        min-height: 64px;
-        gap: 12px;
-    }
-
-    .about-header .diagramcode-logo {
-        font-size: 17px;
-    }
-
-    .about-header .diagramcode-logo__mark {
-        width: 16px;
-        height: 16px;
-    }
-
-    .about-nav {
-        gap: 14px;
-    }
-
-    .about-nav__link {
-        font-size: 14px;
-    }
-
-    .about-page .about-btn--sm {
-        min-height: 36px;
-        padding: 0 14px;
-    }
-
-    .about-section {
-        scroll-margin-top: 64px;
+        width: calc(100% - 36px);
     }
 
     .about-hero {
-        padding: 40px 0;
+        padding: 30px 0 32px;
     }
 
-    .about-hero__copy {
-        gap: 18px;
-    }
-
-    .about-hero p {
-        font-size: 15px;
+    .about-hero h1 {
+        font-size: 27px;
     }
 
     .about-actions {
@@ -685,52 +560,46 @@
     }
 
     .about-summary {
-        padding: 18px;
-    }
-
-    .about-summary__row {
-        padding: 11px 0;
-        font-size: 13px;
+        padding: 16px;
     }
 
     .about-section {
-        padding: 40px 0;
+        padding: 32px 0;
     }
 
     .about-section__head {
-        gap: 8px;
-        margin-bottom: 20px;
+        margin-bottom: 16px;
     }
 
-    .about-section__head p {
-        font-size: 15px;
+    .about-section__head h2 {
+        font-size: 21px;
     }
 
     .about-tech {
-        padding: 18px;
-        gap: 16px;
+        padding: 16px;
+        gap: 14px;
     }
 
     .about-arch {
-        padding: 16px;
-        gap: 16px;
+        padding: 14px;
+        gap: 14px;
     }
 
     .about-flow {
         flex-direction: column;
-        gap: 8px;
+        gap: 6px;
     }
 
     .about-flow__item {
         flex-direction: column;
-        gap: 8px;
+        gap: 6px;
     }
 
     .about-flow__node {
         flex-direction: row;
         width: 100%;
-        padding: 12px 14px;
-        gap: 12px;
+        padding: 10px 12px;
+        gap: 10px;
         text-align: left;
     }
 
@@ -738,25 +607,21 @@
         gap: 2px;
     }
 
-    .about-flow__node strong {
-        font-size: 14px;
-    }
-
     .about-flow__icon {
-        width: 22px;
-        height: 22px;
+        width: 20px;
+        height: 20px;
     }
 
     .about-flow__arrow {
-        width: 18px;
-        height: 18px;
+        width: 16px;
+        height: 16px;
         transform: rotate(90deg);
     }
 
     .about-support {
         grid-template-columns: minmax(0, 1fr);
-        gap: 12px;
-        padding-top: 16px;
+        gap: 10px;
+        padding-top: 14px;
     }
 
     .about-repo-grid {
@@ -764,7 +629,7 @@
     }
 
     .about-repo {
-        padding: 18px;
+        padding: 16px;
         gap: 12px;
     }
 
@@ -775,7 +640,7 @@
     }
 
     .about-repo__name h3 {
-        font-size: 15px;
+        font-size: 14px;
     }
 
     .about-repo__tag {
@@ -784,12 +649,8 @@
         font-weight: 500;
     }
 
-    .about-repo > p {
-        font-size: 13px;
-    }
-
     .about-repo__footer {
-        padding-top: 4px;
+        padding-top: 2px;
         border-top: 0;
     }
 
@@ -802,20 +663,23 @@
     }
 
     .about-cta {
-        padding: 36px 0;
+        padding: 28px 0;
     }
 
     .about-cta__inner {
         flex-direction: column;
         align-items: stretch;
-        gap: 16px;
+        gap: 14px;
     }
 
     .about-cta h2 {
-        font-size: 22px;
+        font-size: 20px;
     }
+}
 
-    .about-cta p {
-        font-size: 14px;
+/* No celular, a página inicial mantém o botão principal do cabeçalho visível */
+@media (max-width: 740px) {
+    .about-page .public-nav__signup {
+        display: inline-flex;
     }
 }

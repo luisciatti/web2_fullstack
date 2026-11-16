@@ -88,6 +88,11 @@
     color: var(--public-ink);
 }
 
+.public-nav a[aria-current="page"] {
+    color: var(--public-ink);
+    font-weight: 650;
+}
+
 .public-button {
     display: inline-flex;
     align-items: center;

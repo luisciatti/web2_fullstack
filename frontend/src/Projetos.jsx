@@ -319,8 +319,8 @@ export default function Projetos({ onNew, onOpen, onLogout }) {
                     </span>
 
                     <div className="projects-header-actions">
-                        <a href="#sobre-o-projeto" className="projects-about-link">
-                            Sobre nós
+                        <a href="#inicio" className="projects-about-link">
+                            Início
                         </a>
 
                         <button

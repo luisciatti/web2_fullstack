@@ -3,11 +3,12 @@ import { renderToString } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import Sobre from '../Sobre.jsx'
 
-describe('página Sobre nós', () => {
+describe('página inicial (#inicio)', () => {
     it('renderiza sem erro para visitante', () => {
         const html = renderToString(createElement(Sobre, {}))
         expect(html).toContain('Stack utilizada em cada camada')
-        expect(html).toContain('Entrar')
+        expect(html).toContain('Criar conta')
+        expect(html).toContain('href="#acesso"')
     })
 
     it('mostra os links dos dois repositórios', () => {
