@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { apiFetch, logout, readAuth, saveAuth } from './api.js'
+import { apiFetch, logout, readAuth, saveAuth } from '../api.js'
 
 describe('apiFetch', () => {
     beforeEach(() => {

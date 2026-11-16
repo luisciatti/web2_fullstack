@@ -79,7 +79,7 @@ export async function excluirProjetoConfirmado(
     projeto,
     {
         confirmar = (mensagem) => window.confirm(mensagem),
-        aoConfirmar = () => {},
+        aoConfirmar = () => { },
         requisicao = apiFetch
     } = {}
 ) {
@@ -220,24 +220,24 @@ export default function Projetos({ onNew, onOpen, onLogout }) {
 
     // Busca a lista de projetos do usuário.
     const carregar = async () => {
-    setCarregando(true)
-    setErro('')
-    setSessaoExpirada(false)
+        setCarregando(true)
+        setErro('')
+        setSessaoExpirada(false)
 
-    try {
-        const projetos = await buscarProjetos()
+        try {
+            const projetos = await buscarProjetos()
 
-        setLista(projetos)
-    } catch (error) {
-        const resultado = interpretarErroProjetos(error)
+            setLista(projetos)
+        } catch (error) {
+            const resultado = interpretarErroProjetos(error)
 
-        setLista([])
-        setErro(resultado.mensagem)
-        setSessaoExpirada(resultado.sessaoExpirada)
-    } finally {
-        setCarregando(false)
+            setLista([])
+            setErro(resultado.mensagem)
+            setSessaoExpirada(resultado.sessaoExpirada)
+        } finally {
+            setCarregando(false)
+        }
     }
-}
 
     useEffect(() => {
         carregar()
@@ -382,32 +382,32 @@ export default function Projetos({ onNew, onOpen, onLogout }) {
                     className="projects-section"
                     aria-label="Lista de projetos"
                 >
-                <div className="projects-toolbar">
-                    <div className="projects-filters">
-                        <input
-                            type="search"
-                            className="projects-search"
-                            aria-label="Buscar projetos"
-                            placeholder="Buscar projeto pelo nome..."
-                            value={busca}
-                            onChange={(event) => setBusca(event.target.value)}
-                        />
+                    <div className="projects-toolbar">
+                        <div className="projects-filters">
+                            <input
+                                type="search"
+                                className="projects-search"
+                                aria-label="Buscar projetos"
+                                placeholder="Buscar projeto pelo nome..."
+                                value={busca}
+                                onChange={(event) => setBusca(event.target.value)}
+                            />
 
-                        <label className="projects-sort-control">
-                            <span>Ordenar por</span>
+                            <label className="projects-sort-control">
+                                <span>Ordenar por</span>
 
-                            <select
-                                className="projects-sort"
-                                value={ordenacao}
-                                onChange={(event) =>
-                                    setOrdenacao(event.target.value)
-                                }
-                            >
-                                <option value="az">Nome: A–Z</option>
-                                <option value="za">Nome: Z–A</option>
-                            </select>
-                        </label>
-                    </div>
+                                <select
+                                    className="projects-sort"
+                                    value={ordenacao}
+                                    onChange={(event) =>
+                                        setOrdenacao(event.target.value)
+                                    }
+                                >
+                                    <option value="az">Nome: A–Z</option>
+                                    <option value="za">Nome: Z–A</option>
+                                </select>
+                            </label>
+                        </div>
 
                         <span
                             className="projects-count"
@@ -417,10 +417,9 @@ export default function Projetos({ onNew, onOpen, onLogout }) {
                                 ? 'Carregando...'
                                 : erro
                                     ? 'Projetos indisponíveis'
-                                    : `${projetosFiltrados.length} ${
-                                        projetosFiltrados.length === 1
-                                            ? 'projeto encontrado'
-                                            : 'projetos encontrados'
+                                    : `${projetosFiltrados.length} ${projetosFiltrados.length === 1
+                                        ? 'projeto encontrado'
+                                        : 'projetos encontrados'
                                     }`
                             }
                         </span>

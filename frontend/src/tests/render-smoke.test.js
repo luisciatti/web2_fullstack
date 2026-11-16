@@ -1,9 +1,9 @@
 import { createElement } from 'react'
 import { renderToString } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
-import Editor, { DiagramPanel } from './Editor.jsx'
-import Login from './Login.jsx'
-import Projetos from './Projetos.jsx'
+import Editor, { DiagramPanel } from '../Editor.jsx'
+import Login from '../Login.jsx'
+import Projetos from '../Projetos.jsx'
 
 describe('render smoke tests', () => {
     it('renderiza o login sem erro', () => {
