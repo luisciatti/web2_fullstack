@@ -48,6 +48,30 @@
     font-size: 14px;
 }
 
+.projects-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.projects-about-link {
+    color: #6b7982;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.projects-about-link:hover {
+    color: var(--projects-primary);
+}
+
+.projects-about-link:focus-visible {
+    outline: 3px solid rgba(11, 59, 80, 0.35);
+    outline-offset: 3px;
+    border-radius: 4px;
+}
+
 /* Botões exclusivos da página */
 
 .projects-page .projects-btn {

@@ -572,7 +572,6 @@
         gap: 14px;
     }
 
-    .public-nav__about,
     .public-nav__signup {
         display: none;
     }
