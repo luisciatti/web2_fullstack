@@ -41,7 +41,7 @@ export function gerarMermaidUml(projeto = {}) {
             const nome = textoSeguro(atributo?.nome)
             const tipo = textoSeguro(atributo?.tipo)
             if (!nome) continue
-            linhas.push(`    ${id} : ${tipo ? `${nome}: ${tipo}` : nome}`)
+            linhas.push(`    ${id} : ${tipo ? `${tipo} ${nome}` : nome}`)
         }
 
         for (const metodo of lista(classe?.metodos)) {

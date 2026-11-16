@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+import mermaid from 'mermaid'
 import { gerarMermaidUml } from './gerarMermaidUml.js'
 
 function obterIds(diagrama) {
@@ -26,6 +27,33 @@ function exemploProjeto() {
 }
 
 describe('gerarMermaidUml', () => {
+    it('aceita o exemplo no parser real do Mermaid', async () => {
+        mermaid.initialize({ startOnLoad: false })
+        const diagrama = await mermaid.mermaidAPI.getDiagramFromText('classDiagram\ndirection TB')
+        const parser = diagrama.parser
+        const contextoOriginal = parser.yy
+        const adicionarMembro = vi.fn()
+        const adicionarRelacao = vi.fn()
+
+        // Valida a gramática real em Node, sem executar a camada de DOM/renderização.
+        parser.yy = {
+            addClass: vi.fn(),
+            setClassLabel: vi.fn(),
+            addMember: adicionarMembro,
+            addRelation: adicionarRelacao,
+            cleanupLabel: (valor) => valor,
+            lineType: { LINE: 0 },
+        }
+        try {
+            expect(() => parser.parse(`${gerarMermaidUml(exemploProjeto())}\n`)).not.toThrow()
+            expect(adicionarMembro).toHaveBeenCalledTimes(5)
+            expect(adicionarRelacao).toHaveBeenCalledTimes(1)
+            expect(() => parser.parse('classDiagram\nClasse : id: Long\n')).toThrow()
+        } finally {
+            parser.yy = contextoOriginal
+        }
+    })
+
     it('retorna classDiagram para projetos vazios ou ausentes', () => {
         for (const projeto of [undefined, null, {}, { classes: [], relacoes: [] }]) {
             expect(gerarMermaidUml(projeto)).toBe('classDiagram')
@@ -38,7 +66,7 @@ describe('gerarMermaidUml', () => {
         expect(obterIds(diagrama)).toHaveLength(1)
         expect(diagrama.startsWith('classDiagram\n')).toBe(true)
         expect(diagrama).toContain(`class ${id}["Pedido"]`)
-        expect(diagrama).toContain(`${id} : valor: BigDecimal`)
+        expect(diagrama).toContain(`${id} : BigDecimal valor`)
         expect(diagrama).toContain(`${id} : calcularTotal() BigDecimal`)
     })
 
