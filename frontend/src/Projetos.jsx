@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import DiagramCodeLogo from './components/public/DiagramCodeLogo.jsx'
+import PublicButton from './components/public/PublicButton.jsx'
 import { apiFetch } from './api.js'
+import './Login.css'
 import './Projetos.css'
 
 function normalizarTexto(valor) {
@@ -305,34 +308,31 @@ export default function Projetos({ onNew, onOpen, onLogout }) {
 
     return (
         <main className="projects-page">
-            <header className="projects-header">
-                <div className="projects-header-inner">
-                    <div className="projects-brand">
-                        <span aria-hidden="true">✦</span> DiagramCode
-                    </div>
+        <header className="public-header">
+            <div className="public-header__inner">
+                <a
+                    className="public-header__brand"
+                    href="#inicio"
+                    aria-label="DiagramCode — início"
+                >
+                    <DiagramCodeLogo />
+                </a>
 
-                    <span
-                        className="projects-current-page"
-                        aria-current="page"
+                <nav className="public-nav" aria-label="Navegação principal">
+                    <a href="#inicio" className="public-nav__home">
+                        Início
+                    </a>
+
+                    <PublicButton
+                        className="projects-header-logout"
+                        variant="outline"
+                        onClick={onLogout}
                     >
-                        Meus projetos
-                    </span>
-
-                    <div className="projects-header-actions">
-                        <a href="#inicio" className="projects-about-link">
-                            Início
-                        </a>
-
-                        <button
-                            type="button"
-                            className="projects-btn projects-btn-secondary"
-                            onClick={onLogout}
-                        >
-                            Sair
-                        </button>
-                    </div>
-                </div>
-            </header>
+                        Sair
+                    </PublicButton>
+                </nav>
+            </div>
+        </header>
 
             <div className="projects-content">
                 <div className="projects-heading">

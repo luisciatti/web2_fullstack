@@ -11,65 +11,23 @@
     color: var(--color-text, #111827);
 }
 
-/* Cabeçalho */
+/* Header compartilhado com as páginas públicas */
 
-.projects-header {
-    background: #fff;
-    border-bottom: 1px solid var(--projects-border);
+.projects-page .public-header {
+    --public-ink: #0b3b50;
+    --public-ink-deep: #082f40;
 }
 
-.projects-header-inner {
-    max-width: 1280px;
-    min-height: 78px;
-    margin: 0 auto;
-    padding: 0 54px;
-
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 24px;
+.projects-page .public-header .public-button--outline:hover:not(:disabled) {
+    border-color: #9bb8c4;
+    background: #f5fafb;
+    color: var(--public-ink);
 }
 
-.projects-brand {
-    color: var(--projects-primary);
-    font-size: 24px;
-    font-weight: 700;
-    letter-spacing: -0.6px;
-    white-space: nowrap;
-}
-
-.projects-brand span {
-    margin-right: 7px;
-}
-
-.projects-current-page {
-    color: var(--projects-primary);
-    font-weight: 600;
-    font-size: 14px;
-}
-
-.projects-header-actions {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
-
-.projects-about-link {
-    color: #6b7982;
-    font-size: 14px;
-    font-weight: 500;
-    text-decoration: none;
-    white-space: nowrap;
-}
-
-.projects-about-link:hover {
-    color: var(--projects-primary);
-}
-
-.projects-about-link:focus-visible {
-    outline: 3px solid rgba(11, 59, 80, 0.35);
-    outline-offset: 3px;
-    border-radius: 4px;
+.projects-page .public-header a:focus-visible,
+.projects-page .public-header button:focus-visible {
+    outline: 3px solid rgba(11, 59, 80, 0.22);
+    outline-offset: 2px;
 }
 
 /* Botões exclusivos da página */
@@ -671,5 +629,185 @@
 
     .projects-delete-dialog-actions button {
         width: 100%;
+    }
+}
+
+
+/* Ajuste visual — densidade da tela de projetos */
+
+.projects-page {
+    background: #f7fafb;
+}
+
+.projects-content {
+    width: min(1240px, calc(100% - 64px));
+    max-width: none;
+    padding: 34px 0 44px;
+}
+
+.projects-page .projects-btn {
+    padding: 10px 14px;
+    border-radius: 8px;
+    gap: 8px;
+    font-size: 13px;
+}
+
+.projects-heading h1 {
+    font-size: 31px;
+    letter-spacing: -0.8px;
+}
+
+.projects-eyebrow {
+    font-size: 10px;
+    margin-bottom: 10px;
+}
+
+.projects-subtitle {
+    font-size: 13px;
+    margin-top: 9px;
+}
+
+.projects-new {
+    min-height: 42px;
+}
+
+.projects-stats {
+    gap: 14px;
+    margin: 28px 0;
+}
+
+.projects-stat {
+    min-height: 96px;
+    padding: 18px;
+    gap: 6px;
+    border-radius: 12px;
+}
+
+.projects-stat span {
+    font-size: 12px;
+}
+
+.projects-stat strong {
+    font-size: 26px;
+}
+
+.projects-toolbar {
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.projects-page .projects-search {
+    height: 42px;
+    padding: 0 13px;
+    border-radius: 8px;
+    font-size: 12px;
+}
+
+.projects-sort-control {
+    font-size: 12px;
+}
+
+.projects-sort {
+    min-height: 40px;
+    border-radius: 8px;
+}
+
+.projects-grid {
+    gap: 16px;
+}
+
+.projects-card {
+    min-height: 255px;
+    padding: 18px;
+    border-radius: 12px;
+}
+
+.projects-card-top {
+    margin-bottom: 16px;
+}
+
+.projects-card-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    font-size: 23px;
+}
+
+.projects-badge {
+    padding: 5px 10px;
+    font-size: 11px;
+}
+
+.projects-card-title {
+    margin-bottom: 12px;
+    font-size: 18px;
+}
+
+.projects-card-description {
+    margin-bottom: 10px;
+    font-size: 12px;
+}
+
+.projects-card-details {
+    gap: 7px;
+    margin-bottom: 16px;
+    font-size: 12px;
+}
+
+.projects-card-actions {
+    gap: 8px;
+    padding-top: 14px;
+}
+
+.projects-empty,
+.projects-error {
+    padding: 42px 22px;
+}
+
+.projects-footer {
+    margin-top: 26px;
+    font-size: 11px;
+}
+
+@media (max-width: 950px) {
+    .projects-content {
+        padding: 30px 0 40px;
+    }
+}
+
+@media (max-width: 600px) {
+    .projects-content {
+        width: calc(100% - 32px);
+        padding: 24px 0 36px;
+    }
+
+    .projects-heading {
+        gap: 16px;
+    }
+
+    .projects-heading h1 {
+        font-size: 27px;
+    }
+
+    .projects-stats {
+        gap: 10px;
+        margin: 22px 0;
+    }
+
+    .projects-stat {
+        min-height: 88px;
+        padding: 13px;
+    }
+
+    .projects-card {
+        min-height: 0;
+        padding: 16px;
+    }
+}
+
+@media (max-width: 380px) {
+    .projects-content {
+        width: calc(100% - 28px);
+        padding: 22px 0 30px;
     }
 }
