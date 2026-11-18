@@ -992,3 +992,7 @@
         min-height: 300px;
     }
 }
+
+.editor-fe15__status-dot.is-saved {
+    background: #26875a;
+}
