@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import JSZip from 'jszip'
 import EditorUmlSlot from './components/editor/EditorUmlSlot.jsx'
 import DiagramCodeLogo from './components/public/DiagramCodeLogo.jsx'
@@ -237,25 +237,83 @@ export function DiagramPanel({ title, status = 'idle', diagram = '', error = '',
         </div>
     )
 }
+export async function persistirProjeto(projeto, projectId, request = apiFetch) {
+    const isCreate = projectId === 'novo' || !projectId
+
+    const response = await request(
+        isCreate ? '/api/projetos' : `/api/projetos/${projectId}`,
+        {
+            method: isCreate ? 'POST' : 'PUT',
+            body: buildPayloadProjeto(projeto),
+        }
+    )
+
+    if (isCreate && !response?.id) {
+        throw new Error(
+            'O servidor não retornou o ID do projeto criado.'
+        )
+    }
+
+    return {
+        id: response?.id || projectId,
+        isCreate,
+    }
+}
 
 export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) {
     const [project, setProject] = useState(createProjetoVazio())
     const [selectedClassIndex, setSelectedClassIndex] = useState(0)
     const [erro, setErro] = useState('')
     const [saving, setSaving] = useState(false)
+    const [generating, setGenerating] = useState(false)
+    const [snapshotSalvo, setSnapshotSalvo] = useState(null)
+    const [snapshotErroSalvar, setSnapshotErroSalvar] = useState(null)
+    const ultimoProjectIdTratadoRef = useRef(null)
+    const idCriadoLocalmenteRef = useRef(null)
     const [resultado, setResultado] = useState(null)
     const [loadingProject, setLoadingProject] = useState(false)
     const [currentProjectId, setCurrentProjectId] = useState(projectId)
     const [diagramState, setDiagramState] = useState({ uml: { status: 'idle', diagram: '', error: '' }, cloud: { status: 'idle', diagram: '', error: '' } })
 
     const problemas = useMemo(() => validarProjeto(project), [project])
+    const snapshotAtual = useMemo(
+        () => JSON.stringify(buildPayloadProjeto(project)),
+        [project]
+    )
+
+    const temAlteracoesNaoSalvas =
+    snapshotSalvo === null || snapshotAtual !== snapshotSalvo
+
+    const houveErroNesteEstado =
+    snapshotErroSalvar !== null &&
+    snapshotErroSalvar === snapshotAtual
+
+    const statusSalvamento = saving
+    ? 'Salvando...'
+    : houveErroNesteEstado
+        ? 'Erro ao salvar'
+        : temAlteracoesNaoSalvas
+            ? 'Alterações não salvas'
+            : 'Salvo'
     const isNovo = currentProjectId === 'novo' || projectId === 'novo'
 
     useEffect(() => {
+        if (ultimoProjectIdTratadoRef.current === projectId) return
+
+        ultimoProjectIdTratadoRef.current = projectId
+
+        if (idCriadoLocalmenteRef.current === projectId) {
+            idCriadoLocalmenteRef.current = null
+            return
+        }
+
         const carregar = async () => {
-            if (projectId === 'novo') {
-                setCurrentProjectId('novo')
-                setProject(createProjetoVazio())
+        if (projectId === 'novo') {
+            setCurrentProjectId('novo')
+            setProject(createProjetoVazio())
+            setSnapshotSalvo(null)
+            setSnapshotErroSalvar(null)
+            setSelectedClassIndex(0)
                 setErro('')
                 setResultado(null)
                 setDiagramState({ uml: { status: 'idle', diagram: '', error: '' }, cloud: { status: 'idle', diagram: '', error: '' } })
@@ -264,12 +322,21 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
 
             setLoadingProject(true)
             setErro('')
+            setSnapshotSalvo(null)
+            setSnapshotErroSalvar(null)
 
             try {
                 const data = await apiFetch(`/api/projetos/${projectId}`)
                 const projetoCarregado = normalizeProjeto(data)
+
                 setCurrentProjectId(projetoCarregado.id || projectId)
                 setProject(projetoCarregado)
+
+                setSnapshotSalvo(
+                    JSON.stringify(buildPayloadProjeto(projetoCarregado))
+                )
+                setSnapshotErroSalvar(null)
+                setSelectedClassIndex(0)
             } catch (err) {
                 setErro(err.message)
                 if (err.message === 'Sessão expirada. Entre novamente.') {
@@ -537,36 +604,54 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
         setErro('')
     }
 
-    const salvar = async () => {
+    const salvarProjeto = async () => {
+        if (saving) return
+
         const erros = validarProjeto(project)
+
         if (erros.length > 0) {
             setErro(erros.join(' • '))
+            setSnapshotErroSalvar(snapshotAtual)
             return
         }
 
+        const payload = buildPayloadProjeto(project)
+        const snapshotEnviado = JSON.stringify(payload)
+
+        const isCreate =
+            currentProjectId === 'novo' || !currentProjectId
+
         try {
             setErro('')
+            setSnapshotErroSalvar(null)
             setSaving(true)
-            const payload = buildPayloadProjeto(project)
-            const isCreate = currentProjectId === 'novo' || !currentProjectId
-            const response = await apiFetch(isCreate ? '/api/projetos' : `/api/projetos/${currentProjectId}`, {
-                method: isCreate ? 'POST' : 'PUT',
-                body: payload,
-            })
 
-            if (response?.id) {
-                setCurrentProjectId(response.id)
-                onProjectSaved?.(response.id)
+            const { id: idSalvo } = await persistirProjeto(
+                project,
+                currentProjectId
+            )
+
+            if (isCreate) {
+                idCriadoLocalmenteRef.current = idSalvo
+                setCurrentProjectId(idSalvo)
             }
 
-            const gerado = await apiFetch(`/api/projetos/${response?.id || currentProjectId}/gerar`, { method: 'POST' })
-            if (import.meta.env.DEV && gerado?.uml) {
-                console.debug('[Editor] resposta.uml recebido do backend:', gerado.uml)
+            setProject((prev) =>
+                prev.id === idSalvo
+                    ? prev
+                    : { ...prev, id: idSalvo }
+            )
+
+            setSnapshotSalvo(snapshotEnviado)
+            setSnapshotErroSalvar(null)
+
+            if (isCreate) {
+                onProjectSaved?.(idSalvo)
             }
-            setResultado(gerado)
-            setProject((prev) => ({ ...prev, ...(response || {}), id: response?.id || prev.id || currentProjectId }))
         } catch (err) {
-            setErro(err.message)
+            setErro(err.message || 'Não foi possível salvar o projeto.')
+            setSnapshotErroSalvar(snapshotEnviado)
+
             if (err.message === 'Sessão expirada. Entre novamente.') {
                 clearAuth()
                 onLogout()
@@ -575,7 +660,46 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
             setSaving(false)
         }
     }
+    const gerarCodigo = async () => {
+        if (saving || generating) return
 
+        if (
+            !currentProjectId ||
+            currentProjectId === 'novo' ||
+            temAlteracoesNaoSalvas
+        ) {
+            setErro('Salve as alterações antes de gerar código.')
+            return
+        }
+
+        const erros = validarProjeto(project)
+
+        if (erros.length > 0) {
+            setErro(erros.join(' • '))
+            return
+        }
+
+        try {
+            setErro('')
+            setGenerating(true)
+
+            const gerado = await apiFetch(
+                `/api/projetos/${currentProjectId}/gerar`,
+                { method: 'POST' }
+            )
+
+            setResultado(gerado)
+        } catch (err) {
+            setErro(err.message || 'Não foi possível gerar código.')
+
+            if (err.message === 'Sessão expirada. Entre novamente.') {
+                clearAuth()
+                onLogout()
+            }
+        } finally {
+            setGenerating(false)
+        }
+    }
     const baixarTudo = async () => {
         if (!resultado?.artefatos?.length) {
             setErro('Ainda não há artefatos para baixar.')
@@ -683,9 +807,19 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
                     />
                 </div>
 
-                <span className="editor-fe15__status">
-                    <span className="editor-fe15__status-dot" />
-                    {saving ? 'Salvando...' : 'Em edição'}
+                <span
+                    className="editor-fe15__status"
+                    role="status"
+                    aria-live="polite"
+                >
+                    <span
+                        className={`editor-fe15__status-dot${
+                            !saving && !temAlteracoesNaoSalvas && !houveErroNesteEstado
+                                ? ' is-saved'
+                                : ''
+                        }`}
+                    />
+                    {statusSalvamento}
                 </span>
 
                 <div className="editor-fe15__actions">
@@ -700,12 +834,30 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
 
                     <button
                         type="button"
-                        className="editor-fe15__generate"
-                        onClick={salvar}
+                        className="editor-fe15__export"
+                        onClick={salvarProjeto}
                         disabled={saving || problemas.length > 0}
-                        title="Salva o projeto e gera os artefatos"
                     >
-                        {saving ? 'Gerando...' : 'Gerar código'}
+                        {saving ? 'Salvando...' : 'Salvar'}
+                    </button>
+
+                    <button
+                        type="button"
+                        className="editor-fe15__generate"
+                        onClick={gerarCodigo}
+                        disabled={
+                            saving ||
+                            generating ||
+                            temAlteracoesNaoSalvas ||
+                            problemas.length > 0
+                        }
+                        title={
+                            temAlteracoesNaoSalvas
+                                ? 'Salve as alterações antes de gerar código'
+                                : 'Gerar código do projeto salvo'
+                        }
+                    >
+                        {generating ? 'Gerando...' : 'Gerar código'}
                     </button>
                 </div>
             </header>
@@ -832,6 +984,7 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
                     </div>
 
                     <EditorUmlSlot
+                        projeto={project}
                         classes={classes}
                         selectedIndex={selectedIndex}
                     />
