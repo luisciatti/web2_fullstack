@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import JSZip from 'jszip'
-import UmlLivePreview from './components/diagramas/UmlLivePreview.jsx'
+import EditorUmlSlot from './components/editor/EditorUmlSlot.jsx'
+import DiagramCodeLogo from './components/public/DiagramCodeLogo.jsx'
+import './Editor.css'
 import { apiFetch, clearAuth } from './api.js'
 
 const TIPOS_ATRIBUTO = ['String', 'Long', 'Integer', 'Double', 'BigDecimal', 'Boolean', 'LocalDate', 'LocalDateTime']
@@ -238,6 +240,7 @@ export function DiagramPanel({ title, status = 'idle', diagram = '', error = '',
 
 export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) {
     const [project, setProject] = useState(createProjetoVazio())
+    const [selectedClassIndex, setSelectedClassIndex] = useState(0)
     const [erro, setErro] = useState('')
     const [saving, setSaving] = useState(false)
     const [resultado, setResultado] = useState(null)
@@ -347,7 +350,19 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
     }
 
     const adicionarClasse = () => {
-        setProject((prev) => ({ ...prev, classes: [...(prev.classes || []), { nome: '', atributos: [], metodos: [] }] }))
+        setSelectedClassIndex(project.classes?.length || 0)
+
+        setProject((prev) => ({
+            ...prev,
+            classes: [
+                ...(prev.classes || []),
+                {
+                    nome: '',
+                    atributos: [],
+                    metodos: []
+                }
+            ]
+        }))
     }
 
     const atualizarClasse = (indice, campo, valor) => {
@@ -614,11 +629,19 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
 
     const nomesClasses = (project.classes || []).map((classe) => classe.nome).filter(Boolean)
     const idsServicos = (project.servicosCloud || []).map((servico) => servico.id).filter(Boolean)
+    const classes = project.classes || []
+
+    const selectedIndex = Math.min(
+        selectedClassIndex,
+        Math.max(0, classes.length - 1)
+    )
+
+    const selectedClass = classes[selectedIndex] || null
 
     if (loadingProject) {
         return (
-            <div className="shell">
-                <div className="card wide">
+            <div className="shell editor-fe15">
+                <div className="card wide editor-fe15__container">
                     <div className="topline">
                         <h1>{isNovo ? 'Novo projeto' : 'Editar projeto'}</h1>
                         <div className="actions">
@@ -632,15 +655,97 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
     }
 
     return (
-        <div className="shell">
-            <div className="card wide">
-                <div className="topline">
-                    <h1>{isNovo ? 'Novo projeto' : 'Editar projeto'}</h1>
-                    <div className="actions">
-                        <button type="button" onClick={onBack}>Voltar</button>
-                        <button type="button" onClick={salvar} disabled={saving || problemas.length > 0}>{saving ? 'Salvando...' : 'Salvar e gerar'}</button>
-                    </div>
+    <div className="shell editor-fe15">
+        <div className="card wide editor-fe15__container">
+            <header className="editor-fe15__header">
+                <div className="editor-fe15__brand">
+                    <DiagramCodeLogo />
                 </div>
+
+                <div className="editor-fe15__breadcrumb">
+                    <button type="button" onClick={onBack}>
+                        Meus projetos
+                    </button>
+
+                    <span aria-hidden="true">/</span>
+
+                    <input
+                        type="text"
+                        aria-label="Nome do projeto"
+                        placeholder="Nome do projeto"
+                        value={project.nome}
+                        onChange={(event) =>
+                            setProject((prev) => ({
+                                ...prev,
+                                nome: event.target.value
+                            }))
+                        }
+                    />
+                </div>
+
+                <span className="editor-fe15__status">
+                    <span className="editor-fe15__status-dot" />
+                    {saving ? 'Salvando...' : 'Em edição'}
+                </span>
+
+                <div className="editor-fe15__actions">
+                    <button
+                        type="button"
+                        className="editor-fe15__export"
+                        onClick={baixarTudo}
+                        disabled={!resultado?.artefatos?.length}
+                    >
+                        Exportar
+                    </button>
+
+                    <button
+                        type="button"
+                        className="editor-fe15__generate"
+                        onClick={salvar}
+                        disabled={saving || problemas.length > 0}
+                        title="Salva o projeto e gera os artefatos"
+                    >
+                        {saving ? 'Gerando...' : 'Gerar código'}
+                    </button>
+                </div>
+            </header>
+
+            <div className="editor-fe15__toolbar">
+                <h2>Diagrama de classes</h2>
+
+                <div className="editor-fe15__tools">
+                    <button
+                        type="button"
+                        className="editor-fe15__tool-primary"
+                        onClick={adicionarClasse}
+                    >
+                        + Classe
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={() => adicionarAtributo(selectedIndex)}
+                        disabled={!selectedClass}
+                    >
+                        + Atributo
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={() => adicionarMetodo(selectedIndex)}
+                        disabled={!selectedClass}
+                    >
+                        + Método
+                    </button>
+                </div>
+
+                <a
+                    className="editor-fe15__preview-link"
+                    href="#editor-diagrama"
+                >
+                    ▤ Visualizar UML
+                </a>
+            </div>
 
                 {erro && <div className="error">{erro}</div>}
                 {problemas.length > 0 && (
@@ -650,6 +755,242 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
                     </div>
                 )}
 
+            <div className="editor-fe15__workspace">
+            <aside
+                className="editor-fe15__panel editor-fe15__structure"
+                aria-label="Estrutura de classes"
+            >
+                <p className="editor-fe15__caption">
+                    ESTRUTURA DO PROJETO
+                </p>
+
+                <strong className="editor-fe15__project-title">
+                    ▾ {project.nome || 'Novo projeto'}
+                </strong>
+
+                <div className="editor-fe15__class-list">
+                    {classes.map((classe, indice) => (
+                        <div key={`estrutura-${indice}`}>
+                            <button
+                                type="button"
+                                className={`editor-fe15__class-item${
+                                    selectedIndex === indice
+                                        ? ' is-selected'
+                                        : ''
+                                }`}
+                                aria-pressed={selectedIndex === indice}
+                                onClick={() => setSelectedClassIndex(indice)}
+                            >
+                                <strong>
+                                    ▦ {classe.nome || `Classe ${indice + 1}`}
+                                </strong>
+                            </button>
+
+                            {selectedIndex === indice && (
+                                <div className="editor-fe15__class-details">
+                                    <span>
+                                        └ Atributos ({classe.atributos?.length || 0})
+                                    </span>
+                                    <span>
+                                        └ Métodos ({classe.metodos?.length || 0})
+                                    </span>
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+
+                <div className="editor-fe15__diagram-nav">
+                    <p className="editor-fe15__caption">
+                        DIAGRAMAS
+                    </p>
+
+                    <a href="#editor-diagrama">
+                        ▦ Diagrama de classes
+                    </a>
+
+                    <span>Visualização Cloud</span>
+                </div>
+
+                <button
+                    type="button"
+                    className="editor-fe15__secondary"
+                    onClick={adicionarClasse}
+                >
+                    + Adicionar classe
+                </button>
+            </aside>
+
+                <section
+                    className="editor-fe15__panel editor-fe15__canvas"
+                    id="editor-diagrama"
+                    aria-label="Área do diagrama"
+                >
+                    <div className="editor-fe15__panel-title">
+                        <h2>Diagrama UML</h2>
+                        <span>Prévia</span>
+                    </div>
+
+                    <EditorUmlSlot
+                        classes={classes}
+                        selectedIndex={selectedIndex}
+                    />
+                </section>
+
+                <aside
+                    className="editor-fe15__panel editor-fe15__inspector"
+                    aria-label="Propriedades da classe"
+                >
+                    <div className="editor-fe15__panel-title">
+                        <h2>Propriedades</h2>
+                    </div>
+
+                    {!selectedClass ? (
+                        <p className="editor-fe15__empty">
+                            Adicione ou selecione uma classe para começar.
+                        </p>
+                    ) : (
+                        <div className="editor-fe15__inspector-body">
+                            <label>
+                                Nome da classe
+                                <input
+                                    value={selectedClass.nome}
+                                    onChange={(event) =>
+                                        atualizarClasse(
+                                            selectedIndex,
+                                            'nome',
+                                            event.target.value
+                                        )
+                                    }
+                                />
+                            </label>
+
+                            <div className="editor-fe15__section-title">
+                                <h3>Atributos</h3>
+                                <button
+                                    type="button"
+                                    onClick={() => adicionarAtributo(selectedIndex)}
+                                >
+                                    + Adicionar
+                                </button>
+                            </div>
+
+                            {(selectedClass.atributos || []).map((atributo, indice) => (
+                                <div className="editor-fe15__property" key={`attr-${indice}`}>
+                                    <input
+                                        aria-label={`Nome do atributo ${indice + 1}`}
+                                        placeholder="Nome"
+                                        value={atributo.nome}
+                                        onChange={(event) =>
+                                            atualizarAtributo(
+                                                selectedIndex,
+                                                indice,
+                                                'nome',
+                                                event.target.value
+                                            )
+                                        }
+                                    />
+
+                                    <select
+                                        aria-label={`Tipo do atributo ${indice + 1}`}
+                                        value={atributo.tipo}
+                                        onChange={(event) =>
+                                            atualizarAtributo(
+                                                selectedIndex,
+                                                indice,
+                                                'tipo',
+                                                event.target.value
+                                            )
+                                        }
+                                    >
+                                        {TIPOS_ATRIBUTO.map((tipo) => (
+                                            <option key={tipo} value={tipo}>
+                                                {tipo}
+                                            </option>
+                                        ))}
+                                    </select>
+
+                                    <button
+                                        type="button"
+                                        className="editor-fe15__remove"
+                                        onClick={() => removerAtributo(selectedIndex, indice)}
+                                    >
+                                        Remover atributo
+                                    </button>
+                                </div>
+                            ))}
+
+                            <div className="editor-fe15__section-title">
+                                <h3>Métodos</h3>
+                                <button
+                                    type="button"
+                                    onClick={() => adicionarMetodo(selectedIndex)}
+                                >
+                                    + Adicionar
+                                </button>
+                            </div>
+
+                            {(selectedClass.metodos || []).map((metodo, indice) => (
+                                <div className="editor-fe15__property" key={`met-${indice}`}>
+                                    <input
+                                        aria-label={`Nome do método ${indice + 1}`}
+                                        placeholder="Nome"
+                                        value={metodo.nome}
+                                        onChange={(event) =>
+                                            atualizarMetodo(
+                                                selectedIndex,
+                                                indice,
+                                                'nome',
+                                                event.target.value
+                                            )
+                                        }
+                                    />
+
+                                    <select
+                                        aria-label={`Retorno do método ${indice + 1}`}
+                                        value={metodo.tipoRetorno}
+                                        onChange={(event) =>
+                                            atualizarMetodo(
+                                                selectedIndex,
+                                                indice,
+                                                'tipoRetorno',
+                                                event.target.value
+                                            )
+                                        }
+                                    >
+                                        {TIPOS_RETORNO.map((tipo) => (
+                                            <option key={tipo} value={tipo}>
+                                                {tipo}
+                                            </option>
+                                        ))}
+                                    </select>
+
+                                    <button
+                                        type="button"
+                                        className="editor-fe15__remove"
+                                        onClick={() => removerMetodo(selectedIndex, indice)}
+                                    >
+                                        Remover método
+                                    </button>
+                                </div>
+                            ))}
+
+                            <button
+                                type="button"
+                                className="editor-fe15__remove-class"
+                                onClick={() => removerClasseLocal(selectedIndex)}
+                            >
+                                Excluir classe
+                            </button>
+                        </div>
+                    )}
+                </aside>
+            </div>
+
+            <details className="editor-fe15__advanced">
+                <summary>
+                    Configurações completas do projeto (relações, cloud, JSON)
+                </summary>
                 <div className="editor-layout">
                     <div className="editor-stack">
                         <fieldset>
@@ -792,11 +1133,8 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
                             <pre>{JSON.stringify(buildPayloadProjeto(project), null, 2)}</pre>
                         </details>
                     </div>
-
-                    <aside className="uml-panel">
-                        <UmlLivePreview projeto={project} />
-                    </aside>
                 </div>
+            </details>
 
                 {resultado && (
                     <div className="resultado">
