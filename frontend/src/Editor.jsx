@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import JSZip from 'jszip'
 import EditorUmlSlot from './components/editor/EditorUmlSlot.jsx'
+import ClassManager from './components/editor/ClassManager.jsx'
 import DiagramCodeLogo from './components/public/DiagramCodeLogo.jsx'
 import './Editor.css'
 import { apiFetch, clearAuth } from './api.js'
@@ -126,7 +127,7 @@ export function buildPayloadProjeto(projeto) {
 
 export function renomearClasse(projeto, indice, nomeNovo) {
     const nomeAntigo = projeto.classes?.[indice]?.nome || ''
-    const nomeFinal = String(nomeNovo || '').trim()
+    const nomeFinal = String(nomeNovo ?? '')
     return {
         ...projeto,
         classes: (projeto.classes || []).map((classe, index) => index === indice ? { ...classe, nome: nomeFinal } : classe),
@@ -270,6 +271,8 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
     const [snapshotErroSalvar, setSnapshotErroSalvar] = useState(null)
     const ultimoProjectIdTratadoRef = useRef(null)
     const idCriadoLocalmenteRef = useRef(null)
+    const nomeClasseInputRef = useRef(null)
+    const deveFocarNomeClasseRef = useRef(false)
     const [resultado, setResultado] = useState(null)
     const [loadingProject, setLoadingProject] = useState(false)
     const [currentProjectId, setCurrentProjectId] = useState(projectId)
@@ -296,6 +299,13 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
             ? 'Alterações não salvas'
             : 'Salvo'
     const isNovo = currentProjectId === 'novo' || projectId === 'novo'
+
+    useEffect(() => {
+        if (!deveFocarNomeClasseRef.current) return
+
+        deveFocarNomeClasseRef.current = false
+        nomeClasseInputRef.current?.focus()
+    }, [project.classes.length])
 
     useEffect(() => {
         if (ultimoProjectIdTratadoRef.current === projectId) return
@@ -417,6 +427,7 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
     }
 
     const adicionarClasse = () => {
+        deveFocarNomeClasseRef.current = true
         setSelectedClassIndex(project.classes?.length || 0)
 
         setProject((prev) => ({
@@ -442,7 +453,24 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
     }
 
     const removerClasseLocal = (indice) => {
+        const classe = project.classes?.[indice]
+        if (!classe) return
+
+        const nome = classe.nome.trim() || `Classe ${indice + 1}`
+
+        if (!window.confirm(`Excluir a classe "${nome}" e suas relações?`)) {
+            return
+        }
+
         setProject((prev) => removerClasse(prev, indice))
+
+        setSelectedClassIndex((prev) => {
+            const proximo = prev > indice ? prev - 1 : prev
+            return Math.min(
+                proximo,
+                Math.max(0, project.classes.length - 2)
+            )
+        })
     }
 
     const adicionarAtributo = (classeIndex) => {
@@ -920,37 +948,11 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
                     ▾ {project.nome || 'Novo projeto'}
                 </strong>
 
-                <div className="editor-fe15__class-list">
-                    {classes.map((classe, indice) => (
-                        <div key={`estrutura-${indice}`}>
-                            <button
-                                type="button"
-                                className={`editor-fe15__class-item${
-                                    selectedIndex === indice
-                                        ? ' is-selected'
-                                        : ''
-                                }`}
-                                aria-pressed={selectedIndex === indice}
-                                onClick={() => setSelectedClassIndex(indice)}
-                            >
-                                <strong>
-                                    ▦ {classe.nome || `Classe ${indice + 1}`}
-                                </strong>
-                            </button>
-
-                            {selectedIndex === indice && (
-                                <div className="editor-fe15__class-details">
-                                    <span>
-                                        └ Atributos ({classe.atributos?.length || 0})
-                                    </span>
-                                    <span>
-                                        └ Métodos ({classe.metodos?.length || 0})
-                                    </span>
-                                </div>
-                            )}
-                        </div>
-                    ))}
-                </div>
+                <ClassManager
+                    classes={classes}
+                    selectedIndex={selectedIndex}
+                    onChange={setSelectedClassIndex}
+                />
 
                 <div className="editor-fe15__diagram-nav">
                     <p className="editor-fe15__caption">
@@ -1007,6 +1009,7 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
                             <label>
                                 Nome da classe
                                 <input
+                                    ref={nomeClasseInputRef}
                                     value={selectedClass.nome}
                                     onChange={(event) =>
                                         atualizarClasse(
