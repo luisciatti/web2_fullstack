@@ -2,11 +2,11 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import JSZip from 'jszip'
 import EditorUmlSlot from './components/editor/EditorUmlSlot.jsx'
 import ClassManager from './components/editor/ClassManager.jsx'
+import AttributeEditor, { TIPOS_ATRIBUTO } from './components/editor/AttributeEditor.jsx'
 import DiagramCodeLogo from './components/public/DiagramCodeLogo.jsx'
 import './Editor.css'
 import { apiFetch, clearAuth } from './api.js'
 
-const TIPOS_ATRIBUTO = ['String', 'Long', 'Integer', 'Double', 'BigDecimal', 'Boolean', 'LocalDate', 'LocalDateTime']
 const TIPOS_RETORNO = ['void', 'String', 'Long', 'Integer', 'Double', 'BigDecimal', 'Boolean']
 const TIPOS_RELACAO = ['ONE_TO_ONE', 'ONE_TO_MANY', 'MANY_TO_ONE', 'MANY_TO_MANY']
 const TIPOS_SERVICO = {
@@ -1021,60 +1021,16 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
                                 />
                             </label>
 
-                            <div className="editor-fe15__section-title">
-                                <h3>Atributos</h3>
-                                <button
-                                    type="button"
-                                    onClick={() => adicionarAtributo(selectedIndex)}
-                                >
-                                    + Adicionar
-                                </button>
-                            </div>
-
-                            {(selectedClass.atributos || []).map((atributo, indice) => (
-                                <div className="editor-fe15__property" key={`attr-${indice}`}>
-                                    <input
-                                        aria-label={`Nome do atributo ${indice + 1}`}
-                                        placeholder="Nome"
-                                        value={atributo.nome}
-                                        onChange={(event) =>
-                                            atualizarAtributo(
-                                                selectedIndex,
-                                                indice,
-                                                'nome',
-                                                event.target.value
-                                            )
-                                        }
-                                    />
-
-                                    <select
-                                        aria-label={`Tipo do atributo ${indice + 1}`}
-                                        value={atributo.tipo}
-                                        onChange={(event) =>
-                                            atualizarAtributo(
-                                                selectedIndex,
-                                                indice,
-                                                'tipo',
-                                                event.target.value
-                                            )
-                                        }
-                                    >
-                                        {TIPOS_ATRIBUTO.map((tipo) => (
-                                            <option key={tipo} value={tipo}>
-                                                {tipo}
-                                            </option>
-                                        ))}
-                                    </select>
-
-                                    <button
-                                        type="button"
-                                        className="editor-fe15__remove"
-                                        onClick={() => removerAtributo(selectedIndex, indice)}
-                                    >
-                                        Remover atributo
-                                    </button>
-                                </div>
-                            ))}
+                            <AttributeEditor
+                                atributos={selectedClass.atributos}
+                                onAdd={() => adicionarAtributo(selectedIndex)}
+                                onUpdate={(indice, campo, valor) =>
+                                    atualizarAtributo(selectedIndex, indice, campo, valor)
+                                }
+                                onRemove={(indice) =>
+                                    removerAtributo(selectedIndex, indice)
+                                }
+                            />
 
                             <div className="editor-fe15__section-title">
                                 <h3>Métodos</h3>
