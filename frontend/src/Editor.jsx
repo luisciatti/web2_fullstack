@@ -4,11 +4,11 @@ import EditorUmlSlot from './components/editor/EditorUmlSlot.jsx'
 import ClassManager from './components/editor/ClassManager.jsx'
 import AttributeEditor, { TIPOS_ATRIBUTO } from './components/editor/AttributeEditor.jsx'
 import MethodEditor, { TIPOS_RETORNO } from './components/editor/MethodEditor.jsx'
+import RelationsEditor, { TIPOS_RELACAO } from './components/editor/RelationsEditor.jsx'
 import DiagramCodeLogo from './components/public/DiagramCodeLogo.jsx'
 import './Editor.css'
 import { apiFetch, clearAuth } from './api.js'
 
-const TIPOS_RELACAO = ['ONE_TO_ONE', 'ONE_TO_MANY', 'MANY_TO_ONE', 'MANY_TO_MANY']
 const TIPOS_SERVICO = {
     aws: ['VPC', 'EC2', 'ASG', 'ALB', 'RDS', 'S3', 'LAMBDA', 'SQS', 'SNS', 'CLOUDWATCH', 'DYNAMODB'],
     oci: ['VCN', 'INSTANCE', 'DATABASE', 'OBJECT_STORAGE', 'LOAD_BALANCER'],
@@ -177,7 +177,21 @@ export function validarProjeto(projeto) {
         const origem = String(relacao?.origem || '').trim()
         const destino = String(relacao?.destino || '').trim()
         const tipo = String(relacao?.tipo || '').trim()
-        if (!origem || !destino || !tipo) erros.push('Há uma relação incompleta.')
+
+        if (!origem || !destino || !tipo) {
+            erros.push('Há uma relação incompleta.')
+            continue
+        }
+
+        if (!nomesClasses.has(origem) || !nomesClasses.has(destino)) {
+            erros.push(
+                `Relação inválida: "${origem}" ou "${destino}" não corresponde a uma classe do projeto.`
+            )
+        }
+
+        if (!TIPOS_RELACAO.includes(tipo)) {
+            erros.push(`Tipo de relação inválido: "${tipo}".`)
+        }
     }
 
     const idsServicos = new Set()
@@ -779,7 +793,6 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
         return mapa
     }, [resultado])
 
-    const nomesClasses = (project.classes || []).map((classe) => classe.nome).filter(Boolean)
     const idsServicos = (project.servicosCloud || []).map((servico) => servico.id).filter(Boolean)
     const classes = project.classes || []
 
@@ -1124,24 +1137,13 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
 
                         <fieldset>
                             <legend>Relações</legend>
-                            {(project.relacoes || []).map((relacao, relacaoIndex) => (
-                                <div key={`relacao-${relacaoIndex}`} className="card-inside row-grid">
-                                    <select value={relacao.origem} onChange={(event) => atualizarRelacao(relacaoIndex, 'origem', event.target.value)}>
-                                        <option value="">Origem</option>
-                                        {nomesClasses.map((nome) => <option key={nome} value={nome}>{nome}</option>)}
-                                    </select>
-                                    <select value={relacao.destino} onChange={(event) => atualizarRelacao(relacaoIndex, 'destino', event.target.value)}>
-                                        <option value="">Destino</option>
-                                        {nomesClasses.map((nome) => <option key={nome} value={nome}>{nome}</option>)}
-                                    </select>
-                                    <select value={relacao.tipo} onChange={(event) => atualizarRelacao(relacaoIndex, 'tipo', event.target.value)}>
-                                        <option value="">Tipo</option>
-                                        {TIPOS_RELACAO.map((tipo) => <option key={tipo} value={tipo}>{tipo}</option>)}
-                                    </select>
-                                    <button type="button" className="danger" onClick={() => removerRelacao(relacaoIndex)}>Remover</button>
-                                </div>
-                            ))}
-                            <button type="button" onClick={adicionarRelacao}>Adicionar relação</button>
+                            <RelationsEditor
+                                classes={classes}
+                                relacoes={project.relacoes}
+                                onAdd={adicionarRelacao}
+                                onUpdate={atualizarRelacao}
+                                onRemove={removerRelacao}
+                            />
                         </fieldset>
 
                         <fieldset>
