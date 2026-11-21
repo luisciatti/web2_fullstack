@@ -3,11 +3,11 @@ import JSZip from 'jszip'
 import EditorUmlSlot from './components/editor/EditorUmlSlot.jsx'
 import ClassManager from './components/editor/ClassManager.jsx'
 import AttributeEditor, { TIPOS_ATRIBUTO } from './components/editor/AttributeEditor.jsx'
+import MethodEditor, { TIPOS_RETORNO } from './components/editor/MethodEditor.jsx'
 import DiagramCodeLogo from './components/public/DiagramCodeLogo.jsx'
 import './Editor.css'
 import { apiFetch, clearAuth } from './api.js'
 
-const TIPOS_RETORNO = ['void', 'String', 'Long', 'Integer', 'Double', 'BigDecimal', 'Boolean']
 const TIPOS_RELACAO = ['ONE_TO_ONE', 'ONE_TO_MANY', 'MANY_TO_ONE', 'MANY_TO_MANY']
 const TIPOS_SERVICO = {
     aws: ['VPC', 'EC2', 'ASG', 'ALB', 'RDS', 'S3', 'LAMBDA', 'SQS', 'SNS', 'CLOUDWATCH', 'DYNAMODB'],
@@ -1032,60 +1032,16 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
                                 }
                             />
 
-                            <div className="editor-fe15__section-title">
-                                <h3>Métodos</h3>
-                                <button
-                                    type="button"
-                                    onClick={() => adicionarMetodo(selectedIndex)}
-                                >
-                                    + Adicionar
-                                </button>
-                            </div>
-
-                            {(selectedClass.metodos || []).map((metodo, indice) => (
-                                <div className="editor-fe15__property" key={`met-${indice}`}>
-                                    <input
-                                        aria-label={`Nome do método ${indice + 1}`}
-                                        placeholder="Nome"
-                                        value={metodo.nome}
-                                        onChange={(event) =>
-                                            atualizarMetodo(
-                                                selectedIndex,
-                                                indice,
-                                                'nome',
-                                                event.target.value
-                                            )
-                                        }
-                                    />
-
-                                    <select
-                                        aria-label={`Retorno do método ${indice + 1}`}
-                                        value={metodo.tipoRetorno}
-                                        onChange={(event) =>
-                                            atualizarMetodo(
-                                                selectedIndex,
-                                                indice,
-                                                'tipoRetorno',
-                                                event.target.value
-                                            )
-                                        }
-                                    >
-                                        {TIPOS_RETORNO.map((tipo) => (
-                                            <option key={tipo} value={tipo}>
-                                                {tipo}
-                                            </option>
-                                        ))}
-                                    </select>
-
-                                    <button
-                                        type="button"
-                                        className="editor-fe15__remove"
-                                        onClick={() => removerMetodo(selectedIndex, indice)}
-                                    >
-                                        Remover método
-                                    </button>
-                                </div>
-                            ))}
+                            <MethodEditor
+                                metodos={selectedClass.metodos}
+                                onAdd={() => adicionarMetodo(selectedIndex)}
+                                onUpdate={(indice, campo, valor) =>
+                                    atualizarMetodo(selectedIndex, indice, campo, valor)
+                                }
+                                onRemove={(indice) =>
+                                    removerMetodo(selectedIndex, indice)
+                                }
+                            />
 
                             <button
                                 type="button"
