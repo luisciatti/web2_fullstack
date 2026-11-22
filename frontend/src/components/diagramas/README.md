@@ -10,8 +10,10 @@ import UmlLivePreview from './components/diagramas/UmlLivePreview.jsx'
 
 O componente recebe apenas `projeto`. Usa o serializador da FE21, sem API,
 login ou persistência. Projetos sem classes com nome exibível mostram o estado
-vazio. Mudanças no texto serializado iniciam uma nova renderização; resultados
-anteriores são descartados pelo cleanup do efeito, inclusive após desmontagem.
+vazio. Passe um novo objeto `projeto` a cada edição local. Quando o texto
+serializado muda, a renderização começa após 300 ms sem novas mudanças.
+O SVG atual permanece visível durante a atualização. O cleanup cancela o timer
+e descarta resultados de renderizações pendentes ao editar ou desmontar.
 O Mermaid é inicializado uma vez neste módulo de renderização, em modo strict.
 Somente seu SVG resultante é inserido na área visível. Mensagens de erro são
 texto fixo, sem interpolar HTML ou detalhes internos do projeto.
@@ -23,13 +25,12 @@ Dentro de `frontend`, execute `npm run dev` e abra
 Esta página é um exemplo de desenvolvimento, independente das rotas do app;
 não requer backend e não entra no build principal de produção.
 
-1. Confira Pedido e Cliente, os membros e a associação muitos-para-um.
-2. Clique em **Projeto vazio** e confira a mensagem de orientação.
-3. Clique em **Carregar exemplo** e confira o retorno do SVG.
-4. Edite o nome de uma classe e a respectiva origem/destino no JSON.
-5. Faça várias alterações rápidas: o resultado final deve refletir o último JSON.
-6. Insira uma classe com nome vazio: ela deve ser ignorada sem quebrar a prévia.
-7. Reduza a janela e confira a rolagem do diagrama.
+1. Confira a classe **Pedido** e clique em **Adicionar classe**. A prévia deve permanecer igual enquanto o nome estiver vazio.
+2. Digite **Cliente** em **Nome**. A classe deve aparecer após a pausa de 300 ms e o tempo de desenho do Mermaid.
+3. Preencha **Atributo** com `email` e **Método** com `validar`. Edite os valores e confira os membros no canvas.
+4. Escolha **Um para muitos** em **Relação com Pedido** e depois **Um para um**. Confira a associação e a troca da cardinalidade.
+5. Clique em **Excluir classe** e confira que Cliente e sua associação desaparecem.
+6. Confira na aba **Network** do navegador que as edições não disparam requisições para `/api/`.
 
 O carregamento pode ser breve. O tratamento de falhas da biblioteca e o descarte
 de resultados antigos são cobertos nos testes automatizados com Mermaid simulado.

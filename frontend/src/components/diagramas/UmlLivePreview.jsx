@@ -1,24 +1,35 @@
-import { useEffect, useId, useState } from 'react'
+import { useEffect, useId, useMemo, useState } from 'react'
 import { gerarMermaidUml } from '../../diagramas/gerarMermaidUml.js'
 import { renderizarUml } from './renderizarUml.js'
 import './UmlLivePreview.css'
 
 export default function UmlLivePreview({ projeto }) {
     const componenteId = useId().replace(/[^a-zA-Z0-9_]/g, '')
-    const fonte = gerarMermaidUml(projeto)
+    const fonte = useMemo(() => gerarMermaidUml(projeto), [projeto])
     const vazio = fonte === 'classDiagram'
     const [resultado, setResultado] = useState(null)
     const [zoom, setZoom] = useState(100)
 
     useEffect(() => {
-        setResultado(null)
-        if (vazio) return
-        return renderizarUml(fonte, componenteId, setResultado)
+        if (vazio) {
+            setResultado(null)
+            return
+        }
+
+        let cancelarRender
+        const timeout = setTimeout(() => {
+            cancelarRender = renderizarUml(fonte, componenteId, setResultado)
+        }, 300)
+
+        return () => {
+            clearTimeout(timeout)
+            cancelarRender?.()
+        }
     }, [fonte, vazio, componenteId])
 
-    // Não exibe o SVG anterior enquanto o efeito da nova prop ainda não executou.
     const estado = vazio ? 'empty'
         : resultado?.fonte === fonte ? resultado.status : 'loading'
+    const exibirCanvas = !vazio && resultado?.status === 'success'
 
     return (
         <section className="uml-live-preview" aria-labelledby={`uml-title-${componenteId}`}>
@@ -44,7 +55,7 @@ export default function UmlLivePreview({ projeto }) {
                         Não foi possível desenhar a UML. Confira as classes e relações e tente editar novamente.
                     </p>
                 )}
-                {estado === 'success' && (
+                {exibirCanvas && (
                     <div
                         className="uml-live-preview__canvas"
                         role="img"

@@ -27,6 +27,48 @@ function exemploProjeto() {
 }
 
 describe('gerarMermaidUml', () => {
+    it('mantém o diagrama ao inserir uma classe vazia e a inclui quando ganha nome', () => {
+        const projeto = exemploProjeto()
+        const rascunho = { ...projeto, classes: [...projeto.classes, { nome: '  ' }] }
+        expect(gerarMermaidUml(rascunho)).toBe(gerarMermaidUml(projeto))
+
+        const editado = { ...projeto, classes: [...projeto.classes, { nome: 'Entrega' }] }
+        expect(gerarMermaidUml(editado)).toContain('["Entrega"]')
+    })
+
+    it('reflete edições de membro e cardinalidade no texto Mermaid', () => {
+        const projeto = exemploProjeto()
+        const [pedido, cliente] = projeto.classes
+        const editado = {
+            ...projeto,
+            classes: [{
+                ...pedido,
+                atributos: [{ nome: 'preco', tipo: 'Double' }],
+                metodos: [{ nome: 'recalcular', tipoRetorno: 'void' }],
+            }, cliente],
+            relacoes: [{ ...projeto.relacoes[0], tipo: 'ONE_TO_MANY' }],
+        }
+        const antes = gerarMermaidUml(projeto)
+        const depois = gerarMermaidUml(editado)
+        const [idPedido, idCliente] = obterIds(antes)
+
+        expect(depois).toContain(`${idPedido} : Double preco`)
+        expect(depois).toContain(`${idPedido} : recalcular() void`)
+        expect(depois).toContain(`${idPedido} "1" -- "*" ${idCliente}`)
+        expect(depois).not.toContain('BigDecimal valor')
+        expect(depois).not.toContain('calcularTotal()')
+        expect(depois).not.toContain(`${idPedido} "*" -- "1" ${idCliente}`)
+    })
+
+    it('remove a classe excluída e a associação mesmo com a relação no projeto', () => {
+        const projeto = exemploProjeto()
+        const editado = { ...projeto, classes: [projeto.classes[0]] }
+        const diagrama = gerarMermaidUml(editado)
+        expect(obterIds(diagrama)).toEqual(obterIds(gerarMermaidUml(projeto)).slice(0, 1))
+        expect(diagrama).not.toContain('["Cliente"]')
+        expect(diagrama).not.toContain(' -- ')
+    })
+
     it('aceita o exemplo no parser real do Mermaid', async () => {
         mermaid.initialize({ startOnLoad: false })
         const diagrama = await mermaid.mermaidAPI.getDiagramFromText('classDiagram\ndirection TB')
