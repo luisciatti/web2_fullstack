@@ -57,7 +57,12 @@ describe('ciclo de renderização UML', () => {
         await vi.waitFor(() => expect(aplicar).toHaveBeenCalledTimes(2))
 
         expect(mermaid.initialize).toHaveBeenCalledTimes(1)
-        expect(mermaid.initialize).toHaveBeenCalledWith({ startOnLoad: false, securityLevel: 'strict' })
+        expect(mermaid.initialize).toHaveBeenCalledWith({
+            startOnLoad: false,
+            securityLevel: 'strict',
+            suppressErrorRendering: true,
+            logLevel: 'error',
+        })
         expect(mermaid.render.mock.calls[0][0]).not.toBe(mermaid.render.mock.calls[1][0])
         expect(mermaid.render.mock.calls[0][1]).toBe('classDiagram\nclass A')
         expect(containers.every((container) => container.remove.mock.calls.length === 1)).toBe(true)
