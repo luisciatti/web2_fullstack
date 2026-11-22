@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useState } from 'react'
+import { useId, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { gerarMermaidUml } from '../../diagramas/gerarMermaidUml.js'
 import { renderizarUml } from './renderizarUml.js'
 import './UmlLivePreview.css'
@@ -8,9 +8,12 @@ export default function UmlLivePreview({ projeto }) {
     const fonte = useMemo(() => gerarMermaidUml(projeto), [projeto])
     const vazio = fonte === 'classDiagram'
     const [resultado, setResultado] = useState(null)
+    const versaoAtual = useRef(0)
     const [zoom, setZoom] = useState(100)
 
-    useEffect(() => {
+    // Invalida a versão anterior no commit, antes de qualquer retorno assíncrono.
+    useLayoutEffect(() => {
+        const versao = ++versaoAtual.current
         if (vazio) {
             setResultado(null)
             return
@@ -18,10 +21,17 @@ export default function UmlLivePreview({ projeto }) {
 
         let cancelarRender
         const timeout = setTimeout(() => {
-            cancelarRender = renderizarUml(fonte, componenteId, setResultado)
+            cancelarRender = renderizarUml(fonte, componenteId, (novo) => {
+                if (versao !== versaoAtual.current) return
+                setResultado((anterior) => ({
+                    ...novo,
+                    svg: novo.status === 'success' ? novo.svg : anterior?.svg,
+                }))
+            })
         }, 300)
 
         return () => {
+            versaoAtual.current++
             clearTimeout(timeout)
             cancelarRender?.()
         }
@@ -29,7 +39,7 @@ export default function UmlLivePreview({ projeto }) {
 
     const estado = vazio ? 'empty'
         : resultado?.fonte === fonte ? resultado.status : 'loading'
-    const exibirCanvas = !vazio && resultado?.status === 'success'
+    const exibirCanvas = !vazio && Boolean(resultado?.svg)
 
     return (
         <section className="uml-live-preview" aria-labelledby={`uml-title-${componenteId}`}>

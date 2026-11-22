@@ -4,7 +4,12 @@ let proximoRender = 0
 function carregarMermaid() {
     if (!mermaidPromise) {
         mermaidPromise = import('mermaid').then(({ default: mermaid }) => {
-            mermaid.initialize({ startOnLoad: false, securityLevel: 'strict' })
+            mermaid.initialize({
+                startOnLoad: false,
+                securityLevel: 'strict',
+                suppressErrorRendering: true,
+                logLevel: import.meta.env.PROD ? 'fatal' : 'error',
+            })
             return mermaid
         }).catch((erro) => {
             mermaidPromise = undefined
