@@ -531,20 +531,37 @@
 }
 
 .editor-fe15__breadcrumb input {
-    min-width: 80px;
-    width: 190px;
+    min-width: 120px;
+    width: 240px;
     max-width: 100%;
-    padding: 5px 3px;
-    border: 1px solid transparent;
-    background: transparent;
-    color: #607483;
+    padding: 7px 10px;
+    border: 1px solid #d9e4e9;
+    border-radius: 7px;
+    background: #fff;
+    color: #0b3b50;
     font-size: 13px;
+    font-weight: 600;
+}
+
+.editor-fe15__breadcrumb input::placeholder {
+    color: #8a9ba5;
+    font-weight: 500;
 }
 
 .editor-fe15__breadcrumb input:hover,
 .editor-fe15__breadcrumb input:focus {
-    border-color: #d9e4e9;
+    border-color: #9bb8c4;
     background: #fff;
+}
+
+.editor-fe15__breadcrumb input.is-invalid {
+    border-color: #f1a7a7;
+    background: #fff7f7;
+}
+
+.editor-fe15__breadcrumb input.is-invalid:focus {
+    border-color: #d95c5c;
+    outline: 3px solid rgba(217, 92, 92, 0.18);
 }
 
 .editor-fe15__status {
@@ -995,4 +1012,67 @@
 
 .editor-fe15__status-dot.is-saved {
     background: #26875a;
+}
+
+/* Correções de UX: atalhos, relações e prévia UML real */
+
+.editor-fe15__fix-link {
+    margin-left: 4px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: #0b3b50;
+    font-size: inherit;
+    font-weight: 650;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.editor-fe15__fix-link:hover {
+    background: none;
+    color: #082f40;
+}
+
+.editor-fe15__diagram-nav .editor-fe15__nav-link {
+    justify-self: start;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: #0b3b50;
+    font-size: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.editor-fe15__diagram-nav .editor-fe15__nav-link:hover {
+    background: none;
+    text-decoration: underline;
+}
+
+button.editor-fe15__preview-link {
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+button.editor-fe15__preview-link:hover {
+    background: #f5fafb;
+}
+
+.editor-fe15__hint {
+    margin: 0;
+    color: #72838e;
+    font-size: 11px;
+}
+
+.editor-fe15__section-title button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.editor-uml-slot--live {
+    display: block;
+    padding: 0;
+    border: 0;
+    background: transparent;
 }

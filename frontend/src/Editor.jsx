@@ -5,6 +5,7 @@ import ClassManager from './components/editor/ClassManager.jsx'
 import AttributeEditor, { TIPOS_ATRIBUTO } from './components/editor/AttributeEditor.jsx'
 import MethodEditor, { TIPOS_RETORNO } from './components/editor/MethodEditor.jsx'
 import RelationsEditor, { TIPOS_RELACAO } from './components/editor/RelationsEditor.jsx'
+import ClassRelationsEditor from './components/editor/ClassRelationsEditor.jsx'
 import DiagramCodeLogo from './components/public/DiagramCodeLogo.jsx'
 import './Editor.css'
 import { apiFetch, clearAuth } from './api.js'
@@ -287,6 +288,7 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
     const idCriadoLocalmenteRef = useRef(null)
     const nomeClasseInputRef = useRef(null)
     const deveFocarNomeClasseRef = useRef(false)
+    const nomeProjetoInputRef = useRef(null)
     const [resultado, setResultado] = useState(null)
     const [loadingProject, setLoadingProject] = useState(false)
     const [currentProjectId, setCurrentProjectId] = useState(projectId)
@@ -553,6 +555,31 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
 
     const adicionarRelacao = () => {
         setProject((prev) => ({ ...prev, relacoes: [...(prev.relacoes || []), { origem: '', destino: '', tipo: TIPOS_RELACAO[0] }] }))
+    }
+
+    const adicionarRelacaoDaClasse = (nomeOrigem) => {
+        if (!nomeOrigem) return
+        setProject((prev) => {
+            const outras = (prev.classes || [])
+                .map((classe) => String(classe.nome || '').trim())
+                .filter((nome) => nome && nome !== nomeOrigem)
+            return {
+                ...prev,
+                relacoes: [
+                    ...(prev.relacoes || []),
+                    { origem: nomeOrigem, destino: outras[0] || nomeOrigem, tipo: TIPOS_RELACAO[0] },
+                ],
+            }
+        })
+    }
+
+    const irParaDiagrama = () => {
+        document.getElementById('editor-diagrama')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+
+    const focarNomeProjeto = () => {
+        nomeProjetoInputRef.current?.focus()
+        nomeProjetoInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
     }
 
     const atualizarRelacao = (indice, campo, valor) => {
@@ -835,9 +862,13 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
                     <span aria-hidden="true">/</span>
 
                     <input
+                        ref={nomeProjetoInputRef}
                         type="text"
+                        className={`editor-fe15__project-name${String(project.nome || '').trim() ? '' : ' is-invalid'}`}
                         aria-label="Nome do projeto"
-                        placeholder="Nome do projeto"
+                        aria-invalid={!String(project.nome || '').trim()}
+                        placeholder="Dê um nome ao projeto"
+                        autoFocus={isNovo && !project.nome}
                         value={project.nome}
                         onChange={(event) =>
                             setProject((prev) => ({
@@ -930,21 +961,43 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
                     >
                         + Método
                     </button>
+
+                    <button
+                        type="button"
+                        onClick={() => adicionarRelacaoDaClasse(String(selectedClass?.nome || '').trim())}
+                        disabled={!String(selectedClass?.nome || '').trim()}
+                        title="Relacionar a classe selecionada com outra"
+                    >
+                        + Relação
+                    </button>
                 </div>
 
-                <a
+                <button
+                    type="button"
                     className="editor-fe15__preview-link"
-                    href="#editor-diagrama"
+                    onClick={irParaDiagrama}
                 >
                     ▤ Visualizar UML
-                </a>
+                </button>
             </div>
 
                 {erro && <div className="error">{erro}</div>}
                 {problemas.length > 0 && (
                     <div className="error list-error">
                         <strong>Problemas do formulário:</strong>
-                        <ul>{problemas.map((problema) => <li key={problema}>{problema}</li>)}</ul>
+                        <ul>{problemas.map((problema) => (
+                            <li key={problema}>
+                                {problema}
+                                {problema === 'O nome do projeto é obrigatório.' && (
+                                    <>
+                                        {' '}
+                                        <button type="button" className="editor-fe15__fix-link" onClick={focarNomeProjeto}>
+                                            Preencher nome
+                                        </button>
+                                    </>
+                                )}
+                            </li>
+                        ))}</ul>
                     </div>
                 )}
 
@@ -972,9 +1025,9 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
                         DIAGRAMAS
                     </p>
 
-                    <a href="#editor-diagrama">
+                    <button type="button" className="editor-fe15__nav-link" onClick={irParaDiagrama}>
                         ▦ Diagrama de classes
-                    </a>
+                    </button>
 
                     <span>Visualização Cloud</span>
                 </div>
@@ -1054,6 +1107,15 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
                                 onRemove={(indice) =>
                                     removerMetodo(selectedIndex, indice)
                                 }
+                            />
+
+                            <ClassRelationsEditor
+                                classe={selectedClass}
+                                classes={classes}
+                                relacoes={project.relacoes || []}
+                                onAdd={adicionarRelacaoDaClasse}
+                                onUpdate={atualizarRelacao}
+                                onRemove={removerRelacao}
                             />
 
                             <button
