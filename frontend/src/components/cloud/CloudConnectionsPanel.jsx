@@ -1,15 +1,11 @@
 import { useId } from 'react'
+import { idsDisponiveis } from './modeloCloud.js'
 import './CloudConnectionsPanel.css'
 
 export default function CloudConnectionsPanel({ projeto, onChange }) {
     const tituloId = useId()
     const { servicosCloud = [], conexoesCloud = [] } = projeto
-    const contagem = new Map()
-    for (const { id } of servicosCloud) {
-        const chave = id.trim()
-        contagem.set(chave, (contagem.get(chave) ?? 0) + 1)
-    }
-    const ids = servicosCloud.map(({ id }) => id).filter((id) => id.trim() && contagem.get(id.trim()) === 1)
+    const ids = idsDisponiveis(servicosCloud)
     const idsValidos = new Set(ids)
 
     function atualizarConexao(indice, campo, valor) {
