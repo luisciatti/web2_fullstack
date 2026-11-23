@@ -20,7 +20,9 @@ describe('gerarMermaidCloud', () => {
             servicosCloud: [{ id: '', tipo: 'S3' }, { id: 'x', tipo: 'EC2' }, { id: 'x', tipo: 'RDS' }, { id: 'y', tipo: 'S3' }],
             conexoesCloud: [{ de: 'x', para: 'y' }, { de: 'y', para: '' }],
         })
-        expect(fonte).toBe('flowchart LR\n    Servico_79["S3<br/>y"]')
+        expect(fonte.split('\n').slice(0, 2)).toEqual(['flowchart LR', '    Servico_79["S3<br/>y"]'])
+        expect(fonte).not.toContain('-->')
+        expect(fonte).toContain('class Servico_79 servico')
     })
 
     it('neutraliza caracteres que quebram o Mermaid', () => {

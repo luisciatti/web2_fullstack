@@ -1,6 +1,7 @@
 package gerador;
 
 import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.ArrayList;
@@ -216,17 +217,55 @@ public class GeradorTemplate {
     public String gerarDiagramaCloud(Projeto projeto) {
         StringBuilder sb = new StringBuilder("flowchart LR\n");
 
+        // IDs do Mermaid gerados pelo sistema (svc1, svc2...) para que
+        // identificadores com espaços ou símbolos não quebrem o diagrama.
+        Map<String, String> nos = new LinkedHashMap<>();
+
         for (modelo.ServicoCloudDef servico : projeto.getServicosCloud()) {
-            sb.append("  ").append(servico.getId()).append("[\"").append(servico.getTipo())
-                    .append("\\n").append(servico.getId()).append("\"]\n");
+            String id = textoLimpo(servico.getId());
+            if (id.isEmpty() || nos.containsKey(id)) {
+                continue;
+            }
+
+            String no = "svc" + (nos.size() + 1);
+            nos.put(id, no);
+
+            String tipo = rotuloMermaid(servico.getTipo());
+            sb.append("  ").append(no).append("[\"")
+                    .append(tipo.isEmpty() ? "Servico" : tipo)
+                    .append("<br/>").append(rotuloMermaid(id)).append("\"]\n");
         }
 
         for (modelo.ConexaoCloudDef conexao : projeto.getConexoesCloud()) {
-            sb.append("  ").append(conexao.getDe()).append(" -->|\"").append(conexao.getRotulo())
-                    .append("\"| ").append(conexao.getPara()).append("\n");
+            String de = nos.get(textoLimpo(conexao.getDe()));
+            String para = nos.get(textoLimpo(conexao.getPara()));
+            if (de == null || para == null) {
+                continue;
+            }
+
+            String rotulo = rotuloMermaid(conexao.getRotulo());
+            sb.append("  ").append(de);
+            if (rotulo.isEmpty()) {
+                sb.append(" --> ");
+            } else {
+                sb.append(" -->|\"").append(rotulo).append("\"| ");
+            }
+            sb.append(para).append("\n");
         }
 
         return sb.toString();
+    }
+
+    private String textoLimpo(String valor) {
+        return valor == null ? "" : valor.trim();
+    }
+
+    // Remove caracteres que fecham rótulos ou injetam sintaxe no Mermaid.
+    private String rotuloMermaid(String valor) {
+        return textoLimpo(valor)
+                .replaceAll("[\"<>`|\\[\\]{}();#&]", " ")
+                .replaceAll("\\s+", " ")
+                .trim();
     }
 
     private String gerarRepositorio(ClasseDef classe) {

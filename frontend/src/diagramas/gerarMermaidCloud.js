@@ -31,12 +31,14 @@ export function gerarMermaidCloud(projeto = {}) {
     }
 
     const ids = new Set()
+    const nos = []
     for (const servico of lista(projeto?.servicosCloud)) {
         const id = texto(servico?.id)
         if (!id || contagem.get(id) > 1 || ids.has(id)) continue
         ids.add(id)
 
         const tipo = textoSeguro(servico?.tipo) || 'Serviço'
+        nos.push(identificador(id))
         linhas.push(`    ${identificador(id)}["${tipo}<br/>${textoSeguro(id) || 'serviço'}"]`)
     }
 
@@ -49,6 +51,11 @@ export function gerarMermaidCloud(projeto = {}) {
         linhas.push(rotulo
             ? `    ${identificador(de)} -->|"${rotulo}"| ${identificador(para)}`
             : `    ${identificador(de)} --> ${identificador(para)}`)
+    }
+
+    if (nos.length) {
+        linhas.push('    classDef servico fill:#e9f4f7,stroke:#0b3b50,stroke-width:1.5px,color:#0b3b50')
+        linhas.push(`    class ${nos.join(',')} servico`)
     }
 
     return linhas.join('\n')

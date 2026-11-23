@@ -10,6 +10,7 @@ import CloudServicesPanel from './components/cloud/CloudServicesPanel.jsx'
 import CloudConnectionsPanel from './components/cloud/CloudConnectionsPanel.jsx'
 import CloudPreview from './components/cloud/CloudPreview.jsx'
 import { gerarMermaidCloud } from './diagramas/gerarMermaidCloud.js'
+import CodeWorkspace from './components/geracao/CodeWorkspace.jsx'
 import DiagramCodeLogo from './components/public/DiagramCodeLogo.jsx'
 import './Editor.css'
 import { apiFetch, clearAuth } from './api.js'
@@ -294,10 +295,11 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
     const deveFocarNomeClasseRef = useRef(false)
     const nomeProjetoInputRef = useRef(null)
     const [visao, setVisao] = useState('uml')
+    const [ideAberta, setIdeAberta] = useState(false)
     const [resultado, setResultado] = useState(null)
     const [loadingProject, setLoadingProject] = useState(false)
     const [currentProjectId, setCurrentProjectId] = useState(projectId)
-    const [diagramState, setDiagramState] = useState({ uml: { status: 'idle', diagram: '', error: '' }, cloud: { status: 'idle', diagram: '', error: '' } })
+    const [, setDiagramState] = useState({ uml: { status: 'idle', diagram: '', error: '' }, cloud: { status: 'idle', diagram: '', error: '' } })
 
     const problemas = useMemo(() => validarProjeto(project), [project])
     const snapshotAtual = useMemo(
@@ -766,6 +768,7 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
             )
 
             setResultado(gerado)
+            setIdeAberta(true)
         } catch (err) {
             setErro(err.message || 'Não foi possível gerar código.')
 
@@ -818,15 +821,6 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
         }
     }
 
-    const agrupado = useMemo(() => {
-        const mapa = { JAVA: [], CONFIG: [], INFRA: [], DIAGRAM: [] }
-        for (const artefato of resultado?.artefatos || []) {
-            const nome = String(artefato?.nome || '').toLowerCase()
-            const tipo = nome.endsWith('.java') || nome.includes('java') ? 'JAVA' : nome.endsWith('.yml') || nome.endsWith('.yaml') || nome.endsWith('.xml') ? 'CONFIG' : nome.includes('diagram') || nome.includes('uml') || nome.includes('cloud') ? 'DIAGRAM' : 'INFRA'
-            mapa[tipo].push(artefato)
-        }
-        return mapa
-    }, [resultado])
 
     const idsServicos = (project.servicosCloud || []).map((servico) => servico.id).filter(Boolean)
     const classes = project.classes || []
@@ -903,6 +897,17 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
                 </span>
 
                 <div className="editor-fe15__actions">
+                    {resultado?.artefatos?.length > 0 && (
+                        <button
+                            type="button"
+                            className="editor-fe15__export"
+                            onClick={() => setIdeAberta(true)}
+                            title="Abrir o último código gerado"
+                        >
+                            {'</>'} Ver código
+                        </button>
+                    )}
+
                     <button
                         type="button"
                         className="editor-fe15__export"
@@ -1111,7 +1116,9 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
                                 codigoMermaid={gerarMermaidCloud(project)}
                                 titulo="Visualização da arquitetura"
                                 descricao="Atualiza enquanto você edita os serviços e as conexões."
-                                mensagemVazio="Adicione um serviço para visualizar a arquitetura cloud."
+                                mensagemVazio={(project.servicosCloud || []).length
+                                    ? 'Preencha o identificador dos serviços para vê-los no diagrama.'
+                                    : 'Adicione um serviço para visualizar a arquitetura cloud.'}
                             />
 
                             <div className="editor-fe15__cloud-panels">
@@ -1334,38 +1341,13 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
                 </div>
             </details>
 
-                {resultado && (
-                    <div className="resultado">
-                        <p className="mini-note">V0 — versão inicial simples. Foco: validar o backend e o que ele gera.</p>
-                        <div className="topline">
-                            <h2>Resultado</h2>
-                            <button type="button" onClick={baixarTudo}>Baixar tudo (.zip)</button>
-                        </div>
-                        <div className="diagrams">
-                            <DiagramPanel
-                                title="Cloud"
-                                status={diagramState.cloud.status}
-                                diagram={diagramState.cloud.diagram || resultado?.cloud || ''}
-                                error={diagramState.cloud.error}
-                                emptyMessage="O diagrama Cloud aparece aqui depois de Salvar e gerar."
-                            />
-                        </div>
-
-                        <div className="artefatos">
-                            {Object.entries(agrupado).map(([grupo, itens]) => itens.length ? (
-                                <div key={grupo} className="grupo">
-                                    <h3>{grupo}</h3>
-                                    {itens.map((artefato, idx) => (
-                                        <details key={`${grupo}-${idx}`} open>
-                                            <summary>{artefato.nome}</summary>
-                                            <pre>{artefato.conteudo || ''}</pre>
-                                        </details>
-                                    ))}
-                                </div>
-                            ) : null)}
-                        </div>
-                    </div>
-                )}
+                <CodeWorkspace
+                    aberto={ideAberta && Boolean(resultado)}
+                    resultado={resultado}
+                    nomeProjeto={project.nome}
+                    onFechar={() => setIdeAberta(false)}
+                    onBaixar={baixarTudo}
+                />
             </div>
         </div>
     )
