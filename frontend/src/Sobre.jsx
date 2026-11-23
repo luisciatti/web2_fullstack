@@ -2,6 +2,7 @@ import DiagramCodeLogo from './components/public/DiagramCodeLogo.jsx'
 import PublicButton from './components/public/PublicButton.jsx'
 import './Login.css'
 import './Sobre.css'
+import BotaoTema from './tema/BotaoTema.jsx'
 
 const REPOS = [
     {
@@ -124,6 +125,7 @@ export default function Sobre({ autenticado = false, onEntrar, onComecar }) {
                         <a href="#inicio" className="public-nav__home" aria-current="page">
                             Início
                         </a>
+                        <BotaoTema />
                         <PublicButton
                             className="public-nav__signup"
                             variant="outline"

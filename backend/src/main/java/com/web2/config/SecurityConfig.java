@@ -56,6 +56,10 @@ public class SecurityConfig {
                                                                 "/assets/**",
                                                                 "/favicon.svg")
                                                 .permitAll()
+                                                // Página de erro do Spring: sem isso, qualquer erro 500
+                                                // vira um 403 vazio ("Sem permissão") para o usuário.
+                                                .requestMatchers("/error")
+                                                .permitAll()
                                                 .requestMatchers(
                                                                 "/api/auth/**",
                                                                 "/docs",

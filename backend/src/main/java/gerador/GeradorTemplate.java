@@ -1,6 +1,7 @@
 package gerador;
 
 import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.ArrayList;
@@ -216,17 +217,55 @@ public class GeradorTemplate {
     public String gerarDiagramaCloud(Projeto projeto) {
         StringBuilder sb = new StringBuilder("flowchart LR\n");
 
+        // IDs do Mermaid gerados pelo sistema (svc1, svc2...) para que
+        // identificadores com espaços ou símbolos não quebrem o diagrama.
+        Map<String, String> nos = new LinkedHashMap<>();
+
         for (modelo.ServicoCloudDef servico : projeto.getServicosCloud()) {
-            sb.append("  ").append(servico.getId()).append("[\"").append(servico.getTipo())
-                    .append("\\n").append(servico.getId()).append("\"]\n");
+            String id = textoLimpo(servico.getId());
+            if (id.isEmpty() || nos.containsKey(id)) {
+                continue;
+            }
+
+            String no = "svc" + (nos.size() + 1);
+            nos.put(id, no);
+
+            String tipo = rotuloMermaid(servico.getTipo());
+            sb.append("  ").append(no).append("[\"")
+                    .append(tipo.isEmpty() ? "Servico" : tipo)
+                    .append("<br/>").append(rotuloMermaid(id)).append("\"]\n");
         }
 
         for (modelo.ConexaoCloudDef conexao : projeto.getConexoesCloud()) {
-            sb.append("  ").append(conexao.getDe()).append(" -->|\"").append(conexao.getRotulo())
-                    .append("\"| ").append(conexao.getPara()).append("\n");
+            String de = nos.get(textoLimpo(conexao.getDe()));
+            String para = nos.get(textoLimpo(conexao.getPara()));
+            if (de == null || para == null) {
+                continue;
+            }
+
+            String rotulo = rotuloMermaid(conexao.getRotulo());
+            sb.append("  ").append(de);
+            if (rotulo.isEmpty()) {
+                sb.append(" --> ");
+            } else {
+                sb.append(" -->|\"").append(rotulo).append("\"| ");
+            }
+            sb.append(para).append("\n");
         }
 
         return sb.toString();
+    }
+
+    private String textoLimpo(String valor) {
+        return valor == null ? "" : valor.trim();
+    }
+
+    // Remove caracteres que fecham rótulos ou injetam sintaxe no Mermaid.
+    private String rotuloMermaid(String valor) {
+        return textoLimpo(valor)
+                .replaceAll("[\"<>`|\\[\\]{}();#&]", " ")
+                .replaceAll("\\s+", " ")
+                .trim();
     }
 
     private String gerarRepositorio(ClasseDef classe) {
@@ -402,6 +441,11 @@ public class GeradorTemplate {
                 .findFirst();
     }
 
+    private String nomeBancoPadrao(Projeto projeto) {
+        String nome = slug(projeto.getNome()).replace('-', '_');
+        return nome.isEmpty() ? "app" : nome;
+    }
+
     private String configValor(ServicoCloudDef servico, String chave) {
         Map<String, String> config = servico.getConfiguracao();
         return config != null ? config.get(chave) : null;
@@ -497,13 +541,21 @@ public class GeradorTemplate {
     }
 
     private String gerarApplicationYml(Projeto projeto) {
-        ServicoCloudDef servico = encontrarServicoBanco(projeto)
-                .orElseThrow(() -> new IllegalStateException(
-                        "Nenhum serviço de banco de dados encontrado no projeto."));
+        // O serviço de banco (categoria DATA) é opcional: sem ele, usa valores
+        // padrão (MySQL, banco com o nome do projeto) para não falhar a geração.
+        Optional<ServicoCloudDef> servico = encontrarServicoBanco(projeto);
 
-        String dbName = configValor(servico, "dbName");
-        String username = configValor(servico, "username");
-        String engine = configValor(servico, "engine");
+        String dbName = servico
+                .map(s -> configValor(s, "dbName"))
+                .filter(valor -> !valor.isBlank())
+                .orElseGet(() -> nomeBancoPadrao(projeto));
+        String username = servico
+                .map(s -> configValor(s, "username"))
+                .filter(valor -> !valor.isBlank())
+                .orElse("app");
+        String engine = servico
+                .map(s -> configValor(s, "engine"))
+                .orElse(null);
 
         boolean postgres = engine != null && engine.toLowerCase().contains("postgres");
 

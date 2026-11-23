@@ -1,0 +1,82 @@
+/* Interruptor claro/escuro. */
+/* O interruptor é isolado do estilo global de button (e dos botões das telas),
+   por isso usa !important só nas propriedades de "casca" do botão. */
+.botao-tema,
+.botao-tema:hover,
+.botao-tema:focus,
+.botao-tema:active {
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+    width: auto !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 999px !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    cursor: pointer;
+    transition: none !important;
+}
+
+.botao-tema:focus-visible {
+    outline: 2px solid #4d93b4;
+    outline-offset: 2px;
+}
+
+.botao-tema__trilho {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 54px;
+    height: 28px;
+    padding: 0 7px;
+    box-sizing: border-box;
+    border: 1px solid #d5e2e7;
+    border-radius: 999px;
+    background: #f1f6f8;
+    transition: background-color 180ms ease, border-color 180ms ease;
+}
+
+.botao-tema__icone {
+    font-size: 12px;
+    line-height: 1;
+    user-select: none;
+}
+
+.botao-tema__icone--sol { color: #c88a04; }
+.botao-tema__icone--lua { color: #7a8b94; }
+
+.botao-tema__bolinha {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #0b3b50;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    transition: transform 180ms ease, background-color 180ms ease;
+}
+
+.botao-tema.is-escuro .botao-tema__trilho {
+    border-color: #3c3c3c;
+    background: #252526;
+}
+
+.botao-tema.is-escuro .botao-tema__icone--lua { color: #4fc1ff; }
+.botao-tema.is-escuro .botao-tema__icone--sol { color: #6e7681; }
+
+.botao-tema.is-escuro .botao-tema__bolinha {
+    transform: translateX(26px);
+    background: #007acc;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .botao-tema__trilho,
+    .botao-tema__bolinha {
+        transition: none;
+    }
+}

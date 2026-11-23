@@ -4,6 +4,7 @@ import DiagramCodeLogo from './components/public/DiagramCodeLogo.jsx'
 import DiagramPreview from './components/public/DiagramPreview.jsx'
 import PublicButton from './components/public/PublicButton.jsx'
 import './Login.css'
+import BotaoTema from './tema/BotaoTema.jsx'
 
 export default function Login({ onLoggedIn, onLogin, onSignup, modoInicial = 'login' }) {
     const [modo, setModo] = useState(modoInicial === 'cadastro' ? 'cadastro' : 'login')
@@ -64,6 +65,7 @@ export default function Login({ onLoggedIn, onLogin, onSignup, modoInicial = 'lo
                         <a href="#inicio" className="public-nav__home">
                             Início
                         </a>
+                        <BotaoTema />
                         <PublicButton
                             className="public-nav__signup"
                             variant="outline"

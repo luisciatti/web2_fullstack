@@ -155,4 +155,11 @@ public class ProjetoControlador {
     public Map<String, String> tratarNaoEncontrado(IllegalArgumentException ex) {
         return Map.of("erro", ex.getMessage());
     }
+
+    // Trata projetos que não podem ser gerados (dados incompletos)
+    @org.springframework.web.bind.annotation.ExceptionHandler(IllegalStateException.class)
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    public Map<String, String> tratarGeracaoInvalida(IllegalStateException ex) {
+        return Map.of("erro", ex.getMessage());
+    }
 }

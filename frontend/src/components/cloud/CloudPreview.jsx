@@ -1,12 +1,23 @@
 import { useId, useLayoutEffect, useState } from 'react'
 import { renderizarMermaid } from '../../diagramas/renderizarMermaid.js'
+import { comTemaMermaid, useTema } from '../../tema/tema.js'
 import './CloudPreview.css'
 
-export default function CloudPreview({ codigoMermaid = '' }) {
+const DESCRICAO_PADRAO = 'Resultado da última geração. Gere novamente para incluir alterações no projeto.'
+const VAZIO_PADRAO = 'Gere um diagrama Cloud para visualizar os serviços e conexões.'
+
+export default function CloudPreview({
+    codigoMermaid = '',
+    titulo = 'Prévia Cloud',
+    descricao = DESCRICAO_PADRAO,
+    mensagemVazio = VAZIO_PADRAO,
+}) {
     const id = useId()
     const [resultado, setResultado] = useState(null)
-    const fonte = codigoMermaid?.trim() || ''
-    const vazio = !fonte || /^(?:flowchart|graph)\s+(?:TB|TD|BT|RL|LR)\s*;?$/i.test(fonte)
+    const tema = useTema()
+    const fonteBase = codigoMermaid?.trim() || ''
+    const vazio = !fonteBase || /^(?:flowchart|graph)\s+(?:TB|TD|BT|RL|LR)\s*;?$/i.test(fonteBase)
+    const fonte = comTemaMermaid(fonteBase, tema)
 
     useLayoutEffect(() => {
         setResultado(null)
@@ -19,10 +30,10 @@ export default function CloudPreview({ codigoMermaid = '' }) {
 
     return (
         <section className="cloud-preview" aria-labelledby={id}>
-            <h2 id={id}>Prévia Cloud</h2>
-            <p>Resultado da última geração. Gere novamente para incluir alterações no projeto.</p>
+            <h2 id={id}>{titulo}</h2>
+            {descricao && <p>{descricao}</p>}
             <div aria-busy={estado === 'loading'}>
-                {estado === 'empty' && <p role="status">Gere um diagrama Cloud para visualizar os serviços e conexões.</p>}
+                {estado === 'empty' && <p role="status">{mensagemVazio}</p>}
                 {estado === 'loading' && <p role="status">Desenhando o diagrama Cloud...</p>}
                 {estado === 'error' && <p role="alert">Não foi possível desenhar o diagrama Cloud.</p>}
                 {estado === 'success' && (

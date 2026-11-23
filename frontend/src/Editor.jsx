@@ -5,6 +5,14 @@ import ClassManager from './components/editor/ClassManager.jsx'
 import AttributeEditor, { TIPOS_ATRIBUTO } from './components/editor/AttributeEditor.jsx'
 import MethodEditor, { TIPOS_RETORNO } from './components/editor/MethodEditor.jsx'
 import RelationsEditor, { TIPOS_RELACAO } from './components/editor/RelationsEditor.jsx'
+import ClassRelationsEditor from './components/editor/ClassRelationsEditor.jsx'
+import CloudServicesPanel from './components/cloud/CloudServicesPanel.jsx'
+import CloudConnectionsPanel from './components/cloud/CloudConnectionsPanel.jsx'
+import CloudPreview from './components/cloud/CloudPreview.jsx'
+import { gerarMermaidCloud } from './diagramas/gerarMermaidCloud.js'
+import CodeWorkspace from './components/geracao/CodeWorkspace.jsx'
+import BotaoTema from './tema/BotaoTema.jsx'
+import { useTema } from './tema/tema.js'
 import DiagramCodeLogo from './components/public/DiagramCodeLogo.jsx'
 import './Editor.css'
 import { apiFetch, clearAuth } from './api.js'
@@ -287,10 +295,14 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
     const idCriadoLocalmenteRef = useRef(null)
     const nomeClasseInputRef = useRef(null)
     const deveFocarNomeClasseRef = useRef(false)
+    const nomeProjetoInputRef = useRef(null)
+    const [visao, setVisao] = useState('uml')
+    const [ideAberta, setIdeAberta] = useState(false)
+    const tema = useTema()
     const [resultado, setResultado] = useState(null)
     const [loadingProject, setLoadingProject] = useState(false)
     const [currentProjectId, setCurrentProjectId] = useState(projectId)
-    const [diagramState, setDiagramState] = useState({ uml: { status: 'idle', diagram: '', error: '' }, cloud: { status: 'idle', diagram: '', error: '' } })
+    const [, setDiagramState] = useState({ uml: { status: 'idle', diagram: '', error: '' }, cloud: { status: 'idle', diagram: '', error: '' } })
 
     const problemas = useMemo(() => validarProjeto(project), [project])
     const snapshotAtual = useMemo(
@@ -555,6 +567,34 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
         setProject((prev) => ({ ...prev, relacoes: [...(prev.relacoes || []), { origem: '', destino: '', tipo: TIPOS_RELACAO[0] }] }))
     }
 
+    const adicionarRelacaoDaClasse = (nomeOrigem) => {
+        if (!nomeOrigem) return
+        setProject((prev) => {
+            const outras = (prev.classes || [])
+                .map((classe) => String(classe.nome || '').trim())
+                .filter((nome) => nome && nome !== nomeOrigem)
+            return {
+                ...prev,
+                relacoes: [
+                    ...(prev.relacoes || []),
+                    { origem: nomeOrigem, destino: outras[0] || nomeOrigem, tipo: TIPOS_RELACAO[0] },
+                ],
+            }
+        })
+    }
+
+    const irParaDiagrama = (novaVisao = 'uml') => {
+        setVisao(novaVisao)
+        requestAnimationFrame(() => {
+            document.getElementById('editor-diagrama')?.scrollIntoView?.({ behavior: 'smooth', block: 'start' })
+        })
+    }
+
+    const focarNomeProjeto = () => {
+        nomeProjetoInputRef.current?.focus()
+        nomeProjetoInputRef.current?.scrollIntoView?.({ behavior: 'smooth', block: 'center' })
+    }
+
     const atualizarRelacao = (indice, campo, valor) => {
         setProject((prev) => ({
             ...prev,
@@ -731,6 +771,7 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
             )
 
             setResultado(gerado)
+            setIdeAberta(true)
         } catch (err) {
             setErro(err.message || 'Não foi possível gerar código.')
 
@@ -783,15 +824,6 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
         }
     }
 
-    const agrupado = useMemo(() => {
-        const mapa = { JAVA: [], CONFIG: [], INFRA: [], DIAGRAM: [] }
-        for (const artefato of resultado?.artefatos || []) {
-            const nome = String(artefato?.nome || '').toLowerCase()
-            const tipo = nome.endsWith('.java') || nome.includes('java') ? 'JAVA' : nome.endsWith('.yml') || nome.endsWith('.yaml') || nome.endsWith('.xml') ? 'CONFIG' : nome.includes('diagram') || nome.includes('uml') || nome.includes('cloud') ? 'DIAGRAM' : 'INFRA'
-            mapa[tipo].push(artefato)
-        }
-        return mapa
-    }, [resultado])
 
     const idsServicos = (project.servicosCloud || []).map((servico) => servico.id).filter(Boolean)
     const classes = project.classes || []
@@ -835,9 +867,13 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
                     <span aria-hidden="true">/</span>
 
                     <input
+                        ref={nomeProjetoInputRef}
                         type="text"
+                        className={`editor-fe15__project-name${String(project.nome || '').trim() ? '' : ' is-invalid'}`}
                         aria-label="Nome do projeto"
-                        placeholder="Nome do projeto"
+                        aria-invalid={!String(project.nome || '').trim()}
+                        placeholder="Dê um nome ao projeto"
+                        autoFocus={isNovo && !project.nome}
                         value={project.nome}
                         onChange={(event) =>
                             setProject((prev) => ({
@@ -864,6 +900,19 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
                 </span>
 
                 <div className="editor-fe15__actions">
+                    <BotaoTema />
+
+                    {resultado?.artefatos?.length > 0 && (
+                        <button
+                            type="button"
+                            className="editor-fe15__export"
+                            onClick={() => setIdeAberta(true)}
+                            title="Abrir o último código gerado"
+                        >
+                            {'</>'} Ver código
+                        </button>
+                    )}
+
                     <button
                         type="button"
                         className="editor-fe15__export"
@@ -904,8 +953,9 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
             </header>
 
             <div className="editor-fe15__toolbar">
-                <h2>Diagrama de classes</h2>
+                <h2>{visao === 'cloud' ? 'Arquitetura Cloud' : 'Diagrama de classes'}</h2>
 
+                {visao === 'uml' ? (
                 <div className="editor-fe15__tools">
                     <button
                         type="button"
@@ -930,25 +980,67 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
                     >
                         + Método
                     </button>
-                </div>
 
-                <a
+                    <button
+                        type="button"
+                        onClick={() => adicionarRelacaoDaClasse(String(selectedClass?.nome || '').trim())}
+                        disabled={!String(selectedClass?.nome || '').trim()}
+                        title="Relacionar a classe selecionada com outra"
+                    >
+                        + Relação
+                    </button>
+                </div>
+                ) : (
+                <div className="editor-fe15__tools">
+                    <button
+                        type="button"
+                        className="editor-fe15__tool-primary"
+                        onClick={adicionarServico}
+                    >
+                        + Serviço
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={adicionarConexao}
+                        disabled={(project.servicosCloud || []).length < 2}
+                        title="Conecte dois serviços"
+                    >
+                        + Conexão
+                    </button>
+                </div>
+                )}
+
+                <button
+                    type="button"
                     className="editor-fe15__preview-link"
-                    href="#editor-diagrama"
+                    onClick={() => irParaDiagrama(visao)}
                 >
-                    ▤ Visualizar UML
-                </a>
+                    {visao === 'cloud' ? '☁ Visualizar Cloud' : '▤ Visualizar UML'}
+                </button>
             </div>
 
                 {erro && <div className="error">{erro}</div>}
                 {problemas.length > 0 && (
                     <div className="error list-error">
                         <strong>Problemas do formulário:</strong>
-                        <ul>{problemas.map((problema) => <li key={problema}>{problema}</li>)}</ul>
+                        <ul>{problemas.map((problema) => (
+                            <li key={problema}>
+                                {problema}
+                                {problema === 'O nome do projeto é obrigatório.' && (
+                                    <>
+                                        {' '}
+                                        <button type="button" className="editor-fe15__fix-link" onClick={focarNomeProjeto}>
+                                            Preencher nome
+                                        </button>
+                                    </>
+                                )}
+                            </li>
+                        ))}</ul>
                     </div>
                 )}
 
-            <div className="editor-fe15__workspace">
+            <div className={`editor-fe15__workspace${visao === 'cloud' ? ' is-cloud' : ''}`}>
             <aside
                 className="editor-fe15__panel editor-fe15__structure"
                 aria-label="Estrutura de classes"
@@ -972,11 +1064,23 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
                         DIAGRAMAS
                     </p>
 
-                    <a href="#editor-diagrama">
+                    <button
+                        type="button"
+                        className={`editor-fe15__nav-link${visao === 'uml' ? ' is-active' : ''}`}
+                        aria-pressed={visao === 'uml'}
+                        onClick={() => irParaDiagrama('uml')}
+                    >
                         ▦ Diagrama de classes
-                    </a>
+                    </button>
 
-                    <span>Visualização Cloud</span>
+                    <button
+                        type="button"
+                        className={`editor-fe15__nav-link${visao === 'cloud' ? ' is-active' : ''}`}
+                        aria-pressed={visao === 'cloud'}
+                        onClick={() => irParaDiagrama('cloud')}
+                    >
+                        ☁ Visualização Cloud
+                    </button>
                 </div>
 
                 <button
@@ -993,18 +1097,44 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
                     id="editor-diagrama"
                     aria-label="Área do diagrama"
                 >
-                    <div className="editor-fe15__panel-title">
-                        <h2>Diagrama UML</h2>
-                        <span>Prévia</span>
-                    </div>
+                    {visao === 'uml' ? (
+                        <>
+                            <div className="editor-fe15__panel-title">
+                                <h2>Diagrama UML</h2>
+                                <span>Prévia</span>
+                            </div>
 
-                    <EditorUmlSlot
-                        projeto={project}
-                        classes={classes}
-                        selectedIndex={selectedIndex}
-                    />
+                            <EditorUmlSlot
+                                projeto={project}
+                                classes={classes}
+                                selectedIndex={selectedIndex}
+                            />
+                        </>
+                    ) : (
+                        <div className="editor-fe15__cloud">
+                            <div className="editor-fe15__panel-title">
+                                <h2>Diagrama Cloud</h2>
+                                <span>Prévia</span>
+                            </div>
+
+                            <CloudPreview
+                                codigoMermaid={gerarMermaidCloud(project, { tema })}
+                                titulo="Visualização da arquitetura"
+                                descricao="Atualiza enquanto você edita os serviços e as conexões."
+                                mensagemVazio={(project.servicosCloud || []).length
+                                    ? 'Preencha o identificador dos serviços para vê-los no diagrama.'
+                                    : 'Adicione um serviço para visualizar a arquitetura cloud.'}
+                            />
+
+                            <div className="editor-fe15__cloud-panels">
+                                <CloudServicesPanel projeto={project} onChange={setProject} />
+                                <CloudConnectionsPanel projeto={project} onChange={setProject} />
+                            </div>
+                        </div>
+                    )}
                 </section>
 
+                {visao === 'uml' && (
                 <aside
                     className="editor-fe15__panel editor-fe15__inspector"
                     aria-label="Propriedades da classe"
@@ -1056,6 +1186,15 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
                                 }
                             />
 
+                            <ClassRelationsEditor
+                                classe={selectedClass}
+                                classes={classes}
+                                relacoes={project.relacoes || []}
+                                onAdd={adicionarRelacaoDaClasse}
+                                onUpdate={atualizarRelacao}
+                                onRemove={removerRelacao}
+                            />
+
                             <button
                                 type="button"
                                 className="editor-fe15__remove-class"
@@ -1066,6 +1205,7 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
                         </div>
                     )}
                 </aside>
+                )}
             </div>
 
             <details className="editor-fe15__advanced">
@@ -1206,38 +1346,13 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
                 </div>
             </details>
 
-                {resultado && (
-                    <div className="resultado">
-                        <p className="mini-note">V0 — versão inicial simples. Foco: validar o backend e o que ele gera.</p>
-                        <div className="topline">
-                            <h2>Resultado</h2>
-                            <button type="button" onClick={baixarTudo}>Baixar tudo (.zip)</button>
-                        </div>
-                        <div className="diagrams">
-                            <DiagramPanel
-                                title="Cloud"
-                                status={diagramState.cloud.status}
-                                diagram={diagramState.cloud.diagram || resultado?.cloud || ''}
-                                error={diagramState.cloud.error}
-                                emptyMessage="O diagrama Cloud aparece aqui depois de Salvar e gerar."
-                            />
-                        </div>
-
-                        <div className="artefatos">
-                            {Object.entries(agrupado).map(([grupo, itens]) => itens.length ? (
-                                <div key={grupo} className="grupo">
-                                    <h3>{grupo}</h3>
-                                    {itens.map((artefato, idx) => (
-                                        <details key={`${grupo}-${idx}`} open>
-                                            <summary>{artefato.nome}</summary>
-                                            <pre>{artefato.conteudo || ''}</pre>
-                                        </details>
-                                    ))}
-                                </div>
-                            ) : null)}
-                        </div>
-                    </div>
-                )}
+                <CodeWorkspace
+                    aberto={ideAberta && Boolean(resultado)}
+                    resultado={resultado}
+                    nomeProjeto={project.nome}
+                    onFechar={() => setIdeAberta(false)}
+                    onBaixar={baixarTudo}
+                />
             </div>
         </div>
     )

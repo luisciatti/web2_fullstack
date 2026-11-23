@@ -531,20 +531,37 @@
 }
 
 .editor-fe15__breadcrumb input {
-    min-width: 80px;
-    width: 190px;
+    min-width: 120px;
+    width: 240px;
     max-width: 100%;
-    padding: 5px 3px;
-    border: 1px solid transparent;
-    background: transparent;
-    color: #607483;
+    padding: 7px 10px;
+    border: 1px solid #d9e4e9;
+    border-radius: 7px;
+    background: #fff;
+    color: #0b3b50;
     font-size: 13px;
+    font-weight: 600;
+}
+
+.editor-fe15__breadcrumb input::placeholder {
+    color: #8a9ba5;
+    font-weight: 500;
 }
 
 .editor-fe15__breadcrumb input:hover,
 .editor-fe15__breadcrumb input:focus {
-    border-color: #d9e4e9;
+    border-color: #9bb8c4;
     background: #fff;
+}
+
+.editor-fe15__breadcrumb input.is-invalid {
+    border-color: #f1a7a7;
+    background: #fff7f7;
+}
+
+.editor-fe15__breadcrumb input.is-invalid:focus {
+    border-color: #d95c5c;
+    outline: 3px solid rgba(217, 92, 92, 0.18);
 }
 
 .editor-fe15__status {
@@ -995,4 +1012,219 @@
 
 .editor-fe15__status-dot.is-saved {
     background: #26875a;
+}
+
+/* Correções de UX: atalhos, relações e prévia UML real */
+
+.editor-fe15__fix-link {
+    margin-left: 4px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: #0b3b50;
+    font-size: inherit;
+    font-weight: 650;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.editor-fe15__fix-link:hover {
+    background: none;
+    color: #082f40;
+}
+
+.editor-fe15__diagram-nav .editor-fe15__nav-link {
+    justify-self: start;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: #0b3b50;
+    font-size: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.editor-fe15__diagram-nav .editor-fe15__nav-link:hover {
+    background: none;
+    text-decoration: underline;
+}
+
+button.editor-fe15__preview-link {
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+button.editor-fe15__preview-link:hover {
+    background: #f5fafb;
+}
+
+.editor-fe15__hint {
+    margin: 0;
+    color: #72838e;
+    font-size: 11px;
+}
+
+.editor-fe15__section-title button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.editor-uml-slot--live {
+    display: block;
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+
+/* Visualização Cloud dentro do editor */
+
+.editor-fe15__workspace.is-cloud {
+    grid-template-columns: 240px minmax(0, 1fr);
+}
+
+.editor-fe15__diagram-nav .editor-fe15__nav-link {
+    padding: 6px 8px;
+    margin-left: -8px;
+    border-radius: 7px;
+    color: #4f6470;
+}
+
+.editor-fe15__diagram-nav .editor-fe15__nav-link.is-active {
+    background: #e9f4f7;
+    color: #0b3b50;
+    font-weight: 650;
+    text-decoration: none;
+}
+
+.editor-fe15__cloud {
+    display: grid;
+    gap: 18px;
+}
+
+.editor-fe15__cloud-panels {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    align-items: start;
+}
+
+@media (max-width: 1050px) {
+    .editor-fe15__workspace.is-cloud {
+        grid-template-columns: 215px minmax(0, 1fr);
+    }
+
+    .editor-fe15__cloud-panels {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 900px) {
+    .editor-fe15__workspace.is-cloud {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* Painéis Cloud na mesma escala do editor */
+.editor-fe15__cloud {
+    font-size: 12px;
+}
+
+.editor-fe15__cloud h2 {
+    margin: 0 0 6px;
+    color: #0b3b50;
+    font-size: 15px;
+}
+
+.editor-fe15__cloud legend,
+.editor-fe15__cloud label {
+    font-size: 12px;
+}
+
+.editor-fe15__cloud input,
+.editor-fe15__cloud select,
+.editor-fe15__cloud button {
+    font-size: 12px;
+}
+
+.editor-fe15__cloud p {
+    font-size: 12px;
+}
+
+/* Layout da visualização Cloud: painéis como cartões alinhados */
+.editor-fe15__cloud .cloud-preview {
+    padding: 18px 20px;
+    border: 1px solid #e0e8ed;
+    border-radius: 12px;
+    background: #fff;
+}
+
+.editor-fe15__cloud-panels > section {
+    display: grid;
+    align-content: start;
+    gap: 12px;
+    min-width: 0;
+    padding: 18px;
+    border: 1px solid #e0e8ed;
+    border-radius: 12px;
+    background: #fff;
+}
+
+.editor-fe15__cloud .cloud-services__header {
+    align-items: center;
+    min-height: 36px;
+}
+
+.editor-fe15__cloud .cloud-services__header label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #607483;
+    font-weight: 600;
+}
+
+.editor-fe15__cloud .cloud-services__header select {
+    min-height: 32px;
+}
+
+.editor-fe15__cloud .cloud-connections > h2 {
+    display: flex;
+    align-items: center;
+    min-height: 36px;
+    margin: 0;
+}
+
+.editor-fe15__cloud .cloud-services input,
+.editor-fe15__cloud .cloud-services select,
+.editor-fe15__cloud .cloud-services button,
+.editor-fe15__cloud .cloud-connections input,
+.editor-fe15__cloud .cloud-connections select,
+.editor-fe15__cloud .cloud-connections button {
+    min-height: 34px;
+    border-color: #d9e4e9;
+    border-radius: 7px;
+    background: #fff;
+    color: #0b3b50;
+}
+
+.editor-fe15__cloud .cloud-services button:hover:not(:disabled),
+.editor-fe15__cloud .cloud-connections button:hover:not(:disabled) {
+    background: #f5fafb;
+    border-color: #9bb8c4;
+}
+
+.editor-fe15__cloud .cloud-services__card,
+.editor-fe15__cloud .cloud-connections fieldset {
+    border-color: #e0e8ed;
+    border-radius: 10px;
+    background: #f7fafb;
+}
+
+.editor-fe15__cloud .cloud-services__header label {
+    white-space: nowrap;
+}
+
+.editor-fe15__cloud h3 {
+    color: #0b3b50;
+    font-size: 13px;
 }
