@@ -1,34 +1,15 @@
 import { describe, expect, it, vi } from 'vitest'
 import mermaid from 'mermaid'
+import { projetoUml, projetoVazio } from '../tests/fixtures/projetos.js'
 import { gerarMermaidUml } from './gerarMermaidUml.js'
 
 function obterIds(diagrama) {
     return [...diagrama.matchAll(/^\s*class (\w+)\[/gm)].map((resultado) => resultado[1])
 }
 
-// Mesmo formato do EXEMPLO_PROJETO de Editor.jsx, sem importar a camada visual.
-function exemploProjeto() {
-    return {
-        nome: 'Pedido',
-        classes: [
-            {
-                nome: 'Pedido',
-                atributos: [{ nome: 'id', tipo: 'Long' }, { nome: 'valor', tipo: 'BigDecimal' }],
-                metodos: [{ nome: 'calcularTotal', tipoRetorno: 'BigDecimal' }],
-            },
-            {
-                nome: 'Cliente',
-                atributos: [{ nome: 'id', tipo: 'Long' }, { nome: 'nome', tipo: 'String' }],
-                metodos: [],
-            },
-        ],
-        relacoes: [{ origem: 'Pedido', destino: 'Cliente', tipo: 'MANY_TO_ONE' }],
-    }
-}
-
 describe('gerarMermaidUml', () => {
     it('mantém o diagrama ao inserir uma classe vazia e a inclui quando ganha nome', () => {
-        const projeto = exemploProjeto()
+        const projeto = projetoUml()
         const rascunho = { ...projeto, classes: [...projeto.classes, { nome: '  ' }] }
         expect(gerarMermaidUml(rascunho)).toBe(gerarMermaidUml(projeto))
 
@@ -37,7 +18,7 @@ describe('gerarMermaidUml', () => {
     })
 
     it('reflete edições de membro e cardinalidade no texto Mermaid', () => {
-        const projeto = exemploProjeto()
+        const projeto = projetoUml()
         const [pedido, cliente] = projeto.classes
         const editado = {
             ...projeto,
@@ -61,7 +42,7 @@ describe('gerarMermaidUml', () => {
     })
 
     it('remove a classe excluída e a associação mesmo com a relação no projeto', () => {
-        const projeto = exemploProjeto()
+        const projeto = projetoUml()
         const editado = { ...projeto, classes: [projeto.classes[0]] }
         const diagrama = gerarMermaidUml(editado)
         expect(obterIds(diagrama)).toEqual(obterIds(gerarMermaidUml(projeto)).slice(0, 1))
@@ -87,7 +68,7 @@ describe('gerarMermaidUml', () => {
             lineType: { LINE: 0 },
         }
         try {
-            expect(() => parser.parse(`${gerarMermaidUml(exemploProjeto())}\n`)).not.toThrow()
+            expect(() => parser.parse(`${gerarMermaidUml(projetoUml())}\n`)).not.toThrow()
             expect(adicionarMembro).toHaveBeenCalledTimes(5)
             expect(adicionarRelacao).toHaveBeenCalledTimes(1)
             expect(() => parser.parse('classDiagram\nClasse : id: Long\n')).toThrow()
@@ -97,13 +78,13 @@ describe('gerarMermaidUml', () => {
     })
 
     it('retorna classDiagram para projetos vazios ou ausentes', () => {
-        for (const projeto of [undefined, null, {}, { classes: [], relacoes: [] }]) {
+        for (const projeto of [undefined, null, {}, projetoVazio()]) {
             expect(gerarMermaidUml(projeto)).toBe('classDiagram')
         }
     })
 
     it('gera uma classe, atributo e método', () => {
-        const diagrama = gerarMermaidUml({ classes: [exemploProjeto().classes[0]] })
+        const diagrama = gerarMermaidUml({ classes: [projetoUml().classes[0]] })
         const [id] = obterIds(diagrama)
         expect(obterIds(diagrama)).toHaveLength(1)
         expect(diagrama.startsWith('classDiagram\n')).toBe(true)
@@ -118,7 +99,7 @@ describe('gerarMermaidUml', () => {
         ['MANY_TO_ONE', '*', '1'],
         ['MANY_TO_MANY', '*', '*'],
     ])('converte a cardinalidade %s', (tipo, origem, destino) => {
-        const projeto = exemploProjeto()
+        const projeto = projetoUml()
         projeto.relacoes[0].tipo = tipo
         const diagrama = gerarMermaidUml(projeto)
         const [pedido, cliente] = obterIds(diagrama)
@@ -142,7 +123,7 @@ describe('gerarMermaidUml', () => {
     })
 
     it('ignora relações incompletas, desconhecidas e sem classes existentes', () => {
-        const projeto = exemploProjeto()
+        const projeto = projetoUml()
         projeto.relacoes = [
             { origem: '', destino: 'Cliente', tipo: 'ONE_TO_ONE' },
             { origem: 'Pedido', destino: '', tipo: 'ONE_TO_ONE' },
@@ -178,7 +159,7 @@ describe('gerarMermaidUml', () => {
     })
 
     it('mantém os IDs quando a ordem das classes muda', () => {
-        const projeto = exemploProjeto()
+        const projeto = projetoUml()
         const antes = obterIds(gerarMermaidUml(projeto))
         projeto.classes.reverse()
         expect(obterIds(gerarMermaidUml(projeto))).toEqual([...antes].reverse())
@@ -191,7 +172,7 @@ describe('gerarMermaidUml', () => {
     })
 
     it('não altera o projeto e retorna o mesmo texto para a mesma entrada', () => {
-        const projeto = exemploProjeto()
+        const projeto = projetoUml()
         const antes = structuredClone(projeto)
         function congelar(valor) {
             if (valor && typeof valor === 'object') {

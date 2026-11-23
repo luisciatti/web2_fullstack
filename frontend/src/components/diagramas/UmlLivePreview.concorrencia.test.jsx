@@ -2,6 +2,8 @@
 import { StrictMode, act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { projetoUml, projetoVazio } from '../../tests/fixtures/projetos.js'
+import GenerationPanel from '../geracao/GenerationPanel.jsx'
 import UmlLivePreview from './UmlLivePreview.jsx'
 
 const mermaid = vi.hoisted(() => ({ initialize: vi.fn(), render: vi.fn() }))
@@ -47,6 +49,41 @@ describe('concorrência da prévia UML montada', () => {
         host.remove()
         vi.useRealTimers()
         vi.unstubAllGlobals()
+    })
+
+    it('mantém UML e salvamento local independentes da chamada explícita de geração', async () => {
+        const fetch = vi.fn().mockResolvedValue({ ok: true })
+        vi.stubGlobal('fetch', fetch)
+        const onGenerate = () => fetch('/api/projetos/42/gerar', { method: 'POST' })
+        function atualizarPaineis(projeto, dirty) {
+            act(() => root.render(
+                <StrictMode>
+                    <UmlLivePreview projeto={projeto} />
+                    <GenerationPanel idSalvo="42" dirty={dirty} valido onGenerate={onGenerate} />
+                </StrictMode>,
+            ))
+        }
+
+        atualizarPaineis(projetoVazio(), false)
+        await avancar()
+        expect(host.textContent).toContain('Adicione uma classe')
+        expect(fetch).not.toHaveBeenCalled()
+
+        const projeto = projetoUml()
+        atualizarPaineis(projeto, true)
+        await avancar()
+        await concluir(renders[0], 'Pedido e Cliente')
+        const botao = host.querySelector('.generation-panel button')
+        expect(botao.disabled).toBe(true)
+        expect(fetch).not.toHaveBeenCalled()
+
+        atualizarPaineis(projeto, false)
+        await avancar()
+        expect(botao.disabled).toBe(false)
+        expect(fetch).not.toHaveBeenCalled()
+        await act(async () => botao.click())
+        expect(fetch).toHaveBeenCalledExactlyOnceWith('/api/projetos/42/gerar', { method: 'POST' })
+        expect(renders).toHaveLength(1)
     })
 
     it('limita e redefine o zoom sem alterar o projeto nem renderizar outro SVG', async () => {

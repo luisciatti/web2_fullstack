@@ -1,4 +1,5 @@
 import { useId, useState } from 'react'
+import { atualizarServicoCloud, contarIdsServicos, removerServicoCloud } from './modeloCloud.js'
 import './CloudServicesPanel.css'
 
 export const TIPOS_SERVICO = {
@@ -14,29 +15,10 @@ export default function CloudServicesPanel({ projeto, onChange }) {
     const [config, setConfig] = useState(null)
     const { provedorCloud = 'aws', servicosCloud = [] } = projeto
     const tipos = tiposPara(provedorCloud)
-    const contagemIds = new Map()
-    for (const { id } of servicosCloud) {
-        const chave = id.trim()
-        if (chave) contagemIds.set(chave, (contagemIds.get(chave) || 0) + 1)
-    }
+    const contagemIds = contarIdsServicos(servicosCloud)
 
     function alterarServico(indice, campos) {
-        const idAnterior = servicosCloud[indice].id
-        const servicos = servicosCloud.map((servico, i) => i === indice ? { ...servico, ...campos } : servico)
-        const proximo = { ...projeto, servicosCloud: servicos }
-        if (idAnterior && campos.id !== undefined && campos.id !== idAnterior
-            && !servicos.some(({ id }) => id === idAnterior) && projeto.conexoesCloud) {
-            const novoId = campos.id.trim()
-            const substituto = novoId && servicos.filter(({ id }) => id.trim() === novoId).length === 1 ? campos.id : ''
-            proximo.conexoesCloud = projeto.conexoesCloud.map((conexao) =>
-                conexao.de === idAnterior || conexao.para === idAnterior ? {
-                    ...conexao,
-                    de: conexao.de === idAnterior ? substituto : conexao.de,
-                    para: conexao.para === idAnterior ? substituto : conexao.para,
-                } : conexao,
-            )
-        }
-        onChange(proximo)
+        onChange(atualizarServicoCloud(projeto, indice, campos))
     }
 
     function removerServico(indice) {
@@ -44,13 +26,7 @@ export default function CloudServicesPanel({ projeto, onChange }) {
             if (!atual || atual.indice === indice) return null
             return atual.indice > indice ? { ...atual, indice: atual.indice - 1 } : atual
         })
-        const removido = servicosCloud[indice].id
-        const servicos = servicosCloud.filter((_, i) => i !== indice)
-        const proximo = { ...projeto, servicosCloud: servicos }
-        if (removido && !servicos.some(({ id }) => id === removido) && projeto.conexoesCloud) {
-            proximo.conexoesCloud = projeto.conexoesCloud.filter(({ de, para }) => de !== removido && para !== removido)
-        }
-        onChange(proximo)
+        onChange(removerServicoCloud(projeto, indice))
     }
 
     function alterarConfiguracao(indice, chaveOriginal, novaEntrada) {
