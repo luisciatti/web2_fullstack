@@ -174,24 +174,26 @@ describe('FE-19 — CRUD de métodos', () => {
             />
         )
 
-        await clicar('Carregar exemplo')
+        await clicar('✨ Gerar exemplo')
 
         const antes = lerProjeto()
         const atributosOriginais = antes.classes[0].atributos
         const relacoesOriginais = antes.relacoes
         const metodosCliente = antes.classes[1].metodos
+        const metodosPedido = antes.classes[0].metodos
+        const novo = metodosPedido.length + 1
 
         await clicar('+ Método')
 
         await alterarInput(
             container.querySelector(
-                '.editor-fe15__inspector [aria-label="Nome do método 2"]'
+                `.editor-fe15__inspector [aria-label="Nome do método ${novo}"]`
             ),
             'validarPedido'
         )
 
         const select = container.querySelector(
-            '.editor-fe15__inspector [aria-label="Retorno do método 2"]'
+            `.editor-fe15__inspector [aria-label="Retorno do método ${novo}"]`
         )
 
         await act(async () => {
@@ -202,7 +204,7 @@ describe('FE-19 — CRUD de métodos', () => {
         const depois = lerProjeto()
 
         expect(depois.classes[0].metodos).toEqual([
-            { nome: 'calcularTotal', tipoRetorno: 'BigDecimal' },
+            ...metodosPedido,
             { nome: 'validarPedido', tipoRetorno: 'Boolean' },
         ])
         expect(depois.classes[1].metodos).toEqual(metodosCliente)
@@ -220,19 +222,25 @@ describe('FE-19 — CRUD de métodos', () => {
         })
 
         expect(container.querySelector(
-            '.editor-fe15__inspector [aria-label="Nome do método 2"]'
+            `.editor-fe15__inspector [aria-label="Nome do método ${metodosCliente.length + 1}"]`
         )).toBeNull()
 
         await clicar('+ Método')
 
         expect(lerProjeto().classes[1].metodos).toEqual([
+            ...metodosCliente,
             { nome: '', tipoRetorno: 'void' },
         ])
 
-        await clicar('Remover método')
+        const removerMetodo = [...container.querySelectorAll('.editor-fe15__inspector button')]
+            .filter((botao) => botao.textContent.trim() === 'Remover método')
 
-        expect(lerProjeto().classes[1].metodos).toEqual([])
-        expect(lerProjeto().classes[0].metodos).toHaveLength(2)
+        await act(async () => {
+            removerMetodo.at(-1).click()
+        })
+
+        expect(lerProjeto().classes[1].metodos).toEqual(metodosCliente)
+        expect(lerProjeto().classes[0].metodos).toHaveLength(novo)
     })
 
     it('bloqueia o salvamento com método incompleto', async () => {
@@ -244,7 +252,7 @@ describe('FE-19 — CRUD de métodos', () => {
             />
         )
 
-        await clicar('Carregar exemplo')
+        await clicar('✨ Gerar exemplo')
         await clicar('+ Método')
 
         const salvar = [...container.querySelectorAll('button')]

@@ -4,7 +4,7 @@ import EditorUmlSlot from './components/editor/EditorUmlSlot.jsx'
 import ClassManager from './components/editor/ClassManager.jsx'
 import AttributeEditor, { TIPOS_ATRIBUTO } from './components/editor/AttributeEditor.jsx'
 import MethodEditor, { TIPOS_RETORNO } from './components/editor/MethodEditor.jsx'
-import RelationsEditor, { TIPOS_RELACAO } from './components/editor/RelationsEditor.jsx'
+import { TIPOS_RELACAO } from './components/editor/RelationsEditor.jsx'
 import ClassRelationsEditor from './components/editor/ClassRelationsEditor.jsx'
 import CloudServicesPanel from './components/cloud/CloudServicesPanel.jsx'
 import CloudConnectionsPanel from './components/cloud/CloudConnectionsPanel.jsx'
@@ -13,6 +13,7 @@ import { gerarMermaidCloud } from './diagramas/gerarMermaidCloud.js'
 import CodeWorkspace from './components/geracao/CodeWorkspace.jsx'
 import BotaoTema from './tema/BotaoTema.jsx'
 import { useTema } from './tema/tema.js'
+import { gerarProjetoExemplo, projetoTemConteudo } from './exemploProjeto.js'
 import DiagramCodeLogo from './components/public/DiagramCodeLogo.jsx'
 import './Editor.css'
 import { apiFetch, clearAuth } from './api.js'
@@ -20,23 +21,6 @@ import { apiFetch, clearAuth } from './api.js'
 const TIPOS_SERVICO = {
     aws: ['VPC', 'EC2', 'ASG', 'ALB', 'RDS', 'S3', 'LAMBDA', 'SQS', 'SNS', 'CLOUDWATCH', 'DYNAMODB'],
     oci: ['VCN', 'INSTANCE', 'DATABASE', 'OBJECT_STORAGE', 'LOAD_BALANCER'],
-}
-
-const EXEMPLO_PROJETO = {
-    nome: 'Pedido',
-    linguagem: 'java',
-    framework: 'spring-boot',
-    provedorCloud: 'aws',
-    classes: [
-        { nome: 'Pedido', atributos: [{ nome: 'id', tipo: 'Long' }, { nome: 'valor', tipo: 'BigDecimal' }], metodos: [{ nome: 'calcularTotal', tipoRetorno: 'BigDecimal' }] },
-        { nome: 'Cliente', atributos: [{ nome: 'id', tipo: 'Long' }, { nome: 'nome', tipo: 'String' }], metodos: [] },
-    ],
-    relacoes: [{ origem: 'Pedido', destino: 'Cliente', tipo: 'MANY_TO_ONE' }],
-    servicosCloud: [
-        { id: 'db', tipo: 'RDS', categoria: 'DATA', configuracao: { engine: 'mysql', instanceType: 'db.t3.micro' } },
-        { id: 'api', tipo: 'EC2', categoria: 'COMPUTE', configuracao: { instanceType: 't3.micro' } },
-    ],
-    conexoesCloud: [{ de: 'api', para: 'db', rotulo: 'API para banco' }],
 }
 
 export function createProjetoVazio() {
@@ -440,18 +424,6 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
         }
     }, [resultado])
 
-    const atualizarProvedor = (valor) => {
-        const tiposValidos = TIPOS_SERVICO[valor] || TIPOS_SERVICO.aws
-        setProject((prev) => ({
-            ...prev,
-            provedorCloud: valor,
-            servicosCloud: (prev.servicosCloud || []).map((servico) => (
-                tiposValidos.includes(servico.tipo) ? servico : { ...servico, tipo: tiposValidos[0] || '' }
-            )),
-        }))
-        setErro('Tipos incompatíveis foram ajustados para o provedor atual.')
-    }
-
     const adicionarClasse = () => {
         deveFocarNomeClasseRef.current = true
         setSelectedClassIndex(project.classes?.length || 0)
@@ -563,10 +535,6 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
         }))
     }
 
-    const adicionarRelacao = () => {
-        setProject((prev) => ({ ...prev, relacoes: [...(prev.relacoes || []), { origem: '', destino: '', tipo: TIPOS_RELACAO[0] }] }))
-    }
-
     const adicionarRelacaoDaClasse = (nomeOrigem) => {
         if (!nomeOrigem) return
         setProject((prev) => {
@@ -613,76 +581,24 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
         }))
     }
 
-    const atualizarServico = (indice, campo, valor) => {
-        setProject((prev) => ({
-            ...prev,
-            servicosCloud: prev.servicosCloud.map((servico, index) => index === indice ? { ...servico, [campo]: valor } : servico),
-        }))
-    }
-
-    const removerServico = (indice) => {
-        setProject((prev) => {
-            const servicoRemovido = prev.servicosCloud[indice]
-            return {
-                ...prev,
-                servicosCloud: prev.servicosCloud.filter((_, indexServico) => indexServico !== indice),
-                conexoesCloud: (prev.conexoesCloud || []).filter((conexao) => conexao.de !== servicoRemovido?.id && conexao.para !== servicoRemovido?.id),
-            }
-        })
-    }
-
-    const adicionarLinhaConfiguracao = (servicoIndex) => {
-        setProject((prev) => ({
-            ...prev,
-            servicosCloud: prev.servicosCloud.map((servico, index) => index === servicoIndex ? {
-                ...servico,
-                configuracao: { ...(servico.configuracao || {}), '': '' },
-            } : servico),
-        }))
-    }
-
-    const atualizarLinhaConfiguracao = (servicoIndex, chaveAntiga, valorChave, valorValor) => {
-        setProject((prev) => ({
-            ...prev,
-            servicosCloud: prev.servicosCloud.map((servico, index) => {
-                if (index !== servicoIndex) return servico
-                const atual = { ...(servico.configuracao || {}) }
-                if (chaveAntiga && chaveAntiga !== valorChave) delete atual[chaveAntiga]
-                if (valorChave.trim()) atual[valorChave.trim()] = String(valorValor ?? '')
-                return { ...servico, configuracao: atual }
-            }),
-        }))
-    }
-
-    const removerLinhaConfiguracao = (servicoIndex, chave) => {
-        setProject((prev) => ({
-            ...prev,
-            servicosCloud: prev.servicosCloud.map((servico, index) => {
-                if (index !== servicoIndex) return servico
-                const atual = { ...(servico.configuracao || {}) }
-                delete atual[chave]
-                return { ...servico, configuracao: atual }
-            }),
-        }))
-    }
-
     const adicionarConexao = () => {
         setProject((prev) => ({ ...prev, conexoesCloud: [...(prev.conexoesCloud || []), { de: '', para: '', rotulo: '' }] }))
     }
 
-    const atualizarConexao = (indice, campo, valor) => {
-        setProject((prev) => ({
-            ...prev,
-            conexoesCloud: prev.conexoesCloud.map((conexao, index) => index === indice ? { ...conexao, [campo]: valor } : conexao),
-        }))
-    }
+    const gerarExemplo = () => {
+        if (
+            projetoTemConteudo(project) &&
+            typeof window !== 'undefined' &&
+            !window.confirm('Substituir as classes e a arquitetura atuais pelo projeto de exemplo?')
+        ) {
+            return
+        }
 
-    const removerConexao = (indice) => {
-        setProject((prev) => ({ ...prev, conexoesCloud: prev.conexoesCloud.filter((_, index) => index !== indice) }))
-    }
-
-    const carregarExemplo = () => {
-        setProject(normalizeProjeto(EXEMPLO_PROJETO))
+        setProject((prev) => normalizeProjeto(gerarProjetoExemplo({
+            nome: prev.nome,
+            provedorCloud: prev.provedorCloud,
+        })))
+        setSelectedClassIndex(0)
         setErro('')
     }
 
@@ -825,7 +741,6 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
     }
 
 
-    const idsServicos = (project.servicosCloud || []).map((servico) => servico.id).filter(Boolean)
     const classes = project.classes || []
 
     const selectedIndex = Math.min(
@@ -1010,6 +925,15 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
                     </button>
                 </div>
                 )}
+
+                <button
+                    type="button"
+                    className="editor-fe15__example"
+                    onClick={gerarExemplo}
+                    title="Preenche o projeto com uma loja virtual completa: classes Java, relações e arquitetura cloud"
+                >
+                    ✨ Gerar exemplo
+                </button>
 
                 <button
                     type="button"
@@ -1208,142 +1132,9 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
                 )}
             </div>
 
-            <details className="editor-fe15__advanced">
-                <summary>
-                    Configurações completas do projeto (relações, cloud, JSON)
-                </summary>
-                <div className="editor-layout">
-                    <div className="editor-stack">
-                        <fieldset>
-                            <legend>Projeto</legend>
-                            <div className="grid-2">
-                                <label>
-                                    Nome
-                                    <input value={project.nome} onChange={(event) => setProject((prev) => ({ ...prev, nome: event.target.value }))} />
-                                </label>
-                                <label>
-                                    Provedor
-                                    <select value={project.provedorCloud} onChange={(event) => atualizarProvedor(event.target.value)}>
-                                        <option value="aws">aws</option>
-                                        <option value="oci">oci</option>
-                                    </select>
-                                </label>
-                            </div>
-                        </fieldset>
-
-                        <fieldset>
-                            <legend>Classes</legend>
-                            {(project.classes || []).map((classe, classeIndex) => (
-                                <div key={`classe-${classeIndex}`} className="card-inside">
-                                    <div className="grid-2">
-                                        <label>
-                                            Nome da classe
-                                            <input value={classe.nome} onChange={(event) => atualizarClasse(classeIndex, 'nome', event.target.value)} />
-                                        </label>
-                                        <div className="actions end">
-                                            <button type="button" className="muted" onClick={() => adicionarAtributo(classeIndex)}>Adicionar atributo</button>
-                                            <button type="button" className="muted" onClick={() => adicionarMetodo(classeIndex)}>Adicionar método</button>
-                                            <button type="button" className="danger" onClick={() => removerClasseLocal(classeIndex)}>Remover</button>
-                                        </div>
-                                    </div>
-
-                                    <div className="nested-list">
-                                        {(classe.atributos || []).map((atributo, atributoIndex) => (
-                                            <div key={`atributo-${classeIndex}-${atributoIndex}`} className="row-grid">
-                                                <input value={atributo.nome} placeholder="nome do atributo" onChange={(event) => atualizarAtributo(classeIndex, atributoIndex, 'nome', event.target.value)} />
-                                                <select value={atributo.tipo} onChange={(event) => atualizarAtributo(classeIndex, atributoIndex, 'tipo', event.target.value)}>
-                                                    {TIPOS_ATRIBUTO.map((tipo) => <option key={tipo} value={tipo}>{tipo}</option>)}
-                                                </select>
-                                                <button type="button" className="danger" onClick={() => removerAtributo(classeIndex, atributoIndex)}>Remover</button>
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    <div className="nested-list">
-                                        {(classe.metodos || []).map((metodo, metodoIndex) => (
-                                            <div key={`metodo-${classeIndex}-${metodoIndex}`} className="row-grid">
-                                                <input value={metodo.nome} placeholder="nome do método" onChange={(event) => atualizarMetodo(classeIndex, metodoIndex, 'nome', event.target.value)} />
-                                                <select value={metodo.tipoRetorno} onChange={(event) => atualizarMetodo(classeIndex, metodoIndex, 'tipoRetorno', event.target.value)}>
-                                                    {TIPOS_RETORNO.map((tipo) => <option key={tipo} value={tipo}>{tipo}</option>)}
-                                                </select>
-                                                <button type="button" className="danger" onClick={() => removerMetodo(classeIndex, metodoIndex)}>Remover</button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            ))}
-                            <button type="button" onClick={adicionarClasse}>Adicionar classe</button>
-                        </fieldset>
-
-                        <fieldset>
-                            <legend>Relações</legend>
-                            <RelationsEditor
-                                classes={classes}
-                                relacoes={project.relacoes}
-                                onAdd={adicionarRelacao}
-                                onUpdate={atualizarRelacao}
-                                onRemove={removerRelacao}
-                            />
-                        </fieldset>
-
-                        <fieldset>
-                            <legend>Serviços cloud</legend>
-                            {(project.servicosCloud || []).map((servico, servicoIndex) => (
-                                <div key={`servico-${servicoIndex}`} className="card-inside">
-                                    <div className="row-grid">
-                                        <input value={servico.id} placeholder="id do serviço" onChange={(event) => atualizarServico(servicoIndex, 'id', event.target.value)} />
-                                        <select value={servico.tipo} onChange={(event) => atualizarServico(servicoIndex, 'tipo', event.target.value)}>
-                                            {(TIPOS_SERVICO[project.provedorCloud || 'aws'] || []).map((tipo) => <option key={tipo} value={tipo}>{tipo}</option>)}
-                                        </select>
-                                        <select value={servico.categoria} onChange={(event) => atualizarServico(servicoIndex, 'categoria', event.target.value)}>
-                                            {['COMPUTE', 'DATA', 'STORAGE', 'NETWORK', 'API', 'MESSAGING', 'OBSERVABILITY'].map((categoria) => <option key={categoria} value={categoria}>{categoria}</option>)}
-                                        </select>
-                                        <button type="button" className="danger" onClick={() => removerServico(servicoIndex)}>Remover</button>
-                                    </div>
-                                    <div className="nested-list">
-                                        {Object.entries(servico.configuracao || {}).map(([chave, valor]) => (
-                                            <div key={`config-${servicoIndex}-${chave}`} className="row-grid">
-                                                <input value={chave} onChange={(event) => atualizarLinhaConfiguracao(servicoIndex, chave, event.target.value, valor)} />
-                                                <input value={valor} onChange={(event) => atualizarLinhaConfiguracao(servicoIndex, chave, chave, event.target.value)} />
-                                                <button type="button" className="danger" onClick={() => removerLinhaConfiguracao(servicoIndex, chave)}>Remover</button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <button type="button" className="muted" onClick={() => adicionarLinhaConfiguracao(servicoIndex)}>Adicionar linha de config</button>
-                                </div>
-                            ))}
-                            <button type="button" onClick={adicionarServico}>Adicionar serviço</button>
-                        </fieldset>
-
-                        <fieldset>
-                            <legend>Conexões</legend>
-                            {(project.conexoesCloud || []).map((conexao, conexaoIndex) => (
-                                <div key={`conexao-${conexaoIndex}`} className="card-inside row-grid">
-                                    <select value={conexao.de} onChange={(event) => atualizarConexao(conexaoIndex, 'de', event.target.value)}>
-                                        <option value="">De</option>
-                                        {idsServicos.map((id) => <option key={id} value={id}>{id}</option>)}
-                                    </select>
-                                    <select value={conexao.para} onChange={(event) => atualizarConexao(conexaoIndex, 'para', event.target.value)}>
-                                        <option value="">Para</option>
-                                        {idsServicos.map((id) => <option key={id} value={id}>{id}</option>)}
-                                    </select>
-                                    <input value={conexao.rotulo} placeholder="rótulo" onChange={(event) => atualizarConexao(conexaoIndex, 'rotulo', event.target.value)} />
-                                    <button type="button" className="danger" onClick={() => removerConexao(conexaoIndex)}>Remover</button>
-                                </div>
-                            ))}
-                            <button type="button" onClick={adicionarConexao}>Adicionar conexão</button>
-                        </fieldset>
-
-                        <div className="actions">
-                            <button type="button" onClick={carregarExemplo}>Carregar exemplo</button>
-                        </div>
-
-                        <details>
-                            <summary>Ver JSON que será enviado</summary>
-                            <pre>{JSON.stringify(buildPayloadProjeto(project), null, 2)}</pre>
-                        </details>
-                    </div>
-                </div>
+            <details className="editor-fe15__json">
+                <summary>Ver JSON que será enviado</summary>
+                <pre>{JSON.stringify(buildPayloadProjeto(project), null, 2)}</pre>
             </details>
 
                 <CodeWorkspace
