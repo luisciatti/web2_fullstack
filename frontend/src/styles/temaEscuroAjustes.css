@@ -1,0 +1,54 @@
+/*
+ * Ajustes manuais do tema escuro (o restante é gerado em temaEscuro.css).
+ * Inspirado no VS Code Dark+.
+ */
+
+html[data-tema="escuro"] body {
+    background: #181818;
+    color: #cccccc;
+}
+
+/* Campos de formulário no padrão do VS Code */
+html[data-tema="escuro"] input,
+html[data-tema="escuro"] select,
+html[data-tema="escuro"] textarea {
+    background-color: #3c3c3c;
+    color: #e1e1e1;
+    border-color: #3c3c3c;
+}
+
+html[data-tema="escuro"] input::placeholder,
+html[data-tema="escuro"] textarea::placeholder {
+    color: #8b8b8b;
+}
+
+html[data-tema="escuro"] input:focus,
+html[data-tema="escuro"] select:focus,
+html[data-tema="escuro"] textarea:focus {
+    border-color: #007fd4;
+}
+
+/* Fonte mono nos blocos de código, como no editor */
+html[data-tema="escuro"] pre,
+html[data-tema="escuro"] code {
+    background: #1e1e1e;
+    color: #d4d4d4;
+}
+
+/* Áreas dos diagramas Mermaid: fundo do editor do VS Code */
+html[data-tema="escuro"] .uml-live-preview__canvas,
+html[data-tema="escuro"] .cloud-preview__canvas {
+    background: #1e1e1e;
+}
+
+/* Barras de rolagem discretas */
+html[data-tema="escuro"] {
+    scrollbar-color: #424242 #1e1e1e;
+}
+
+/* O logotipo herda a cor do texto claro */
+html[data-tema="escuro"] .diagramcode-logo,
+html[data-tema="escuro"] .public-header__brand {
+    color: #e1e1e1;
+}
+

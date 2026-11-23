@@ -4,6 +4,7 @@ import PublicButton from './components/public/PublicButton.jsx'
 import { apiFetch } from './api.js'
 import './Login.css'
 import './Projetos.css'
+import BotaoTema from './tema/BotaoTema.jsx'
 
 function normalizarTexto(valor) {
     return String(valor ?? '')
@@ -323,6 +324,7 @@ export default function Projetos({ onNew, onOpen, onLogout }) {
                         Início
                     </a>
 
+                    <BotaoTema />
                     <PublicButton
                         className="projects-header-logout"
                         variant="outline"

@@ -11,6 +11,8 @@ import CloudConnectionsPanel from './components/cloud/CloudConnectionsPanel.jsx'
 import CloudPreview from './components/cloud/CloudPreview.jsx'
 import { gerarMermaidCloud } from './diagramas/gerarMermaidCloud.js'
 import CodeWorkspace from './components/geracao/CodeWorkspace.jsx'
+import BotaoTema from './tema/BotaoTema.jsx'
+import { useTema } from './tema/tema.js'
 import DiagramCodeLogo from './components/public/DiagramCodeLogo.jsx'
 import './Editor.css'
 import { apiFetch, clearAuth } from './api.js'
@@ -296,6 +298,7 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
     const nomeProjetoInputRef = useRef(null)
     const [visao, setVisao] = useState('uml')
     const [ideAberta, setIdeAberta] = useState(false)
+    const tema = useTema()
     const [resultado, setResultado] = useState(null)
     const [loadingProject, setLoadingProject] = useState(false)
     const [currentProjectId, setCurrentProjectId] = useState(projectId)
@@ -897,6 +900,8 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
                 </span>
 
                 <div className="editor-fe15__actions">
+                    <BotaoTema />
+
                     {resultado?.artefatos?.length > 0 && (
                         <button
                             type="button"
@@ -1113,7 +1118,7 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
                             </div>
 
                             <CloudPreview
-                                codigoMermaid={gerarMermaidCloud(project)}
+                                codigoMermaid={gerarMermaidCloud(project, { tema })}
                                 titulo="Visualização da arquitetura"
                                 descricao="Atualiza enquanto você edita os serviços e as conexões."
                                 mensagemVazio={(project.servicosCloud || []).length

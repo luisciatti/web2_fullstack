@@ -1,12 +1,15 @@
 import { useId, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { gerarMermaidUml } from '../../diagramas/gerarMermaidUml.js'
 import { renderizarUml } from './renderizarUml.js'
+import { comTemaMermaid, useTema } from '../../tema/tema.js'
 import './UmlLivePreview.css'
 
 export default function UmlLivePreview({ projeto }) {
     const componenteId = useId().replace(/[^a-zA-Z0-9_]/g, '')
-    const fonte = useMemo(() => gerarMermaidUml(projeto), [projeto])
-    const vazio = fonte === 'classDiagram'
+    const tema = useTema()
+    const fonteBase = useMemo(() => gerarMermaidUml(projeto), [projeto])
+    const vazio = fonteBase === 'classDiagram'
+    const fonte = useMemo(() => comTemaMermaid(fonteBase, tema), [fonteBase, tema])
     const [resultado, setResultado] = useState(null)
     const versaoAtual = useRef(0)
     const canvas = useRef(null)

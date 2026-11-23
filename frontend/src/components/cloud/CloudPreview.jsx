@@ -1,5 +1,6 @@
 import { useId, useLayoutEffect, useState } from 'react'
 import { renderizarMermaid } from '../../diagramas/renderizarMermaid.js'
+import { comTemaMermaid, useTema } from '../../tema/tema.js'
 import './CloudPreview.css'
 
 const DESCRICAO_PADRAO = 'Resultado da última geração. Gere novamente para incluir alterações no projeto.'
@@ -13,8 +14,10 @@ export default function CloudPreview({
 }) {
     const id = useId()
     const [resultado, setResultado] = useState(null)
-    const fonte = codigoMermaid?.trim() || ''
-    const vazio = !fonte || /^(?:flowchart|graph)\s+(?:TB|TD|BT|RL|LR)\s*;?$/i.test(fonte)
+    const tema = useTema()
+    const fonteBase = codigoMermaid?.trim() || ''
+    const vazio = !fonteBase || /^(?:flowchart|graph)\s+(?:TB|TD|BT|RL|LR)\s*;?$/i.test(fonteBase)
+    const fonte = comTemaMermaid(fonteBase, tema)
 
     useLayoutEffect(() => {
         setResultado(null)

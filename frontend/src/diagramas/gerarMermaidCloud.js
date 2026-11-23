@@ -21,7 +21,7 @@ function identificador(id) {
  * no mesmo formato do diagrama gerado pelo back-end (tipo + id em cada nó).
  * Serviços sem id ou com id duplicado e conexões incompletas são ignorados.
  */
-export function gerarMermaidCloud(projeto = {}) {
+export function gerarMermaidCloud(projeto = {}, { tema = 'claro' } = {}) {
     const linhas = ['flowchart LR']
     const contagem = new Map()
 
@@ -54,7 +54,9 @@ export function gerarMermaidCloud(projeto = {}) {
     }
 
     if (nos.length) {
-        linhas.push('    classDef servico fill:#e9f4f7,stroke:#0b3b50,stroke-width:1.5px,color:#0b3b50')
+        linhas.push(tema === 'escuro'
+            ? '    classDef servico fill:#252526,stroke:#3794ff,stroke-width:1.5px,color:#e1e1e1'
+            : '    classDef servico fill:#e9f4f7,stroke:#0b3b50,stroke-width:1.5px,color:#0b3b50')
         linhas.push(`    class ${nos.join(',')} servico`)
     }
 
