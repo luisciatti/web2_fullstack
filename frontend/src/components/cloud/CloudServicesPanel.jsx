@@ -21,10 +21,22 @@ export default function CloudServicesPanel({ projeto, onChange }) {
     }
 
     function alterarServico(indice, campos) {
-        onChange({
-            ...projeto,
-            servicosCloud: servicosCloud.map((servico, i) => i === indice ? { ...servico, ...campos } : servico),
-        })
+        const idAnterior = servicosCloud[indice].id
+        const servicos = servicosCloud.map((servico, i) => i === indice ? { ...servico, ...campos } : servico)
+        const proximo = { ...projeto, servicosCloud: servicos }
+        if (idAnterior && campos.id !== undefined && campos.id !== idAnterior
+            && !servicos.some(({ id }) => id === idAnterior) && projeto.conexoesCloud) {
+            const novoId = campos.id.trim()
+            const substituto = novoId && servicos.filter(({ id }) => id.trim() === novoId).length === 1 ? campos.id : ''
+            proximo.conexoesCloud = projeto.conexoesCloud.map((conexao) =>
+                conexao.de === idAnterior || conexao.para === idAnterior ? {
+                    ...conexao,
+                    de: conexao.de === idAnterior ? substituto : conexao.de,
+                    para: conexao.para === idAnterior ? substituto : conexao.para,
+                } : conexao,
+            )
+        }
+        onChange(proximo)
     }
 
     function removerServico(indice) {
@@ -32,7 +44,13 @@ export default function CloudServicesPanel({ projeto, onChange }) {
             if (!atual || atual.indice === indice) return null
             return atual.indice > indice ? { ...atual, indice: atual.indice - 1 } : atual
         })
-        onChange({ ...projeto, servicosCloud: servicosCloud.filter((_, i) => i !== indice) })
+        const removido = servicosCloud[indice].id
+        const servicos = servicosCloud.filter((_, i) => i !== indice)
+        const proximo = { ...projeto, servicosCloud: servicos }
+        if (removido && !servicos.some(({ id }) => id === removido) && projeto.conexoesCloud) {
+            proximo.conexoesCloud = projeto.conexoesCloud.filter(({ de, para }) => de !== removido && para !== removido)
+        }
+        onChange(proximo)
     }
 
     function alterarConfiguracao(indice, chaveOriginal, novaEntrada) {
