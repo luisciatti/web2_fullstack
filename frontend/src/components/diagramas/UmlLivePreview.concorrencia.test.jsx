@@ -49,6 +49,35 @@ describe('concorrência da prévia UML montada', () => {
         vi.unstubAllGlobals()
     })
 
+    it('limita e redefine o zoom sem alterar o projeto nem renderizar outro SVG', async () => {
+        const projeto = structuredClone(projetoComPedido)
+        atualizar(projeto)
+        await avancar()
+        await concluir(renders[0], 'Pedido')
+
+        const controle = (rotulo) => host.querySelector(`button[aria-label="${rotulo}"]`)
+        const diminuir = controle('Diminuir zoom')
+        const aumentar = controle('Aumentar zoom')
+        const redefinir = controle('Redefinir zoom para 100%')
+        const percentual = host.querySelector('output')
+        const svg = host.querySelector('svg')
+
+        for (let passo = 0; passo < 3; passo++) act(() => diminuir.click())
+        expect(percentual.textContent).toBe('50%')
+        expect(diminuir.disabled).toBe(true)
+
+        for (let passo = 0; passo < 7; passo++) act(() => aumentar.click())
+        expect(percentual.textContent).toBe('200%')
+        expect(aumentar.disabled).toBe(true)
+
+        act(() => redefinir.click())
+        await avancar()
+        expect(percentual.textContent).toBe('100%')
+        expect(host.querySelector('svg')).toBe(svg)
+        expect(renders).toHaveLength(1)
+        expect(projeto).toEqual(projetoComPedido)
+    })
+
     it('agrupa renomes rápidos e ignora retornos antigos após mudar relação e excluir classe', async () => {
         const projetoComClasse = (nome, tipo) => ({
             classes: [...projetoComPedido.classes, { nome }],
