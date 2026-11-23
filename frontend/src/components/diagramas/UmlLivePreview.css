@@ -44,6 +44,8 @@
 
 .uml-live-preview__canvas {
     overflow: auto;
+    max-width: 100%;
+    box-sizing: border-box;
     max-height: 70vh;
     padding: .5rem;
     border: 1px solid var(--color-border, #e5e7eb);
@@ -52,10 +54,16 @@
     min-height: 360px;
 }
 
-.uml-live-preview__canvas svg { display: block; margin: auto; zoom: var(--uml-zoom, 1); }
+/* As dimensões do viewBox preservam a proporção e o zoom ajusta a área rolável. */
+.uml-live-preview__canvas svg {
+    display: block;
+    max-width: none;
+    margin-inline: auto;
+    zoom: var(--uml-zoom, 1);
+}
 .uml-live-preview__temporary { position: absolute; left: -100000px; top: 0; visibility: hidden; pointer-events: none; }
 
-.uml-live-preview__zoom { display: flex; align-items: center; border: 1px solid #dee5eb; border-radius: 9px; background: #fff; color: var(--color-primary, #0b3b50); }
+.uml-live-preview__zoom { display: flex; flex-wrap: wrap; max-width: 100%; align-items: center; border: 1px solid #dee5eb; border-radius: 9px; background: #fff; color: var(--color-primary, #0b3b50); }
 .uml-live-preview__zoom output { min-width: 3rem; text-align: center; font-size: .8125rem; }
 .uml-live-preview__zoom button { padding: .5rem; border: 0; background: transparent; color: inherit; box-shadow: none; min-width: 2rem; cursor: pointer; }
 .uml-live-preview__zoom button:disabled { opacity: .4; cursor: default; }
