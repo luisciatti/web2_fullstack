@@ -21,15 +21,34 @@ O painel segue o modelo da seção Serviços cloud de `Editor.jsx`.
 ```
 
 O componente é controlado pelo projeto recebido. Cada operação concluída chama
-`onChange(novoProjeto)` e preserva os demais campos, incluindo `conexoesCloud`.
-O consumidor é responsável por gerenciar conexões que referenciem IDs alterados
-ou excluídos. Use uma nova `key` se trocar o projeto inteiro com o painel montado.
+`onChange(novoProjeto)` e preserva os demais campos. Ao renomear um serviço,
+atualiza as conexões que usavam o identificador antigo. Se o novo identificador
+estiver vazio ou duplicado, o campo da conexão fica vazio para correção e o rótulo
+é mantido. Ao excluir um serviço, remove as conexões associadas se nenhum outro
+serviço usar o identificador. Use uma nova `key` se trocar o projeto inteiro
+com o painel montado.
 
 Trocar de provedor mantém os serviços e configurações, com aviso nos tipos
 incompatíveis. Campos do serviço são editados diretamente no estado local do
 projeto. Chave e valor ficam em rascunho até **Aplicar configuração**. Isso
 permite renomear uma chave inteira e validar duplicatas antes de gravar o mapa.
 O painel não usa a API.
+
+## FE-27 — Conexões e prévia gerada
+
+```jsx
+<CloudConnectionsPanel projeto={projeto} onChange={setProjeto} />
+<CloudPreview codigoMermaid={resultado?.cloud ?? ''} />
+```
+
+As conexões usam `{ de, para, rotulo }`. Origem e destino usam IDs únicos
+dos serviços. Conexões importadas com referência ausente ou ambígua mostram
+um aviso e podem ser corrigidas ou removidas. O rótulo é opcional.
+
+A prévia recebe o Mermaid da última geração. O consumidor fornece uma nova
+string ao receber outro resultado. No fixture, **Carregar resultado de exemplo**
+carrega um resultado estático para o provedor atual. O resultado permanece
+visível durante edições do projeto.
 
 ## Verificação manual
 
@@ -40,3 +59,5 @@ Em `frontend`, rode `npm run dev` e abra `/exemplos/cloud.html`.
 3. Tente renomear a chave para outra já existente. Confira o aviso e os valores no JSON.
 4. Troque o provedor para OCI no seletor. Os tipos AWS devem permanecer visíveis com avisos e as configurações devem permanecer no JSON.
 5. Carregue o exemplo OCI e confira INSTANCE e DATABASE. Exclua uma configuração e um serviço e confira o JSON.
+6. Adicione uma conexão, escolha origem e destino e edite o rótulo. Renomeie um serviço e confira o novo ID na conexão. Exclua o serviço e confira que suas conexões somem.
+7. Carregue um resultado de exemplo e edite uma conexão. Confira que o diagrama continua mostrando a última geração.
