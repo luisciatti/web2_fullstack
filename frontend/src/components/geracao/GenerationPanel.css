@@ -1,0 +1,25 @@
+.generation-panel {
+    min-width: 0;
+    padding: 1rem;
+    border: 1px solid var(--color-border, #d1d5db);
+    border-radius: var(--radius-md, 8px);
+    color: var(--color-text, #111827);
+    font-family: var(--font-family, system-ui, sans-serif);
+}
+
+.generation-panel h2 { margin: 0 0 .75rem; }
+.generation-panel button {
+    min-height: 2.5rem;
+    padding: .4rem .75rem;
+    border: 1px solid var(--color-primary, #0b3b50);
+    border-radius: 6px;
+    color: #fff;
+    background: var(--color-primary, #0b3b50);
+    font: inherit;
+    cursor: pointer;
+}
+.generation-panel button:disabled { opacity: .55; cursor: default; }
+.generation-panel button:focus-visible { outline: 2px solid var(--color-primary, #0b3b50); outline-offset: 2px; }
+.generation-panel p,
+.generation-panel li { overflow-wrap: anywhere; }
+.generation-panel__erro { color: var(--color-text-danger, #991b1b); }
