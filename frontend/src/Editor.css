@@ -1228,3 +1228,59 @@ button.editor-fe15__preview-link:hover {
     color: #0b3b50;
     font-size: 13px;
 }
+
+/* Gerar exemplo (barra de ferramentas) */
+.editor-fe15__toolbar .editor-fe15__example {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 41px;
+    margin-left: auto;
+    padding: 0 14px;
+    border: 1px dashed #9bb8c4;
+    border-radius: 9px;
+    background: #f5fafb;
+    color: #0b3b50;
+    font-size: 12px;
+    font-weight: 650;
+    cursor: pointer;
+}
+
+.editor-fe15__toolbar .editor-fe15__example:hover {
+    border-style: solid;
+    background: #e9f4f7;
+}
+
+.editor-fe15__toolbar .editor-fe15__example + .editor-fe15__preview-link {
+    margin-left: 8px;
+}
+
+/* JSON enviado ao back-end */
+.editor-fe15__json {
+    margin: 0;
+    padding: 14px 28px;
+    border-top: 1px solid #dce5e9;
+    background: #fff;
+    font-size: 12px;
+}
+
+.editor-fe15__json summary {
+    color: #4f6470;
+    font-weight: 650;
+    cursor: pointer;
+}
+
+.editor-fe15__json pre {
+    max-height: 420px;
+    margin: 12px 0 0;
+    padding: 14px;
+    overflow: auto;
+    border: 1px solid #e0e8ed;
+    border-radius: 10px;
+    background: #f7fafb;
+    color: #1b2b37;
+    font-family: ui-monospace, 'Cascadia Code', SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    white-space: pre;
+}

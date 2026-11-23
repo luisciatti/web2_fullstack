@@ -178,23 +178,25 @@ describe('FE-18 — CRUD de atributos', () => {
             />
         )
 
-        await clicar('Carregar exemplo')
+        await clicar('✨ Gerar exemplo')
 
         const antes = lerProjeto()
         const metodosOriginais = antes.classes[0].metodos
         const relacoesOriginais = antes.relacoes
         const atributosCliente = antes.classes[1].atributos
+        const atributosPedido = antes.classes[0].atributos
+        const novo = atributosPedido.length + 1
 
         await clicar('+ Atributo')
 
         const input = container.querySelector(
-            '.editor-fe15__inspector [aria-label="Nome do atributo 3"]'
+            `.editor-fe15__inspector [aria-label="Nome do atributo ${novo}"]`
         )
 
         await alterarInput(input, 'dataCadastro')
 
         const select = container.querySelector(
-            '.editor-fe15__inspector [aria-label="Tipo do atributo 3"]'
+            `.editor-fe15__inspector [aria-label="Tipo do atributo ${novo}"]`
         )
 
         await act(async () => {
@@ -206,7 +208,7 @@ describe('FE-18 — CRUD de atributos', () => {
 
         const depois = lerProjeto()
 
-        expect(depois.classes[0].atributos[2]).toEqual({
+        expect(depois.classes[0].atributos[novo - 1]).toEqual({
             nome: 'dataCadastro',
             tipo: 'LocalDate',
         })
@@ -232,20 +234,20 @@ describe('FE-18 — CRUD de atributos', () => {
 
         expect(
             container.querySelector(
-                '.editor-fe15__inspector [aria-label="Nome do atributo 3"]'
+                `.editor-fe15__inspector [aria-label="Nome do atributo ${atributosCliente.length + 1}"]`
             )
         ).toBeNull()
 
         await clicar('+ Atributo')
 
-        expect(lerProjeto().classes[1].atributos).toHaveLength(3)
-        expect(lerProjeto().classes[0].atributos).toHaveLength(3)
+        expect(lerProjeto().classes[1].atributos).toHaveLength(atributosCliente.length + 1)
+        expect(lerProjeto().classes[0].atributos).toHaveLength(novo)
 
         const botoesRemover = [
             ...container.querySelectorAll(
                 '.editor-fe15__inspector .editor-fe15__remove'
             ),
-        ]
+        ].filter((botao) => botao.textContent.trim() === 'Remover atributo')
 
         await act(async () => {
             botoesRemover.at(-1).click()
@@ -254,7 +256,7 @@ describe('FE-18 — CRUD de atributos', () => {
         expect(lerProjeto().classes[1].atributos)
             .toEqual(atributosCliente)
 
-        expect(lerProjeto().classes[0].atributos[2]).toEqual({
+        expect(lerProjeto().classes[0].atributos[novo - 1]).toEqual({
             nome: 'dataCadastro',
             tipo: 'LocalDate',
         })
@@ -269,7 +271,7 @@ describe('FE-18 — CRUD de atributos', () => {
             />
         )
 
-        await clicar('Carregar exemplo')
+        await clicar('✨ Gerar exemplo')
         await clicar('+ Atributo')
 
         const salvar = [...container.querySelectorAll('button')]

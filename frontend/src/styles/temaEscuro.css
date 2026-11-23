@@ -968,6 +968,26 @@ html[data-tema="escuro"] .editor-fe15__cloud .cloud-services__card, html[data-te
 html[data-tema="escuro"] .editor-fe15__cloud h3 {
     color: #e1e1e1
 }
+html[data-tema="escuro"] .editor-fe15__toolbar .editor-fe15__example {
+    border: 1px dashed #555555;
+    background: #1e1e1e;
+    color: #e1e1e1
+}
+html[data-tema="escuro"] .editor-fe15__toolbar .editor-fe15__example:hover {
+    background: #04395e
+}
+html[data-tema="escuro"] .editor-fe15__json {
+    border-top: 1px solid #3c3c3c;
+    background: #252526
+}
+html[data-tema="escuro"] .editor-fe15__json summary {
+    color: #cccccc
+}
+html[data-tema="escuro"] .editor-fe15__json pre {
+    border: 1px solid #3c3c3c;
+    background: #1e1e1e;
+    color: #e1e1e1
+}
 /*  components/cloud/CloudServicesPanel.css  */
 html[data-tema="escuro"] .cloud-services {
     color: #e1e1e1

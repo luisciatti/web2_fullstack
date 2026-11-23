@@ -327,63 +327,38 @@ describe('FE-20 — Relações UML e validação', () => {
             />
         )
 
-        await clicar(
-            [...container.querySelectorAll('button')]
-                .find((botao) =>
-                    botao.textContent.trim() === 'Carregar exemplo'
-                )
-        )
+        const botao = (texto) => [...container.querySelectorAll('button')]
+            .find((elemento) => elemento.textContent.trim() === texto)
+
+        await clicar(botao('✨ Gerar exemplo'))
 
         const antes = lerProjeto()
+        const daClasse = antes.relacoes
+            .filter((relacao) => relacao.origem === antes.classes[0].nome)
+            .length
 
-        const campo = [
-            ...container.querySelectorAll(
-                '.editor-fe15__advanced fieldset'
-            ),
-        ].find((elemento) =>
-            elemento.querySelector('legend')?.textContent === 'Relações'
-        )
+        await clicar(botao('+ Relação'))
 
-        expect(campo).toBeDefined()
+        expect(lerProjeto().relacoes).toHaveLength(antes.relacoes.length + 1)
+        expect(lerProjeto().relacoes.at(-1).origem).toBe(antes.classes[0].nome)
 
-        await clicar(
-            [...campo.querySelectorAll('button')]
-                .find((botao) =>
-                    botao.textContent.trim() === 'Adicionar relação'
-                )
-        )
+        const posicao = daClasse + 1
 
-        expect(lerProjeto().relacoes).toHaveLength(2)
-
-        const salvar = [...container.querySelectorAll('button')]
-            .find((botao) => botao.textContent.trim() === 'Salvar')
-
-        expect(salvar.disabled).toBe(true)
-
-        expect(container.textContent).toContain(
-            'Há uma relação incompleta.'
+        await selecionar(
+            `.editor-fe15__inspector [aria-label="Classe relacionada ${posicao}"]`,
+            'Produto'
         )
 
         await selecionar(
-            '[aria-label="Origem da relação 2"]',
-            'Cliente'
-        )
-
-        await selecionar(
-            '[aria-label="Destino da relação 2"]',
-            'Pedido'
-        )
-
-        await selecionar(
-            '[aria-label="Tipo da relação 2"]',
+            `.editor-fe15__inspector [aria-label="Tipo da relação ${posicao}"]`,
             'MANY_TO_MANY'
         )
 
         const depois = lerProjeto()
 
-        expect(depois.relacoes[1]).toEqual({
-            origem: 'Cliente',
-            destino: 'Pedido',
+        expect(depois.relacoes.at(-1)).toEqual({
+            origem: antes.classes[0].nome,
+            destino: 'Produto',
             tipo: 'MANY_TO_MANY',
         })
 
@@ -391,15 +366,30 @@ describe('FE-20 — Relações UML e validação', () => {
         expect(depois.servicosCloud).toEqual(antes.servicosCloud)
         expect(depois.conexoesCloud).toEqual(antes.conexoesCloud)
 
-        expect(salvar.disabled).toBe(false)
+        expect(botao('Salvar').disabled).toBe(false)
 
         const remover = [
-            ...campo.querySelectorAll('button.danger'),
-        ]
+            ...container.querySelectorAll('.editor-fe15__inspector button'),
+        ].filter((elemento) => elemento.textContent.trim() === 'Remover relação')
 
-        await clicar(remover[1])
+        await clicar(remover.at(-1))
 
         expect(lerProjeto().relacoes).toEqual(antes.relacoes)
         expect(lerProjeto().classes).toEqual(antes.classes)
+    })
+
+    it('não exibe mais a seção de configurações completas, só o JSON', async () => {
+        await renderizar(
+            <Editor
+                projectId="novo"
+                onBack={() => {}}
+                onLogout={() => {}}
+            />
+        )
+
+        expect(container.textContent).not.toContain('Configurações completas do projeto')
+        expect(container.querySelector('.editor-fe15__advanced')).toBeNull()
+        expect(container.querySelector('.editor-fe15__json summary').textContent)
+            .toBe('Ver JSON que será enviado')
     })
 })
