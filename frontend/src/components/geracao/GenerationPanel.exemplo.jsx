@@ -2,13 +2,19 @@ import { StrictMode, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import UmlLivePreview from '../diagramas/UmlLivePreview.jsx'
 import GenerationPanel from './GenerationPanel.jsx'
+import ArtifactsPanel from './ArtifactsPanel.jsx'
 import '../../styles/tokens.css'
 
 const RESULTADO_FIXTURE = {
     idProjeto: 'projeto-exemplo',
     uml: 'classDiagram\n    class Pedido',
     cloud: 'flowchart LR',
-    artefatos: [{ tipo: 'JAVA', nome: 'Pedido.java', conteudo: 'public class Pedido {}' }],
+    artefatos: [
+        { tipo: 'CONFIG', nome: 'pom.xml', conteudo: '<project><artifactId>pedidos</artifactId></project>' },
+        { tipo: 'CONFIG', nome: 'src/main/resources/application.yml', conteudo: 'spring:\n  application:\n    name: pedidos' },
+        { tipo: 'INFRA', nome: 'infra/main.tf', conteudo: '' },
+        { tipo: 'DIAGRAM', nome: 'docs/diagrama.mmd', conteudo: 'classDiagram\n    class Pedido' },
+    ],
 }
 
 function Exemplo() {
@@ -31,10 +37,14 @@ function Exemplo() {
             await new Promise((resolve) => setTimeout(resolve, 700))
             if (simularFalha) throw new Error('Falha simulada ao gerar código.')
             const nomeSalvo = projetoSalvo.classes[0].nome
+            const uml = `classDiagram\n    class ${nomeSalvo}`
             setResultado({
                 ...RESULTADO_FIXTURE,
-                uml: `classDiagram\n    class ${nomeSalvo}`,
-                artefatos: [{ tipo: 'JAVA', nome: `${nomeSalvo}.java`, conteudo: `public class ${nomeSalvo} {}` }],
+                uml,
+                artefatos: [
+                    { tipo: 'JAVA', nome: `src/main/java/exemplo/${nomeSalvo}.java`, conteudo: `public class ${nomeSalvo} {}` },
+                    ...RESULTADO_FIXTURE.artefatos.map((artefato) => artefato.tipo === 'DIAGRAM' ? { ...artefato, conteudo: uml } : artefato),
+                ],
             })
         } catch (falha) {
             setErro(falha.message)
@@ -66,6 +76,7 @@ function Exemplo() {
                 resultado={resultado}
                 onGenerate={gerar}
             />
+            <ArtifactsPanel resultado={resultado} />
         </main>
     )
 }
