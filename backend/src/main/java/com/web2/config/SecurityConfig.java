@@ -72,6 +72,8 @@ public class SecurityConfig {
                                                 .permitAll()
 
                                                 // Rotas protegidas
+                                                .requestMatchers("/api/admin/**")
+                                                .hasRole("ADMIN")
                                                 .requestMatchers("/api/projetos/**")
                                                 .hasAnyRole("USER", "ADMIN")
 
