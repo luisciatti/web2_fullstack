@@ -199,7 +199,7 @@ function ProjetoCard({
 }
 
 // Componente principal. Mantemos as três props do App.jsx.
-export default function Projetos({ onNew, onOpen, onLogout }) {
+export default function Projetos({ onNew, onOpen, onLogout, administrador }) {
     const [lista, setLista] = useState([])
     const [erro, setErro] = useState('')
     const [carregando, setCarregando] = useState(true)
@@ -323,6 +323,7 @@ export default function Projetos({ onNew, onOpen, onLogout }) {
                     <a href="#inicio" className="public-nav__home">
                         Início
                     </a>
+                    {administrador && <a href="#usuarios" className="public-nav__home">Usuários</a>}
 
                     <BotaoTema />
                     <PublicButton
