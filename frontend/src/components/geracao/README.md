@@ -65,3 +65,20 @@ Em `frontend`, rode `npm run dev` e abra `/exemplos/geracao.html`.
 3. Renomeie a classe. A UML deve refletir o novo nome e o arquivo deve continuar sendo o da última geração. Salve e confira que o arquivo segue igual até gerar novamente.
 4. Marque **Simular falha** e clique em **Gerar código**. Confira a mensagem de falha e desmarque a opção para testar a recuperação.
 5. Confira na aba **Network** que o fixture não faz requisição à API.
+
+## FE-29 — Artefatos e download
+
+Passe o mesmo resultado da geração para `<ArtifactsPanel resultado={resultado} />`.
+O painel mostra Java, Config, Infra e Diagramas. Expanda um arquivo para ler o
+conteúdo como texto. O botão de download aparece quando há arquivos com nomes
+válidos. O editor pode usar o painel completo ou importar `baixarZip(artefatos)`
+de `src/utils/downloadZip.js` em seu próprio botão.
+
+O ZIP mantém os diretórios conhecidos quando informados e coloca `pom.xml` na
+raiz. Nomes inválidos são ignorados e colisões recebem sufixos numéricos. Um
+arquivo com nome válido e conteúdo ausente entra no ZIP como arquivo vazio.
+
+Para verificar no fixture, salve e gere o projeto, expanda `pom.xml` e clique
+em **Baixar tudo (.zip)**. Abra `projeto-gerado.zip` e confira Java em
+`src/main/java`, YAML em `src/main/resources`, Terraform em `infra`,
+Mermaid em `docs` e o POM na raiz.
