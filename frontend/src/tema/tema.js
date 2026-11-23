@@ -39,9 +39,19 @@ export function aplicarTemaSalvo() {
     document.documentElement.dataset.tema = lerSalvo() || 'claro'
 }
 
+function sincronizarTema(evento) {
+    if (evento.storageArea !== localStorage || (evento.key !== CHAVE_TEMA && evento.key !== null)) return
+    aplicarTemaSalvo()
+    ouvintes.forEach((ouvinte) => ouvinte())
+}
+
 function inscrever(ouvinte) {
+    if (!ouvintes.size) window.addEventListener('storage', sincronizarTema)
     ouvintes.add(ouvinte)
-    return () => ouvintes.delete(ouvinte)
+    return () => {
+        ouvintes.delete(ouvinte)
+        if (!ouvintes.size) window.removeEventListener('storage', sincronizarTema)
+    }
 }
 
 export function useTema() {

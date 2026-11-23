@@ -61,5 +61,12 @@ describe('tema', () => {
 
         await act(async () => { definirTema('claro') })
         expect(botao.getAttribute('aria-pressed')).toBe('false')
+
+        await act(async () => {
+            localStorage.setItem(CHAVE_TEMA, 'escuro')
+            window.dispatchEvent(new StorageEvent('storage', { key: CHAVE_TEMA, storageArea: localStorage, newValue: 'escuro' }))
+        })
+        expect(temaAtual()).toBe('escuro')
+        expect(botao.getAttribute('aria-pressed')).toBe('true')
     })
 })
