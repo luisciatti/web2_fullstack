@@ -94,7 +94,25 @@ describe('Correções de UX do editor', () => {
         alvo.scrollIntoView = vi.fn()
         const hashAntes = window.location.hash
         await clicar('▤ Visualizar UML')
+        await act(async () => { await new Promise((resolve) => requestAnimationFrame(resolve)) })
         expect(alvo.scrollIntoView).toHaveBeenCalled()
         expect(window.location.hash).toBe(hashAntes)
+    })
+
+    it('abre a visualização Cloud e permite adicionar serviços e conexões', async () => {
+        await renderizar()
+        await clicar('☁ Visualização Cloud')
+        expect(container.querySelector('.editor-fe15__toolbar h2').textContent).toBe('Arquitetura Cloud')
+        expect(container.textContent).toContain('Conexões Cloud')
+        expect(container.querySelector('.editor-fe15__inspector')).toBeNull()
+
+        await clicar('+ Serviço')
+        await clicar('+ Serviço')
+        expect(botao('+ Conexão').disabled).toBe(false)
+        await clicar('+ Conexão')
+        expect(container.querySelectorAll('.cloud-connections fieldset').length).toBe(1)
+
+        await clicar('▦ Diagrama de classes')
+        expect(container.querySelector('.editor-fe15__toolbar h2').textContent).toBe('Diagrama de classes')
     })
 })

@@ -402,6 +402,11 @@ public class GeradorTemplate {
                 .findFirst();
     }
 
+    private String nomeBancoPadrao(Projeto projeto) {
+        String nome = slug(projeto.getNome()).replace('-', '_');
+        return nome.isEmpty() ? "app" : nome;
+    }
+
     private String configValor(ServicoCloudDef servico, String chave) {
         Map<String, String> config = servico.getConfiguracao();
         return config != null ? config.get(chave) : null;
@@ -497,13 +502,21 @@ public class GeradorTemplate {
     }
 
     private String gerarApplicationYml(Projeto projeto) {
-        ServicoCloudDef servico = encontrarServicoBanco(projeto)
-                .orElseThrow(() -> new IllegalStateException(
-                        "Nenhum serviço de banco de dados encontrado no projeto."));
+        // O serviço de banco (categoria DATA) é opcional: sem ele, usa valores
+        // padrão (MySQL, banco com o nome do projeto) para não falhar a geração.
+        Optional<ServicoCloudDef> servico = encontrarServicoBanco(projeto);
 
-        String dbName = configValor(servico, "dbName");
-        String username = configValor(servico, "username");
-        String engine = configValor(servico, "engine");
+        String dbName = servico
+                .map(s -> configValor(s, "dbName"))
+                .filter(valor -> !valor.isBlank())
+                .orElseGet(() -> nomeBancoPadrao(projeto));
+        String username = servico
+                .map(s -> configValor(s, "username"))
+                .filter(valor -> !valor.isBlank())
+                .orElse("app");
+        String engine = servico
+                .map(s -> configValor(s, "engine"))
+                .orElse(null);
 
         boolean postgres = engine != null && engine.toLowerCase().contains("postgres");
 

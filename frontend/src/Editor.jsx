@@ -6,6 +6,10 @@ import AttributeEditor, { TIPOS_ATRIBUTO } from './components/editor/AttributeEd
 import MethodEditor, { TIPOS_RETORNO } from './components/editor/MethodEditor.jsx'
 import RelationsEditor, { TIPOS_RELACAO } from './components/editor/RelationsEditor.jsx'
 import ClassRelationsEditor from './components/editor/ClassRelationsEditor.jsx'
+import CloudServicesPanel from './components/cloud/CloudServicesPanel.jsx'
+import CloudConnectionsPanel from './components/cloud/CloudConnectionsPanel.jsx'
+import CloudPreview from './components/cloud/CloudPreview.jsx'
+import { gerarMermaidCloud } from './diagramas/gerarMermaidCloud.js'
 import DiagramCodeLogo from './components/public/DiagramCodeLogo.jsx'
 import './Editor.css'
 import { apiFetch, clearAuth } from './api.js'
@@ -289,6 +293,7 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
     const nomeClasseInputRef = useRef(null)
     const deveFocarNomeClasseRef = useRef(false)
     const nomeProjetoInputRef = useRef(null)
+    const [visao, setVisao] = useState('uml')
     const [resultado, setResultado] = useState(null)
     const [loadingProject, setLoadingProject] = useState(false)
     const [currentProjectId, setCurrentProjectId] = useState(projectId)
@@ -573,13 +578,16 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
         })
     }
 
-    const irParaDiagrama = () => {
-        document.getElementById('editor-diagrama')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    const irParaDiagrama = (novaVisao = 'uml') => {
+        setVisao(novaVisao)
+        requestAnimationFrame(() => {
+            document.getElementById('editor-diagrama')?.scrollIntoView?.({ behavior: 'smooth', block: 'start' })
+        })
     }
 
     const focarNomeProjeto = () => {
         nomeProjetoInputRef.current?.focus()
-        nomeProjetoInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        nomeProjetoInputRef.current?.scrollIntoView?.({ behavior: 'smooth', block: 'center' })
     }
 
     const atualizarRelacao = (indice, campo, valor) => {
@@ -935,8 +943,9 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
             </header>
 
             <div className="editor-fe15__toolbar">
-                <h2>Diagrama de classes</h2>
+                <h2>{visao === 'cloud' ? 'Arquitetura Cloud' : 'Diagrama de classes'}</h2>
 
+                {visao === 'uml' ? (
                 <div className="editor-fe15__tools">
                     <button
                         type="button"
@@ -971,13 +980,33 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
                         + Relação
                     </button>
                 </div>
+                ) : (
+                <div className="editor-fe15__tools">
+                    <button
+                        type="button"
+                        className="editor-fe15__tool-primary"
+                        onClick={adicionarServico}
+                    >
+                        + Serviço
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={adicionarConexao}
+                        disabled={(project.servicosCloud || []).length < 2}
+                        title="Conecte dois serviços"
+                    >
+                        + Conexão
+                    </button>
+                </div>
+                )}
 
                 <button
                     type="button"
                     className="editor-fe15__preview-link"
-                    onClick={irParaDiagrama}
+                    onClick={() => irParaDiagrama(visao)}
                 >
-                    ▤ Visualizar UML
+                    {visao === 'cloud' ? '☁ Visualizar Cloud' : '▤ Visualizar UML'}
                 </button>
             </div>
 
@@ -1001,7 +1030,7 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
                     </div>
                 )}
 
-            <div className="editor-fe15__workspace">
+            <div className={`editor-fe15__workspace${visao === 'cloud' ? ' is-cloud' : ''}`}>
             <aside
                 className="editor-fe15__panel editor-fe15__structure"
                 aria-label="Estrutura de classes"
@@ -1025,11 +1054,23 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
                         DIAGRAMAS
                     </p>
 
-                    <button type="button" className="editor-fe15__nav-link" onClick={irParaDiagrama}>
+                    <button
+                        type="button"
+                        className={`editor-fe15__nav-link${visao === 'uml' ? ' is-active' : ''}`}
+                        aria-pressed={visao === 'uml'}
+                        onClick={() => irParaDiagrama('uml')}
+                    >
                         ▦ Diagrama de classes
                     </button>
 
-                    <span>Visualização Cloud</span>
+                    <button
+                        type="button"
+                        className={`editor-fe15__nav-link${visao === 'cloud' ? ' is-active' : ''}`}
+                        aria-pressed={visao === 'cloud'}
+                        onClick={() => irParaDiagrama('cloud')}
+                    >
+                        ☁ Visualização Cloud
+                    </button>
                 </div>
 
                 <button
@@ -1046,18 +1087,42 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
                     id="editor-diagrama"
                     aria-label="Área do diagrama"
                 >
-                    <div className="editor-fe15__panel-title">
-                        <h2>Diagrama UML</h2>
-                        <span>Prévia</span>
-                    </div>
+                    {visao === 'uml' ? (
+                        <>
+                            <div className="editor-fe15__panel-title">
+                                <h2>Diagrama UML</h2>
+                                <span>Prévia</span>
+                            </div>
 
-                    <EditorUmlSlot
-                        projeto={project}
-                        classes={classes}
-                        selectedIndex={selectedIndex}
-                    />
+                            <EditorUmlSlot
+                                projeto={project}
+                                classes={classes}
+                                selectedIndex={selectedIndex}
+                            />
+                        </>
+                    ) : (
+                        <div className="editor-fe15__cloud">
+                            <div className="editor-fe15__panel-title">
+                                <h2>Diagrama Cloud</h2>
+                                <span>Prévia</span>
+                            </div>
+
+                            <CloudPreview
+                                codigoMermaid={gerarMermaidCloud(project)}
+                                titulo="Visualização da arquitetura"
+                                descricao="Atualiza enquanto você edita os serviços e as conexões."
+                                mensagemVazio="Adicione um serviço para visualizar a arquitetura cloud."
+                            />
+
+                            <div className="editor-fe15__cloud-panels">
+                                <CloudServicesPanel projeto={project} onChange={setProject} />
+                                <CloudConnectionsPanel projeto={project} onChange={setProject} />
+                            </div>
+                        </div>
+                    )}
                 </section>
 
+                {visao === 'uml' && (
                 <aside
                     className="editor-fe15__panel editor-fe15__inspector"
                     aria-label="Propriedades da classe"
@@ -1128,6 +1193,7 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
                         </div>
                     )}
                 </aside>
+                )}
             </div>
 
             <details className="editor-fe15__advanced">
