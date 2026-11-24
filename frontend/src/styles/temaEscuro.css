@@ -14,7 +14,6 @@ html[data-tema="escuro"] body {
     color: #e1e1e1
 }
 html[data-tema="escuro"] button {
-    background: #0e639c;
     color: #ffffff;
     border: 0
 }
