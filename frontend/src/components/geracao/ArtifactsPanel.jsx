@@ -1,5 +1,6 @@
 import { useId, useState } from 'react'
 import { baixarZip, normalizarCaminho } from '../../utils/downloadZip.js'
+import { prepararDownloadProjeto } from './arvoreArquivos.js'
 import './ArtifactsPanel.css'
 
 const GRUPOS = ['Java', 'Config', 'Infra', 'Diagramas']
@@ -27,7 +28,7 @@ export default function ArtifactsPanel({ resultado }) {
         setBaixando(true)
         setErro('')
         try {
-            await baixarZip(artefatos)
+            await baixarZip(prepararDownloadProjeto(artefatos))
         } catch {
             setErro('Não foi possível baixar o ZIP. Tente novamente.')
         } finally {
