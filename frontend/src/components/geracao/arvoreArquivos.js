@@ -14,6 +14,12 @@ export function caminhoNoProjeto(artefato) {
     if (!caminho) return ''
     if (caminho.includes('/')) return caminho
 
+    // Java já gerado com declaração de package: pasta deve refletir o pacote.
+    if (caminho.toLowerCase().endsWith('.java')) {
+        const pacote = /^\s*package\s+([\w.]+)\s*;/m.exec(artefato?.conteudo || '')?.[1]
+        if (pacote) return `src/main/java/${pacote.replaceAll('.', '/')}/${caminho}`
+    }
+
     const tipo = String(artefato?.tipo || '').toUpperCase()
     const nome = caminho
     const minusculo = nome.toLowerCase()
@@ -55,6 +61,11 @@ export function listarArquivos(artefatos = []) {
     }
 
     return arquivos
+}
+
+/** Mesmos caminhos do explorador, agora dentro do ZIP exportado. */
+export function prepararDownloadProjeto(artefatos = []) {
+    return listarArquivos(artefatos).map(({ caminho, conteudo }) => ({ nome: caminho, conteudo }))
 }
 
 /**

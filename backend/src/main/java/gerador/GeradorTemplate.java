@@ -59,8 +59,12 @@ public class GeradorTemplate {
     private String gerarModel(ClasseDef classe) {
         StringBuilder sb = new StringBuilder();
 
-        // imports
+        // O pacote e os imports devem acompanhar a estrutura do projeto exportado.
+        sb.append("package com.example.demo.model;\n\n");
         sb.append("import jakarta.persistence.*;\n");
+        sb.append("import java.math.BigDecimal;\n");
+        sb.append("import java.time.LocalDate;\n");
+        sb.append("import java.time.LocalDateTime;\n");
         sb.append("import java.util.Objects;\n\n");
 
         // anotações JPA
@@ -272,6 +276,8 @@ public class GeradorTemplate {
         StringBuilder sb = new StringBuilder();
 
         // imports
+        sb.append("package com.example.demo.repositorio;\n\n");
+        sb.append("import com.example.demo.model." + classe.nome() + ";\n");
         sb.append("import org.springframework.data.jpa.repository.JpaRepository;\n");
         sb.append("import org.springframework.stereotype.Repository;\n");
         sb.append("import java.util.Optional;\n\n");
@@ -317,6 +323,8 @@ public class GeradorTemplate {
         StringBuilder sb = new StringBuilder();
 
         // imports
+        sb.append("package com.example.demo.servico;\n\n");
+        sb.append("import com.example.demo.model." + classe.nome() + ";\n");
         sb.append("import java.util.List;\n");
         sb.append("import java.util.Optional;\n\n");
 
@@ -343,6 +351,9 @@ public class GeradorTemplate {
         StringBuilder sb = new StringBuilder();
 
         // imports
+        sb.append("package com.example.demo.servico;\n\n");
+        sb.append("import com.example.demo.model." + classe.nome() + ";\n");
+        sb.append("import com.example.demo.repositorio." + classe.nome() + "Repositorio;\n");
         sb.append("import org.springframework.stereotype.Service;\n");
         sb.append("import org.springframework.transaction.annotation.Transactional;\n");
         sb.append("import java.util.List;\n");
@@ -613,6 +624,9 @@ public class GeradorTemplate {
         StringBuilder sb = new StringBuilder();
 
         // imports
+        sb.append("package com.example.demo.controlador;\n\n");
+        sb.append("import com.example.demo.model." + classe.nome() + ";\n");
+        sb.append("import com.example.demo.servico." + classe.nome() + "Servico;\n");
         sb.append("import org.springframework.http.HttpStatus;\n");
         sb.append("import org.springframework.http.ResponseEntity;\n");
         sb.append("import org.springframework.web.bind.annotation.*;\n");

@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import JSZip from 'jszip'
 import EditorUmlSlot from './components/editor/EditorUmlSlot.jsx'
 import ClassManager from './components/editor/ClassManager.jsx'
 import AttributeEditor, { TIPOS_ATRIBUTO } from './components/editor/AttributeEditor.jsx'
@@ -11,6 +10,8 @@ import CloudConnectionsPanel from './components/cloud/CloudConnectionsPanel.jsx'
 import CloudPreview from './components/cloud/CloudPreview.jsx'
 import { gerarMermaidCloud } from './diagramas/gerarMermaidCloud.js'
 import CodeWorkspace from './components/geracao/CodeWorkspace.jsx'
+import { prepararDownloadProjeto } from './components/geracao/arvoreArquivos.js'
+import { baixarZip } from './utils/downloadZip.js'
 import BotaoTema from './tema/BotaoTema.jsx'
 import { useTema } from './tema/tema.js'
 import { gerarProjetoExemplo, projetoTemConteudo } from './exemploProjeto.js'
@@ -706,35 +707,8 @@ export default function Editor({ projectId, onBack, onLogout, onProjectSaved }) 
         }
 
         try {
-            const zip = new JSZip()
-            for (const artefato of resultado.artefatos) {
-                const nome = String(artefato?.nome || 'arquivo.txt')
-                const caminho = nome.replace(/\\/g, '/')
-                const conteudo = artefato?.conteudo || ''
-                let destino = caminho
-
-                if (caminho.includes('/src/main/java/')) {
-                    destino = caminho.replace(/^.*?src\/main\/java\//, 'src/main/java/')
-                } else if (caminho.includes('/src/main/resources/')) {
-                    destino = caminho.replace(/^.*?src\/main\/resources\//, 'src/main/resources/')
-                } else if (caminho.includes('/infra/') || caminho.includes('infra/')) {
-                    destino = `infra/${caminho.split('/').pop()}`
-                } else if (caminho.includes('/docs/') || caminho.includes('docs/')) {
-                    destino = `docs/${caminho.split('/').pop()}`
-                } else if (caminho.endsWith('pom.xml')) {
-                    destino = 'pom.xml'
-                }
-
-                zip.file(destino, conteudo)
-            }
-
-            const blob = await zip.generateAsync({ type: 'blob' })
-            const link = document.createElement('a')
-            const url = URL.createObjectURL(blob)
-            link.href = url
-            link.download = 'projeto-gerado.zip'
-            link.click()
-            URL.revokeObjectURL(url)
+            // Usa os mesmos caminhos em pastas que o explorador de código gerado.
+            await baixarZip(prepararDownloadProjeto(resultado.artefatos))
         } catch (err) {
             setErro(err.message || 'Não foi possível baixar o pacote.')
         }
